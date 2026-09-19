@@ -1,0 +1,14 @@
+[package]
+name = "locus"
+description = "Locus language: coordinates, allele rules and the one reference normalizer (ADR-0008)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+serde = { workspace = true, optional = true }
+
+[features]
+default = []
+serde = ["dep:serde"]

@@ -1,0 +1,18 @@
+{
+  "id": "gwas-catalog",
+  "title": "GWAS Catalog associations",
+  "description": "Published genome-wide associations between variants and traits. Population-level associations, not statements about any individual. Lifted from GRCh38 to GRCh37 at build time.",
+  "build": "GRCh37",
+  "scientificDomain": "statistical-genetics",
+  "evidenceKind": "statistical-association",
+  "trackKind": "variant",
+  "core": false,
+  "licence": "CC0 (NHGRI-EBI GWAS Catalog)",
+  "licenceClass": "open",
+  "source": {
+    "name": "NHGRI-EBI GWAS Catalog, all associations with ontology annotations",
+    "short": "GWAS Catalog",
+    "url": "https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/gwas-catalog-associations_ontology-annotated-full.zip"
+  },
+  "citation": "Cerezo M. et al. The NHGRI-EBI GWAS Catalog: standards for reusability, sustainability and diversity. Nucleic Acids Res. 2025;53:D998–D1005"
+}

@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "id": "clinvar",
+  "title": "ClinVar classifications",
+  "description": "Curated classifications of variants submitted to ClinVar, with review status. A classification is a panel's judgement on a date; it can be revised.",
+  "build": "GRCh37",
+  "scientificDomain": "clinical-genetics",
+  "evidenceKind": "curated-classification",
+  "trackKind": "variant",
+  "core": false,
+  "licence": "CC0 (public domain, NCBI)",
+  "licenceClass": "open",
+  "source": {
+    "name": "ClinVar VCF, GRCh37",
+    "short": "ClinVar",
+    "url": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
+  },
+  "citation": "Landrum MJ et al. ClinVar: improvements to accessing data. Nucleic Acids Res. 2020;48:D835\u2013D844",
+  "version": "2026-09-13",
+  "sourceDate": "2026-09-13",
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-19T17:16:14+00:00",
+  "file": "clinvar.parquet",
+  "rows": 13011,
+  "columns": [
+    "chrom",
+    "pos",
+    "ref",
+    "alt",
+    "variation_id",
+    "allele_id",
+    "rsid",
+    "classification",
+    "review_status",
+    "stars",
+    "element",
+    "element",
+    "element",
+    "origin"
+  ],
+  "size": 185469,
+  "sha256": "523c6acaba6a3e30dc1740fb089789e34f6006ea0a56def5645c711ebc52f617",
+  "stats": {
+    "fixture": true,
+    "snvs": 4162431,
+    "skipped": {
+      "notSnv": 308448,
+      "noAlt": 754,
+      "unknownChrom": 8
+    }
+  }
+}

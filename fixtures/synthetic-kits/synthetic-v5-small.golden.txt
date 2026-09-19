@@ -1,0 +1,33 @@
+rows_read 5000
+calls 5000
+no_calls 72
+strand_ambiguous 503
+rejected 0
+duplicates_merged 0
+ref_check match 0
+ref_check hom-non-ref 0
+ref_check complement-only 0
+ref_check mismatch 0
+ref_check unknown 4928
+ref_check indel-unresolved 0
+ref_check not-applicable 72
+call 1:1341185 rs17160977 CC false
+call 1:184764510 rs758958794 AA false
+call 2:74741991 rs200296220 GG false
+call 2:201270538 rs4674036 AC false
+call 3:99497118 rs1287285 GG false
+call 4:49620838 rs374066154 CC false
+call 5:11306627 rs1015493 GG false
+call 5:174619797 rs17064682 CC false
+call 6:110800666 rs79096852 AG false
+call 7:77602532 rs57925255 TT false
+call 8:41915096 rs76365427 CC false
+call 9:87186405 rs4877280 CG true
+call 10:93778269 rs2048901 CC false
+call 11:103601376 rs73607738 TT false
+call 12:114793660 rs114124210 CC false
+call 14:45201353 rs712414 AT true
+call 15:101158916 rs4965685 AA false
+call 17:51613235 rs9890221 CC false
+call 19:16050931 rs1025500 GG false
+call 22:22095920 rs5999264 TT false

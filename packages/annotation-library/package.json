@@ -1,0 +1,13 @@
+{
+  "name": "@gw/annotation-library",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Annotation Library: signed pack index, whole-pack install with SHA-256 checks, local joins, annotation tracks",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@gw/plugin-host": "workspace:*",
+    "@gw/plugin-sdk": "workspace:*",
+    "@gw/storage": "workspace:*"
+  }
+}

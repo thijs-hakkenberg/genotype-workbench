@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-b36023e6-ecf8-439e-8ded-bcc952382f76/styles.css">
+<script src="_ds/nocturne-b36023e6-ecf8-439e-8ded-bcc952382f76/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; }
+  a { color: var(--color-accent); }
+  a:hover { color: var(--color-accent-300); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);display:flex;flex-direction:column">
+
+  <div class="nav" style="padding:10px 18px;gap:var(--space-4);box-shadow:0 1px 0 var(--color-divider);flex:none">
+    <div class="nav-brand" style="font-size:15px;margin-right:var(--space-8)">Genotype Workbench <span class="text-muted" style="font-weight:400;font-size:12px">v0.4</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm)">
+      <span style="display:flex;flex-direction:column;gap:2px"><span style="width:10px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:6px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>
+      <span style="font-size:13px">Bakker family tree</span>
+      <span class="tag tag-neutral" style="font-size:10px;padding:1px 7px">GEDCOM 5.5.1</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
+      <input class="input" type="text" value="Search people, places, sources" style="width:250px;font-size:13px;color:var(--color-neutral-500)">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-neutral-400)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--color-accent-500);display:block"></span>
+        Offline · no network grants
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:grid;grid-template-columns:186px 1fr;min-height:0">
+
+    <nav style="border-right:1px solid var(--color-divider);padding:var(--space-4) var(--space-3);display:flex;flex-direction:column;gap:2px">
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius-sm);font-size:13px;color:var(--color-neutral-300)"><span style="width:8px;height:8px;border-radius:2px;background:var(--color-accent-400);display:block"></span>Overview</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius-sm);font-size:13px;color:var(--color-neutral-300)"><span style="width:8px;height:8px;border-radius:2px;background:var(--color-accent-400);display:block"></span>Genome view</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius-sm);font-size:13px;background:var(--color-accent-900);color:var(--color-accent-200)"><span style="display:flex;flex-direction:column;gap:2px"><span style="width:8px;height:1.5px;background:var(--color-accent-200);display:block"></span><span style="width:5px;height:1.5px;background:var(--color-accent-200);display:block"></span></span>Pedigree</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius-sm);font-size:13px;color:var(--color-neutral-300)"><span style="width:8px;height:8px;border-radius:2px;background:var(--color-neutral-600);display:block"></span>Kits<span style="margin-left:auto;font-size:10px;color:var(--color-neutral-500)">1</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius-sm);font-size:13px;color:var(--color-neutral-300)"><span style="width:8px;height:8px;border-radius:2px;border:1.5px solid var(--color-neutral-600);display:block"></span>Packs<span style="margin-left:auto;font-size:10px;color:var(--color-neutral-500)">0</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--radius-sm);font-size:13px;color:var(--color-neutral-300)"><span style="width:8px;height:8px;border-radius:2px;background:var(--color-neutral-600);display:block"></span>Plugins<span style="margin-left:auto;font-size:10px;color:var(--color-neutral-500)">3</span></div>
+      <div style="margin-top:auto;padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-neutral-900)">
+        <div style="font-size:11px;color:var(--color-neutral-400);line-height:1.5">284 people · 97 families<br>1 kit linked · 0 estimates</div>
+      </div>
+    </nav>
+
+    <main style="min-width:0;overflow:auto">
+      <div style="padding:var(--space-8) var(--space-8) 64px;max-width:1360px">
+
+        <div style="display:flex;align-items:flex-start;gap:var(--space-8);margin-bottom:var(--space-6)">
+          <div style="flex:1">
+            <div class="card-kicker">Pedigree · documentary evidence</div>
+            <h2 style="margin:6px 0 4px">Bakker family tree</h2>
+            <div style="font-size:13px;color:var(--color-neutral-400)">Imported from <span style="color:var(--color-neutral-300)">ancestry-export-2026-09-14.ged</span> · GEDCOM 5.5.1 · connector gedcom-file@0.4.0 · read on this device, nothing sent back</div>
+          </div>
+          <div style="display:flex;gap:var(--space-2)">
+            <button class="btn btn-secondary" type="button" style="white-space:nowrap">Import receipt</button>
+            <button class="btn btn-secondary" type="button" style="white-space:nowrap">Export GEDCOM</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:var(--space-3);margin-bottom:var(--space-8)">
+          <div style="padding:var(--space-4) var(--space-6);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm)">
+            <div style="font-size:24px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.1">284</div>
+            <div style="font-size:11px;color:var(--color-neutral-400);margin-top:3px">People</div>
+          </div>
+          <div style="padding:var(--space-4) var(--space-6);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm)">
+            <div style="font-size:24px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.1">97</div>
+            <div style="font-size:11px;color:var(--color-neutral-400);margin-top:3px">Families</div>
+          </div>
+          <div style="padding:var(--space-4) var(--space-6);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm)">
+            <div style="font-size:24px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.1">612</div>
+            <div style="font-size:11px;color:var(--color-neutral-400);margin-top:3px">Source citations</div>
+          </div>
+          <div style="padding:var(--space-4) var(--space-6);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm)">
+            <div style="font-size:24px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.1">41</div>
+            <div style="font-size:11px;color:var(--color-neutral-400);margin-top:3px">Unknown tags, round-tripped</div>
+          </div>
+          <div style="padding:var(--space-4) var(--space-6);border-radius:var(--radius-md);background:var(--color-accent-900);box-shadow:var(--shadow-sm)">
+            <div style="font-size:24px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1.1;color:var(--color-accent-200)">1</div>
+            <div style="font-size:11px;color:var(--color-accent-300);margin-top:3px">Person linked to a kit</div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:stretch">
+
+          <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6);min-width:0;flex:1 1 620px">
+            <div style="display:flex;align-items:baseline;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap">
+              <h4 style="margin:0">Ancestors of you</h4>
+              <span style="font-size:12px;color:var(--color-neutral-400)">Four generations · every line here is documentary</span>
+              <div style="margin-left:auto;display:flex;gap:var(--space-2)">
+                <div class="seg">
+                  <label class="seg-opt"><input type="radio" name="chart" checked>Ancestors</label>
+                  <label class="seg-opt"><input type="radio" name="chart">Descendants</label>
+                  <label class="seg-opt"><input type="radio" name="chart">List</label>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;height:540px;min-width:0">
+              <sc-for list="{{ columns }}" as="col" hint-placeholder-count="4">
+                <div style="{{ col.colStyle }}">
+                  <sc-for list="{{ col.people }}" as="p" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ p.go }}" style="{{ p.style }}">
+                      <span style="{{ p.markStyle }}"></span>
+                      <span style="min-width:0;flex:1;text-align:left;display:block">
+                        <span style="{{ p.nameStyle }}">{{ p.name }}</span>
+                        <span style="display:block;font-size:10px;color:var(--color-neutral-500);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.years }}</span>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="{{ col.connStyle }}">
+                  <sc-for list="{{ col.groups }}" as="g" hint-placeholder-count="2">
+                    <div style="flex:1;display:flex;align-items:center">
+                      <div style="width:7px;height:1px;background:var(--color-neutral-700);flex:none"></div>
+                      <div style="width:9px;height:50%;border:1px solid var(--color-neutral-700);border-left:0;border-radius:0 3px 3px 0;flex:none"></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;gap:var(--space-8);margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--color-divider);font-size:11px;color:var(--color-neutral-400);flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:7px"><span style="display:flex;flex-direction:column;gap:2px"><span style="width:10px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:6px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>Documented</span>
+              <span style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-accent-400);display:block"></span>Linked to a kit</span>
+              <span style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-800);display:block"></span>Not in the export</span>
+              <span style="margin-left:auto">276 further people beyond generation four. <a href="#">Open list</a></span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--space-3);flex:1 1 330px;min-width:0">
+
+            <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+              <div class="card-kicker">Person</div>
+              <h4 style="margin:6px 0 2px">{{ sel.name }}</h4>
+              <div style="font-size:12px;color:var(--color-neutral-400);font-variant-numeric:tabular-nums">{{ sel.years }} · {{ sel.relation }}</div>
+
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);margin:var(--space-6) 0">
+                <sc-for list="{{ sel.events }}" as="e" hint-placeholder-count="3">
+                  <div style="display:flex;gap:var(--space-3)">
+                    <span style="display:flex;flex-direction:column;gap:2px;width:11px;margin-top:5px;flex:none"><span style="width:11px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:7px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>
+                    <div style="min-width:0">
+                      <div style="font-size:13px">{{ e.what }}</div>
+                      <div style="font-size:11px;color:var(--color-neutral-400);margin-top:2px">{{ e.where }}</div>
+                      <div style="font-size:11px;color:var(--color-neutral-500);margin-top:3px">{{ e.source }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);background:var(--color-neutral-900);font-size:11px;color:var(--color-neutral-400);line-height:1.5">
+                <div style="color:var(--color-neutral-300);margin-bottom:3px">Relationship provenance</div>
+                {{ sel.provenance }}
+              </div>
+
+              <div style="display:flex;gap:var(--space-2);margin-top:var(--space-4);flex-wrap:wrap">
+                <button class="btn btn-secondary" type="button">Edit person</button>
+                <button class="btn btn-ghost" type="button">Original GEDCOM record</button>
+              </div>
+            </div>
+
+            <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+              <div class="card-kicker">Link · Person ↔ Kit</div>
+              <h4 style="margin:6px 0 var(--space-4)">One link exists</h4>
+              <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-accent-900)">
+                <span style="width:11px;height:11px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;color:var(--color-accent-100)">You ↔ Me — 23andMe v5</div>
+                  <div style="font-size:11px;color:var(--color-accent-300)">Confirmed by you · 12 Mar 2026</div>
+                </div>
+              </div>
+              <p style="font-size:12px;color:var(--color-neutral-400);margin:var(--space-4) 0 0;line-height:1.55">Pedigree holds who people are. Genotype Store holds whose DNA is whose. They meet only here, through the Link — neither context reads the other's data.</p>
+            </div>
+
+            <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+              <div class="card-kicker" style="color:var(--color-neutral-500)">Inheritance Analysis</div>
+              <h4 style="margin:6px 0 var(--space-3);color:var(--color-neutral-300)">No estimates — one kit</h4>
+              <div style="display:flex;align-items:center;gap:var(--space-4);padding:var(--space-4) 0">
+                <div style="position:relative;height:12px;flex:1;opacity:.4">
+                  <div style="position:absolute;top:3px;left:12%;right:30%;height:6px;border-radius:3px;background:linear-gradient(to right,transparent,var(--color-neutral-600) 22%,var(--color-neutral-600) 78%,transparent)"></div>
+                </div>
+              </div>
+              <p style="font-size:12px;color:var(--color-neutral-400);margin:0;line-height:1.55">Shared segments need at least two kits under consent. Import a relative's file and the tree gains a second kind of evidence beside the documents: a range, never a fact, and always proposed for you to confirm.</p>
+              <button class="btn btn-secondary btn-block" type="button" style="margin-top:var(--space-4)">Import a relative's kit</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-3)">
+          <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+            <div class="card-kicker">Connector</div>
+            <h4 style="margin:6px 0 var(--space-4)">What the import did with Ancestry's file</h4>
+            <table class="table">
+              <tbody>
+                <tr><td style="width:44%;color:var(--color-neutral-400)">Mapped to Person</td><td>284 <span style="color:var(--color-neutral-500);font-size:12px">INDI records</span></td></tr>
+                <tr><td style="color:var(--color-neutral-400)">Mapped to Family</td><td>97 <span style="color:var(--color-neutral-500);font-size:12px">FAM records</span></td></tr>
+                <tr><td style="color:var(--color-neutral-400)">Mapped to Relationship</td><td>531 <span style="color:var(--color-neutral-500);font-size:12px">each with its source citation</span></td></tr>
+                <tr><td style="color:var(--color-neutral-400)">Kept verbatim</td><td>41 <span style="color:var(--color-neutral-500);font-size:12px">_APID, _MTTAG and other vendor tags</span></td></tr>
+                <tr><td style="color:var(--color-neutral-400)">Rejected</td><td>0</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:12px;color:var(--color-neutral-500);margin:var(--space-4) 0 0;line-height:1.55">Unknown tags are stored as written and emitted again on export, so a round-trip through the workbench does not lose anything Ancestry put in the file.</p>
+          </div>
+
+          <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+            <div class="card-kicker">Reading this tree</div>
+            <h4 style="margin:6px 0 var(--space-4)">Documents are one kind of evidence</h4>
+            <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+              <div style="display:flex;gap:var(--space-3)">
+                <span style="display:flex;flex-direction:column;gap:2px;width:12px;margin-top:5px;flex:none"><span style="width:12px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:8px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>
+                <div>
+                  <div style="font-size:13px">The whole page runs in the neutral ramp</div>
+                  <div style="font-size:12px;color:var(--color-neutral-400);margin-top:2px">Documentary evidence never borrows the accent. The one accent mark here is the single person whose DNA the workbench also holds.</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:var(--space-3)">
+                <span style="width:12px;height:12px;margin-top:5px;flex:none;border-radius:2px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-800);display:block"></span>
+                <div>
+                  <div style="font-size:13px">A gap is drawn, not hidden</div>
+                  <div style="font-size:12px;color:var(--color-neutral-400);margin-top:2px">An ancestor missing from the export is hatched in place, the same way a no-call is. Absence is a finding.</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:var(--space-3)">
+                <span style="width:12px;height:12px;margin-top:5px;flex:none;border-radius:2px;border:1.5px dashed var(--color-accent-500);display:block"></span>
+                <div>
+                  <div style="font-size:13px">Nothing here is dashed yet</div>
+                  <div style="font-size:12px;color:var(--color-neutral-400);margin-top:2px">A dashed edge would mean a genetic estimate awaiting your confirmation. With one kit, no estimate exists, so the tree makes no claim it cannot source.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1080}}">
+const PEOPLE = {
+  you:  { name: 'You', years: 'b. 1988', relation: 'self', kit: true,
+    events: [
+      { what: 'Born 4 June 1988', where: 'Utrecht, Netherlands', source: 'Personal knowledge · no citation needed' },
+      { what: 'DNA test taken', where: '23andMe v5 chip', source: 'Kit imported 12 Mar 2026 · custody: self' }
+    ],
+    provenance: 'Root of this chart. Linked to kit “Me — 23andMe v5”.' },
+
+  f:    { name: 'Pieter Bakker', years: '1958–', relation: 'father', kit: false,
+    events: [
+      { what: 'Born 22 January 1958', where: 'Zwolle, Overijssel', source: 'Birth register Zwolle 1958, akte 104 · Ancestry _APID 1,61115::104' },
+      { what: 'Married Maria de Vries', where: 'Utrecht, 12 May 1985', source: 'Marriage register Utrecht 1985, akte 331' }
+    ],
+    provenance: 'Documented — birth register naming both parents, and the 1985 marriage record. No genetic evidence: this person has no kit.' },
+  m:    { name: 'Maria de Vries', years: '1960–', relation: 'mother', kit: false,
+    events: [
+      { what: 'Born 9 September 1960', where: 'Utrecht, Netherlands', source: 'Birth register Utrecht 1960, akte 1187' },
+      { what: 'Married Pieter Bakker', where: 'Utrecht, 12 May 1985', source: 'Marriage register Utrecht 1985, akte 331' }
+    ],
+    provenance: 'Documented — birth register and marriage record. No kit, so no genetic confirmation.' },
+
+  ff:   { name: 'Jan Bakker', years: '1929–2004', relation: "father's father", kit: false,
+    events: [
+      { what: 'Born 3 March 1929', where: 'Kampen, Overijssel', source: 'Birth register Kampen 1929, akte 58' },
+      { what: 'Died 17 November 2004', where: 'Zwolle, Overijssel', source: 'Death register Zwolle 2004, akte 890' }
+    ],
+    provenance: 'Documented — named as father on the 1958 birth register.' },
+  fm:   { name: 'Geertje Mulder', years: '1932–2011', relation: "father's mother", kit: false,
+    events: [
+      { what: 'Born 28 July 1932', where: 'Kampen, Overijssel', source: 'Birth register Kampen 1932, akte 201' },
+      { what: 'Died 2 February 2011', where: 'Zwolle, Overijssel', source: 'Death register Zwolle 2011, akte 77' }
+    ],
+    provenance: 'Documented — named as mother on the 1958 birth register.' },
+  mf:   { name: 'Cornelis de Vries', years: '1931–1998', relation: "mother's father", kit: false,
+    events: [
+      { what: 'Born 14 April 1931', where: 'Amersfoort, Utrecht', source: 'Birth register Amersfoort 1931, akte 412' },
+      { what: 'Emigrated and returned', where: 'Canada, 1952–1957', source: 'Passenger list, SS Groote Beer · Ancestry _APID 1,8801::2291' }
+    ],
+    provenance: 'Documented — named as father on the 1960 birth register.' },
+  mm:   { name: 'Alida Bosch', years: '1934–2019', relation: "mother's mother", kit: false,
+    events: [
+      { what: 'Born 1 December 1934', where: 'Utrecht, Netherlands', source: 'Birth register Utrecht 1934, akte 1502' },
+      { what: 'Died 6 August 2019', where: 'Utrecht, Netherlands', source: 'Death register Utrecht 2019, akte 640' }
+    ],
+    provenance: 'Documented — named as mother on the 1960 birth register.' },
+
+  fff:  { name: 'Hendrik Bakker', years: '1901–1976', relation: 'great-grandfather', kit: false,
+    events: [{ what: 'Born 11 May 1901', where: 'Kampen, Overijssel', source: 'Birth register Kampen 1901, akte 143' }],
+    provenance: 'Documented — named on the 1929 birth register.' },
+  ffm:  { name: 'Aaltje Visser', years: '1904–1988', relation: 'great-grandmother', kit: false,
+    events: [{ what: 'Born 2 October 1904', where: "'s-Hertogenbosch", source: 'Birth register 1904, akte 998' }],
+    provenance: 'Documented — named on the 1929 birth register.' },
+  fmf:  { name: 'Willem Mulder', years: '1899–1971', relation: 'great-grandfather', kit: false,
+    events: [{ what: 'Born 19 August 1899', where: 'Kampen, Overijssel', source: 'Birth register Kampen 1899, akte 271' }],
+    provenance: 'Documented — named on the 1932 birth register.' },
+  fmm:  { name: 'Unknown', years: 'not in the export', relation: "great-grandmother, father's line", kit: false, missing: true,
+    events: [],
+    provenance: 'Not present in ancestry-export-2026-09-14.ged. The 1932 birth register should name her; the record has not been attached in the source tree.' },
+  mff:  { name: 'Cornelis de Vries sr.', years: '1898–1969', relation: 'great-grandfather', kit: false,
+    events: [{ what: 'Born 7 January 1898', where: 'Amersfoort, Utrecht', source: 'Birth register Amersfoort 1898, akte 22' }],
+    provenance: 'Documented — named on the 1931 birth register.' },
+  mfm:  { name: 'Johanna Smit', years: '1902–1984', relation: 'great-grandmother', kit: false,
+    events: [{ what: 'Born 30 March 1902', where: 'Amersfoort, Utrecht', source: 'Birth register Amersfoort 1902, akte 190' }],
+    provenance: 'Documented — named on the 1931 birth register.' },
+  mmf:  { name: 'Gerrit Bosch', years: '1900–1982', relation: 'great-grandfather', kit: false,
+    events: [{ what: 'Born 24 June 1900', where: 'Utrecht, Netherlands', source: 'Birth register Utrecht 1900, akte 841' }],
+    provenance: 'Documented — named on the 1934 birth register.' },
+  mmm:  { name: 'Unknown', years: 'not in the export', relation: "great-grandmother, mother's line", kit: false, missing: true,
+    events: [],
+    provenance: 'Not present in the export. Ancestry holds a hint for this person that was not attached before exporting.' }
+};
+
+const COLS = [
+  ['you'],
+  ['f', 'm'],
+  ['ff', 'fm', 'mf', 'mm'],
+  ['fff', 'ffm', 'fmf', 'fmm', 'mff', 'mfm', 'mmf', 'mmm']
+];
+
+class Component extends DCLogic {
+  state = { sel: 'you' };
+
+  renderVals() {
+    const sel = this.state.sel;
+
+    const columns = COLS.map((ids, ci) => ({
+      colStyle: 'display:flex;flex-direction:column;justify-content:space-around;flex:1;min-width:0;gap:2px;'
+        + (ci === 0 ? '' : ''),
+      connStyle: ci === COLS.length - 1
+        ? 'display:none'
+        : 'display:flex;flex-direction:column;justify-content:space-around;width:18px;flex:none',
+      groups: new Array(ids.length).fill(0).map((_, i) => ({ i })),
+      people: ids.map((id) => {
+        const p = PEOPLE[id];
+        const active = id === sel;
+        const base = 'display:flex;align-items:center;gap:8px;width:100%;padding:7px 9px;border:0;cursor:pointer;'
+          + 'font:inherit;border-radius:var(--radius-sm);text-align:left;min-width:0;';
+        let skin;
+        if (p.missing) {
+          skin = 'background:var(--color-bg);box-shadow:inset 0 0 0 1px var(--color-neutral-800);';
+        } else if (p.kit) {
+          skin = 'background:var(--color-accent-900);box-shadow:inset 0 0 0 1px var(--color-accent-700);';
+        } else {
+          skin = 'background:var(--color-neutral-900);';
+        }
+        if (active) skin += 'outline:1px solid var(--color-accent-400);outline-offset:1px;';
+        const mark = p.missing
+          ? 'width:10px;height:10px;flex:none;border-radius:2px;display:block;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-800);'
+          : p.kit
+            ? 'width:10px;height:10px;flex:none;border-radius:2px;background:var(--color-accent-400);display:block;'
+            : 'width:10px;height:5px;flex:none;display:block;background:linear-gradient(var(--color-neutral-400) 0 1.5px,transparent 1.5px 3.5px,var(--color-neutral-400) 3.5px 5px);';
+        return {
+          name: p.name,
+          years: p.years,
+          go: () => this.setState({ sel: id }),
+          style: base + skin,
+          markStyle: mark,
+          nameStyle: 'display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
+            + (p.missing ? 'color:var(--color-neutral-500);' : p.kit ? 'color:var(--color-accent-100);' : '')
+        };
+      })
+    }));
+
+    const p = PEOPLE[sel];
+    return { columns, sel: { name: p.name, years: p.years, relation: p.relation, events: p.events, provenance: p.provenance } };
+  }
+}
+
+</script>
+</body>
+</html>

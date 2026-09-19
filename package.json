@@ -1,0 +1,29 @@
+{
+  "name": "genotype-workbench",
+  "private": true,
+  "description": "Local-first genotype workbench: bring your raw DNA file, explore it on a genome view, enrich it with whole downloaded packs.",
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build:wasm": "wasm-pack build crates/locus-wasm --target web --release --out-dir pkg --out-name locus_wasm",
+    "dev": "pnpm build:wasm && pnpm build:ext && pnpm --filter @gw/web dev",
+    "build": "pnpm build:wasm && pnpm build:ext && pnpm --filter @gw/web build",
+    "preview": "pnpm --filter @gw/web preview",
+    "test": "cargo test --workspace --exclude locus-py && vitest run",
+    "test:e2e": "pnpm --filter @gw/web test:e2e",
+    "check": "pnpm -r --if-present check",
+    "packs:build": "uv run --project tools/packkit packkit build",
+    "packs:chip-loci": "uv run --project tools/packkit packkit chip-loci",
+    "fixtures:kits": "uv run --project tools/packkit python fixtures/synthetic-kits/generate.py",
+    "check:no-genomes": "sh scripts/check-no-genomes.sh",
+    "build:ext": "node scripts/vendor-duckdb-extensions.mjs"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.2",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.1"
+  }
+}

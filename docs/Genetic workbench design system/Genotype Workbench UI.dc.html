@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/nocturne-b36023e6-ecf8-439e-8ded-bcc952382f76/styles.css">
+<script src="_ds/nocturne-b36023e6-ecf8-439e-8ded-bcc952382f76/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; }
+  a { color: var(--color-accent); }
+  a:hover { color: var(--color-accent-300); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);padding:0 0 120px">
+
+  <div class="nav" style="padding:14px 40px;position:sticky;top:0;z-index:5;background:var(--color-bg);box-shadow:0 1px 0 var(--color-divider)">
+    <div class="nav-brand">{{ productName }} <span class="text-muted" style="font-weight:400;font-size:13px">UI language</span></div>
+    <a href="#evidence">Evidence</a>
+    <a href="#edges">Edges</a>
+    <a href="#tracks">Tracks</a>
+    <a href="#custody">Custody</a>
+    <a href="#surfaces">Surfaces</a>
+  </div>
+
+  <div style="max-width:1180px;margin:0 auto;padding:0 40px">
+
+    <header style="padding:64px 0 8px;max-width:720px">
+      <div class="card-kicker">Domain layer over Nocturne</div>
+      <h1 style="margin:10px 0 16px">Evidence you can see</h1>
+      <p style="font-size:17px;line-height:1.5;color:var(--color-neutral-300);text-wrap:pretty">A measurement, a population association, a curated classification, an estimate and a documented fact are five different kinds of knowing. This layer gives each one a form, so no view can render them alike. Nocturne supplies the ground, the type and the controls; everything on this page is what the science adds on top.</p>
+    </header>
+
+    <section id="evidence" style="margin-top:72px">
+      <div class="card-kicker">01 — Evidence kind</div>
+      <h2 style="margin:8px 0 6px">Five marks, one accent</h2>
+      <p class="text-muted" style="max-width:640px;margin-bottom:28px">The palette is mono, so the kinds separate by <strong style="color:var(--color-text);font-weight:500">form</strong>, not hue: how the mark is filled, and how its edges end. Every value in the app carries its kind's mark within reading distance.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--space-3)">
+
+        <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+          <div style="height:34px;display:flex;align-items:center">
+            <span style="width:13px;height:13px;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+          </div>
+          <div>
+            <div class="card-title">Measured</div>
+            <div style="font-size:11px;letter-spacing:.04em;color:var(--color-neutral-500);font-variant-numeric:tabular-nums">measured</div>
+          </div>
+          <p class="card-body">A solid block with hard edges. The chip read this base at this position. Error rate exists but the bounds do not move.</p>
+          <div class="card-meta">Genotyping · Genotype Store</div>
+        </div>
+
+        <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+          <div style="height:34px;display:flex;align-items:center">
+            <span style="position:relative;display:block;width:40px;height:13px">
+              <span style="position:absolute;top:6px;left:0;right:0;height:1.5px;background:linear-gradient(to right,transparent,var(--color-accent-500) 35%,var(--color-accent-500) 65%,transparent)"></span>
+              <span style="position:absolute;top:3.5px;left:17px;width:7px;height:7px;border-radius:50%;background:var(--color-accent-400)"></span>
+            </span>
+          </div>
+          <div>
+            <div class="card-title">Association</div>
+            <div style="font-size:11px;letter-spacing:.04em;color:var(--color-neutral-500)">statistical-association</div>
+          </div>
+          <p class="card-body">A point inside a plume. The plume is the study population; the point is not the reader. Never rendered as a statement about the person.</p>
+          <div class="card-meta">Statistical genetics · GWAS pack</div>
+        </div>
+
+        <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+          <div style="height:34px;display:flex;align-items:center">
+            <span style="display:flex;align-items:center;justify-content:center;width:13px;height:13px;border:1.5px solid var(--color-accent-300);border-radius:2px">
+              <span style="width:4px;height:4px;background:var(--color-accent-300);border-radius:1px;display:block"></span>
+            </span>
+          </div>
+          <div>
+            <div class="card-title">Classification</div>
+            <div style="font-size:11px;letter-spacing:.04em;color:var(--color-neutral-500)">curated-classification</div>
+          </div>
+          <p class="card-body">An outline around a judgement. A panel decided this, under review criteria, on a date. It can be revised, so it is never filled solid.</p>
+          <div class="card-meta">Clinical genetics · ClinVar pack</div>
+        </div>
+
+        <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+          <div style="height:34px;display:flex;align-items:center">
+            <span style="position:relative;display:block;width:44px;height:13px">
+              <span style="position:absolute;top:3px;left:0;right:0;height:7px;border-radius:4px;background:linear-gradient(to right,transparent,var(--color-accent-700) 25%,var(--color-accent-700) 75%,transparent)"></span>
+              <span style="position:absolute;top:1px;left:21px;width:1.5px;height:11px;background:var(--color-accent-300)"></span>
+            </span>
+          </div>
+          <div>
+            <div class="card-title">Estimate</div>
+            <div style="font-size:11px;letter-spacing:.04em;color:var(--color-neutral-500)">probabilistic-estimate</div>
+          </div>
+          <p class="card-body">A band that fades out at both ends, with a tick at the likeliest value. The fade is the point: the bounds are not known.</p>
+          <div class="card-meta">Genetic genealogy · Inheritance Analysis</div>
+        </div>
+
+        <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+          <div style="height:34px;display:flex;flex-direction:column;justify-content:center;gap:3px">
+            <span style="width:16px;height:1.5px;background:var(--color-neutral-400);display:block"></span>
+            <span style="width:10px;height:1.5px;background:var(--color-neutral-400);display:block"></span>
+          </div>
+          <div>
+            <div class="card-title">Documentary</div>
+            <div style="font-size:11px;letter-spacing:.04em;color:var(--color-neutral-500)">documentary</div>
+          </div>
+          <p class="card-body">Ruled lines, in the neutral ramp, never the accent. A record says so. Its weight comes from the source, which is always named.</p>
+          <div class="card-meta">Documentary genealogy · Pedigree</div>
+        </div>
+
+      </div>
+
+      <sc-if value="{{ showRationale }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:var(--space-4);padding:var(--space-4) var(--space-6);border-left:2px solid var(--color-accent-700);background:var(--color-accent-900);border-radius:0 var(--radius-md) var(--radius-md) 0;max-width:820px">
+          <p style="margin:0;font-size:13px;color:var(--color-neutral-300)">The five marks are drawn from one accent and one neutral ramp, so they survive on any ground and never read as a traffic-light scale. Nothing in this set encodes good or bad.</p>
+        </div>
+      </sc-if>
+    </section>
+
+    <section id="edges" style="margin-top:88px">
+      <div class="card-kicker">02 — Uncertainty</div>
+      <h2 style="margin:8px 0 6px">Edges carry certainty</h2>
+      <p class="text-muted" style="max-width:660px;margin-bottom:28px">Nocturne fades its rules to transparent at the ends. Here that becomes a rule of meaning: <strong style="color:var(--color-text);font-weight:500">a hard end is a known bound, a faded end is an unknown one.</strong> One habit covers cM ranges, frequencies, segment boundaries and confidence intervals, and it needs no extra colour.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+        <div class="card elev-sm" style="padding:var(--space-6);gap:var(--space-4)">
+          <div class="card-title">Hard ends — bounded</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-3) 0">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-400);margin-bottom:6px"><span>Call rate</span><span style="font-variant-numeric:tabular-nums;color:var(--color-text)">99.4%</span></div>
+              <div style="height:6px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:99.4%;height:100%;background:var(--color-accent-400)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-400);margin-bottom:6px"><span>Loci normalized</span><span style="font-variant-numeric:tabular-nums;color:var(--color-text)">638,412</span></div>
+              <div style="height:6px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:86%;height:100%;background:var(--color-accent-400)"></div></div>
+            </div>
+          </div>
+          <p class="card-body">Counted, measured or read from the file. The bar starts and stops exactly where the number does.</p>
+        </div>
+
+        <div class="card elev-sm" style="padding:var(--space-6);gap:var(--space-4)">
+          <div class="card-title">Faded ends — estimated</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-3) 0">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-400);margin-bottom:6px"><span>Shared with Kit B</span><span style="font-variant-numeric:tabular-nums;color:var(--color-text)">1,742 cM</span></div>
+              <div style="position:relative;height:12px">
+                <div style="position:absolute;top:3px;left:14%;right:33%;height:6px;border-radius:3px;background:linear-gradient(to right,transparent,var(--color-accent-700) 22%,var(--color-accent-700) 78%,transparent)"></div>
+                <div style="position:absolute;top:0;left:37%;width:1.5px;height:12px;background:var(--color-accent-300)"></div>
+              </div>
+              <div style="font-size:11px;color:var(--color-neutral-500);margin-top:5px;font-variant-numeric:tabular-nums">half-sibling · grandparent · aunt/uncle — 1,300–2,300 cM</div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-400);margin-bottom:6px"><span>Segment 4p16 boundary</span><span style="font-variant-numeric:tabular-nums;color:var(--color-text)">~11.4 Mb</span></div>
+              <div style="position:relative;height:12px">
+                <div style="position:absolute;top:3px;left:8%;right:46%;height:6px;border-radius:3px;background:linear-gradient(to right,transparent,var(--color-accent-700) 30%,var(--color-accent-700) 82%,transparent)"></div>
+              </div>
+              <div style="font-size:11px;color:var(--color-neutral-500);margin-top:5px">unphased — half-identical until a parent kit is present</div>
+            </div>
+          </div>
+          <p class="card-body">Ranges are drawn, never rounded to a single answer. A relationship estimate always shows its overlapping candidates.</p>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:var(--space-3);margin-top:var(--space-3)">
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="width:13px;height:13px;border-radius:2px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);border:1px solid var(--color-neutral-700);display:block"></span>
+            <span style="font-size:14px">No-call</span>
+          </div>
+          <p class="card-body" style="margin:0">Hatched, never blank and never zero. The chip returned nothing here; the absence is data.</p>
+        </div>
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="width:13px;height:13px;border-radius:2px;background:var(--color-accent-400);box-shadow:inset 0 0 0 1px var(--color-bg), 0 0 0 1.5px var(--color-accent-400);display:block"></span>
+            <span style="font-size:14px">Strand-ambiguous</span>
+          </div>
+          <p class="card-body" style="margin:0">A double outline on an A/T or C/G call. Measured, but the strand can't be inferred, so joins on it are flagged.</p>
+        </div>
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="display:block;width:13px;height:13px;border-radius:2px;border:1.5px dashed var(--color-accent-500)"></span>
+            <span style="font-size:14px">Proposed</span>
+          </div>
+          <p class="card-body" style="margin:0">A dashed edge marks anything awaiting the human gate — an estimate offered to the pedigree, not yet confirmed.</p>
+        </div>
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="display:block;width:13px;height:13px;border-radius:2px;background:var(--color-neutral-800);box-shadow:inset 0 0 0 1px var(--color-neutral-700)"></span>
+            <span style="font-size:14px">Stale build</span>
+          </div>
+          <p class="card-body" style="margin:0">Anything whose build or pack version no longer matches the kit drops to the neutral ramp and states the mismatch.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tracks" style="margin-top:88px">
+      <div class="card-kicker">03 — Track chrome</div>
+      <h2 style="margin:8px 0 6px">Everything is a track</h2>
+      <p class="text-muted" style="max-width:660px;margin-bottom:28px">Each track states its kind, source, version and build in the header, and renders its rows in its evidence kind's encoding. The same window below carries five tracks from four sciences; none of them looks like another.</p>
+
+      <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-md);overflow:hidden">
+        <div style="display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-4);background:var(--color-neutral-900)">
+          <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-variant-numeric:tabular-nums">
+            <span class="text-muted">chr1:</span><span>155,200,000–155,260,000</span>
+          </div>
+          <span class="tag tag-neutral">GRCh37</span>
+          <span class="text-muted" style="font-size:12px">60 kb window</span>
+          <div style="margin-left:auto;display:flex;gap:var(--space-2)">
+            <button class="btn btn-secondary" type="button">Add track</button>
+            <button class="btn btn-primary" type="button">Export region</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:218px 1fr">
+          <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;gap:9px;align-items:flex-start">
+            <span style="width:11px;height:11px;margin-top:4px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+            <div>
+              <div style="font-size:13px">My calls</div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">measured · 23andMe v5 · GRCh37</div>
+            </div>
+          </div>
+          <div style="border-bottom:1px solid var(--color-divider);padding:var(--space-4) var(--space-4);display:flex;align-items:center;gap:0;position:relative">
+            <div style="position:absolute;left:16px;right:16px;height:1px;background:var(--color-neutral-800)"></div>
+            <div style="position:relative;display:flex;gap:14px;align-items:center">
+              <span style="width:3px;height:16px;background:var(--color-accent-400);display:block"></span>
+              <span style="width:3px;height:16px;background:var(--color-accent-400);display:block"></span>
+              <span style="width:3px;height:16px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-700);display:block"></span>
+              <span style="width:3px;height:16px;background:var(--color-accent-400);box-shadow:0 0 0 1.5px var(--color-accent-800);display:block"></span>
+              <span style="width:3px;height:16px;background:var(--color-accent-400);display:block"></span>
+              <span style="width:3px;height:16px;background:var(--color-accent-400);display:block"></span>
+              <span style="width:3px;height:16px;background:var(--color-accent-400);display:block"></span>
+              <span style="width:3px;height:16px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-700);display:block"></span>
+              <span style="width:3px;height:16px;background:var(--color-accent-400);display:block"></span>
+            </div>
+          </div>
+
+          <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;gap:9px;align-items:flex-start">
+            <span style="display:flex;align-items:center;justify-content:center;width:11px;height:11px;margin-top:4px;flex:none;border:1.5px solid var(--color-accent-300);border-radius:2px"><span style="width:3px;height:3px;background:var(--color-accent-300);display:block"></span></span>
+            <div>
+              <div style="font-size:13px">ClinVar</div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">classification · pack 2026-08 · CC0</div>
+            </div>
+          </div>
+          <div style="border-bottom:1px solid var(--color-divider);padding:var(--space-4);display:flex;align-items:center;gap:var(--space-2)">
+            <span style="font-size:11px;padding:2px 9px;border-radius:3px;border:1px solid var(--color-accent-300);color:var(--color-accent-300)">Benign</span>
+            <span style="font-size:11px;padding:2px 9px;border-radius:3px;border:1px solid var(--color-accent-300);color:var(--color-accent-300)">Likely benign</span>
+            <span style="font-size:11px;padding:2px 9px;border-radius:3px;border:1px dashed var(--color-neutral-500);color:var(--color-neutral-400)">Conflicting</span>
+          </div>
+
+          <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;gap:9px;align-items:flex-start">
+            <span style="position:relative;display:block;width:11px;height:11px;margin-top:4px;flex:none">
+              <span style="position:absolute;top:5px;left:0;right:0;height:1.5px;background:linear-gradient(to right,transparent,var(--color-accent-500),transparent)"></span>
+              <span style="position:absolute;top:3px;left:3.5px;width:5px;height:5px;border-radius:50%;background:var(--color-accent-400)"></span>
+            </span>
+            <div>
+              <div style="font-size:13px">GWAS Catalog</div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">association · pack 2026-07</div>
+            </div>
+          </div>
+          <div style="border-bottom:1px solid var(--color-divider);padding:var(--space-3) var(--space-4);position:relative;height:66px">
+            <div style="position:absolute;left:16px;right:16px;top:26px;height:1px;background:linear-gradient(to right,transparent,var(--color-neutral-700) 48px,var(--color-neutral-700) calc(100% - 48px),transparent)"></div>
+            <div style="position:absolute;left:16px;top:6px;font-size:10px;color:var(--color-neutral-500)">p = 5×10⁻⁸</div>
+            <div style="position:relative;height:100%;display:flex;align-items:flex-end;gap:26px;padding-left:64px;padding-bottom:6px">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--color-accent-500);margin-bottom:4px"></span>
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--color-accent-400);margin-bottom:32px"></span>
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--color-accent-500);margin-bottom:12px"></span>
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--color-accent-500);margin-bottom:2px"></span>
+            </div>
+          </div>
+
+          <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;gap:9px;align-items:flex-start">
+            <span style="position:relative;display:block;width:11px;height:11px;margin-top:4px;flex:none">
+              <span style="position:absolute;top:2.5px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(to right,transparent,var(--color-accent-700) 25%,var(--color-accent-700) 75%,transparent)"></span>
+            </span>
+            <div>
+              <div style="font-size:13px">Shared with Kit B</div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">estimate · analysis-kinship 0.3</div>
+            </div>
+          </div>
+          <div style="border-bottom:1px solid var(--color-divider);padding:var(--space-6) var(--space-4);display:flex;align-items:center">
+            <div style="height:10px;width:62%;margin-left:12%;border-radius:5px;background:linear-gradient(to right,transparent,var(--color-accent-700) 18%,var(--color-accent-700) 82%,transparent)"></div>
+          </div>
+
+          <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);display:flex;gap:9px;align-items:flex-start">
+            <span style="display:flex;flex-direction:column;gap:2.5px;width:11px;margin-top:5px;flex:none">
+              <span style="width:11px;height:1.5px;background:var(--color-neutral-400);display:block"></span>
+              <span style="width:7px;height:1.5px;background:var(--color-neutral-400);display:block"></span>
+            </span>
+            <div>
+              <div style="font-size:13px">Gene models</div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">documentary · Ensembl 75</div>
+            </div>
+          </div>
+          <div style="padding:var(--space-6) var(--space-4);display:flex;align-items:center;gap:var(--space-2)">
+            <div style="height:7px;width:22%;background:var(--color-neutral-700);border-radius:1px"></div>
+            <div style="height:1.5px;width:6%;background:var(--color-neutral-700)"></div>
+            <div style="height:7px;width:9%;background:var(--color-neutral-700);border-radius:1px"></div>
+            <span style="font-size:11px;color:var(--color-neutral-500);margin-left:6px">MCM6 · LCT</span>
+          </div>
+        </div>
+
+        <sc-if value="{{ showTrackLegend }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-6);padding:var(--space-3) var(--space-4);background:var(--color-neutral-900);font-size:11px;color:var(--color-neutral-400)">
+            <span style="display:flex;align-items:center;gap:7px"><span style="width:3px;height:11px;background:var(--color-accent-400);display:block"></span>Call</span>
+            <span style="display:flex;align-items:center;gap:7px"><span style="width:3px;height:11px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-700);display:block"></span>No-call</span>
+            <span style="display:flex;align-items:center;gap:7px"><span style="width:3px;height:11px;background:var(--color-accent-400);box-shadow:0 0 0 1.5px var(--color-accent-800);display:block"></span>Strand-ambiguous</span>
+            <span style="display:flex;align-items:center;gap:7px"><span style="width:11px;height:6px;border-radius:3px;background:linear-gradient(to right,transparent,var(--color-accent-700),transparent);display:block"></span>Estimated bounds</span>
+            <span style="margin-left:auto">Rendered by view-igv 0.1 · joins on Locus 0.2.1</span>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <section id="custody" style="margin-top:88px">
+      <div class="card-kicker">04 — Custody and consent</div>
+      <h2 style="margin:8px 0 6px">Whose DNA, and who may read it</h2>
+      <p class="text-muted" style="max-width:660px;margin-bottom:28px">Every kit shows its data subject and custodian on the same line, because as soon as a relative's kit is imported the two differ. Consent basis is a tag, never an icon alone, and a kit with no basis recorded is readable but not analysable.</p>
+
+      <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-4) var(--space-6) var(--space-6)">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Kit</th><th>Data subject</th><th>Custodian</th><th>Consent basis</th><th>Calls</th><th>Quality</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div>Me — 23andMe v5</div><div style="font-size:11px;color:var(--color-neutral-500)">imported 12 Mar 2026 · profile-23andme@0.1.0</div></td>
+              <td>Self</td>
+              <td>Self</td>
+              <td><span class="tag tag-accent">Self</span></td>
+              <td style="font-variant-numeric:tabular-nums">638,412</td>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="width:56px;height:5px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:99%;height:100%;background:var(--color-accent-400)"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">99.4%</span></div></td>
+            </tr>
+            <tr>
+              <td><div>Mother — AncestryDNA</div><div style="font-size:11px;color:var(--color-neutral-500)">imported 3 Apr 2026 · profile-ancestrydna@0.1.0</div></td>
+              <td>M. Bakker</td>
+              <td>Self</td>
+              <td><span class="tag tag-accent-2">Recorded consent</span></td>
+              <td style="font-variant-numeric:tabular-nums">701,478</td>
+              <td><div style="display:flex;align-items:center;gap:8px"><div style="width:56px;height:5px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:97%;height:100%;background:var(--color-accent-400)"></div></div><span style="font-size:12px;font-variant-numeric:tabular-nums">98.1%</span></div></td>
+            </tr>
+            <tr>
+              <td><div>Uncle J — MyHeritage</div><div style="font-size:11px;color:var(--color-neutral-500)">imported 9 Sep 2026 · profile-myheritage@0.2.0</div></td>
+              <td>J. Bakker</td>
+              <td>Self</td>
+              <td><span class="tag tag-outline" style="border-style:dashed;border-color:var(--color-neutral-500);color:var(--color-neutral-300)">None recorded</span></td>
+              <td style="font-variant-numeric:tabular-nums">612,003</td>
+              <td><span style="font-size:12px;color:var(--color-neutral-500)">Analysis blocked</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:var(--space-3);margin-top:var(--space-3);align-items:start">
+
+        <div style="background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+          <div style="display:flex;align-items:baseline;gap:var(--space-3)">
+            <div class="dialog-title">Grant requested</div>
+            <span class="tag tag-neutral">analysis-kinship 0.3.1</span>
+          </div>
+          <p class="dialog-body" style="margin:0">This plugin is asking to read whole kits. Grants are scoped and revocable, and nothing leaves this device.</p>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-3) 0">
+            <div style="display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-accent-900)">
+              <span style="width:11px;height:11px;margin-top:4px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+              <div>
+                <div style="font-size:13px">Read 2 kits in full</div>
+                <div style="font-size:12px;color:var(--color-neutral-400)">Me — 23andMe v5 · Mother — AncestryDNA</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-accent-900)">
+              <span style="width:11px;height:11px;margin-top:4px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+              <div>
+                <div style="font-size:13px">Read relatives from the pedigree</div>
+                <div style="font-size:12px;color:var(--color-neutral-400)">Names and relationships, degree 3</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-neutral-900)">
+              <span style="width:11px;height:11px;margin-top:4px;flex:none;border-radius:2px;border:1.5px solid var(--color-neutral-500);display:block"></span>
+              <div>
+                <div style="font-size:13px;color:var(--color-neutral-400)">No network access</div>
+                <div style="font-size:12px;color:var(--color-neutral-500)">The manifest lists no hosts</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--color-neutral-500);border-top:1px solid var(--color-divider);padding-top:var(--space-3)">Uncle J — MyHeritage is excluded: no consent record. <a href="#custody">Record one</a></div>
+          <div class="dialog-actions">
+            <button class="btn btn-secondary" type="button">Deny</button>
+            <button class="btn btn-primary" type="button">Grant for this session</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div class="card elev-sm" style="padding:var(--space-6)">
+            <div class="card-kicker">Rule</div>
+            <div class="card-title">A grant names the kits</div>
+            <p class="card-body">Permission copy lists the actual kits and their subjects, never a category like "your data". A person consenting on behalf of a relative should be able to read the sentence aloud to them.</p>
+          </div>
+          <div class="card elev-sm" style="padding:var(--space-6)">
+            <div class="card-kicker">Rule</div>
+            <div class="card-title">Network is an absence, not a warning</div>
+            <p class="card-body">Offline is the default state, so it is stated in the neutral ramp. Only a plugin that does request hosts raises the accent, with each host listed.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="surfaces" style="margin-top:88px">
+      <div class="card-kicker">05 — Surfaces</div>
+      <h2 style="margin:8px 0 6px">The rest of the app, same rules</h2>
+      <p class="text-muted" style="max-width:660px;margin-bottom:28px">Variant detail, packs, pedigree and import all reuse the marks and the edge rule. Each fact names its source and version, and the app states what a source says without adding to it.</p>
+
+      <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:var(--space-3);align-items:start">
+
+        <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-4)">
+            <div>
+              <h4 style="margin:0 0 3px">rs4988235</h4>
+              <div style="font-size:12px;color:var(--color-neutral-500);font-variant-numeric:tabular-nums">GRCh37 chr2:136,608,646 · C&gt;T · MCM6 intron</div>
+            </div>
+            <span class="tag tag-neutral">Locus 0.2.1</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:var(--space-3);margin:var(--space-6) 0;padding:var(--space-4);border-radius:var(--radius-sm);background:var(--color-neutral-900)">
+            <span style="width:13px;height:13px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+            <div>
+              <div style="font-size:12px;color:var(--color-neutral-400);margin-bottom:2px">Your call · measured</div>
+              <div style="font-size:24px;font-family:var(--font-heading);letter-spacing:.06em">T / T</div>
+            </div>
+            <div style="margin-left:auto;text-align:right;font-size:12px;color:var(--color-neutral-500)">
+              <div>Plus strand · not ambiguous</div>
+              <div>23andMe v5 · imported 12 Mar 2026</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+            <div style="display:flex;gap:var(--space-3)">
+              <span style="position:relative;display:block;width:13px;height:13px;margin-top:4px;flex:none">
+                <span style="position:absolute;top:6px;left:0;right:0;height:1.5px;background:linear-gradient(to right,transparent,var(--color-accent-500),transparent)"></span>
+                <span style="position:absolute;top:3.5px;left:4px;width:6px;height:6px;border-radius:50%;background:var(--color-accent-400)"></span>
+              </span>
+              <div>
+                <div style="font-size:14px">Associated with lactase persistence in European-ancestry cohorts</div>
+                <div style="font-size:12px;color:var(--color-neutral-400);margin-top:3px">GWAS Catalog · population-level association, not a statement about you</div>
+                <div style="font-size:11px;color:var(--color-neutral-500);margin-top:4px">Enattah et al. 2002 · pack gwas-catalog 2026-07 · CC0</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-3)">
+              <span style="display:flex;align-items:center;justify-content:center;width:13px;height:13px;margin-top:4px;flex:none;border:1.5px solid var(--color-accent-300);border-radius:2px"><span style="width:4px;height:4px;background:var(--color-accent-300);display:block"></span></span>
+              <div>
+                <div style="font-size:14px">ClinVar classification: <span style="color:var(--color-accent-300)">Benign</span></div>
+                <div style="font-size:12px;color:var(--color-neutral-400);margin-top:3px">Two submitters, criteria provided, no conflicts · reviewed 14 Jan 2026</div>
+                <div style="font-size:11px;color:var(--color-neutral-500);margin-top:4px">VCV000018202 · pack clinvar 2026-08 · CC0</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--space-3)">
+              <span style="display:block;width:13px;height:13px;margin-top:4px;flex:none;position:relative">
+                <span style="position:absolute;top:2.5px;left:0;right:0;height:7px;border-radius:4px;background:linear-gradient(to right,transparent,var(--color-accent-700) 25%,var(--color-accent-700) 75%,transparent)"></span>
+              </span>
+              <div>
+                <div style="font-size:14px">Allele frequency, T: 0.51 <span style="color:var(--color-neutral-500);font-size:12px">(0.47–0.55, non-Finnish European)</span></div>
+                <div style="font-size:12px;color:var(--color-neutral-400);margin-top:3px">Sampling-dependent — frequency varies by reference panel</div>
+                <div style="font-size:11px;color:var(--color-neutral-500);margin-top:4px">gnomAD v4 · pack gnomad-chip 2026-06 · CC0, attribution requested</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+            <button class="btn btn-secondary" type="button">Copy locus key</button>
+            <button class="btn btn-secondary" type="button">Export as VRS</button>
+            <button class="btn btn-ghost" type="button">Show in genome view</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+
+          <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+            <div class="card-kicker">Pack library</div>
+            <h4 style="margin:6px 0 var(--space-4)">Installed packs</h4>
+            <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <div style="display:flex;align-items:center;gap:var(--space-3)">
+                <span style="display:flex;align-items:center;justify-content:center;width:11px;height:11px;flex:none;border:1.5px solid var(--color-accent-300);border-radius:2px"><span style="width:3px;height:3px;background:var(--color-accent-300);display:block"></span></span>
+                <div style="flex:1">
+                  <div style="font-size:13px">clinvar 2026-08</div>
+                  <div style="font-size:11px;color:var(--color-neutral-500)">Clinical genetics · CC0 · signed · 41 MB</div>
+                </div>
+                <span class="tag tag-neutral">GRCh37</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-3)">
+                <span style="position:relative;display:block;width:11px;height:11px;flex:none"><span style="position:absolute;top:5px;left:0;right:0;height:1.5px;background:linear-gradient(to right,transparent,var(--color-accent-500),transparent)"></span><span style="position:absolute;top:3px;left:3px;width:5px;height:5px;border-radius:50%;background:var(--color-accent-400)"></span></span>
+                <div style="flex:1">
+                  <div style="font-size:13px">gwas-catalog 2026-07</div>
+                  <div style="font-size:11px;color:var(--color-neutral-500)">Statistical genetics · CC0 · signed · 12 MB</div>
+                </div>
+                <span class="tag tag-neutral">GRCh37</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-3);opacity:.75">
+                <span style="display:block;width:11px;height:11px;flex:none;border:1.5px dashed var(--color-neutral-500);border-radius:2px"></span>
+                <div style="flex:1">
+                  <div style="font-size:13px">clinpgx 2026-05</div>
+                  <div style="font-size:11px;color:var(--color-neutral-500)">Pharmacogenomics · CC BY-SA · separate pack</div>
+                </div>
+                <button class="btn btn-ghost" type="button">Install</button>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--color-neutral-500);margin:var(--space-4) 0 0">Licence sits beside the size because it decides whether a pack can ship first-party.</p>
+          </div>
+
+          <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+            <div class="card-kicker">Pedigree</div>
+            <h4 style="margin:6px 0 var(--space-4)">Relationship provenance</h4>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-neutral-900)">
+                <div style="width:30px;height:30px;border-radius:50%;background:var(--color-neutral-800);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--color-neutral-300)">MB</div>
+                <div style="flex:1">
+                  <div style="font-size:13px">Maria Bakker · mother</div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-neutral-500);margin-top:2px">
+                    <span style="display:flex;flex-direction:column;gap:2px"><span style="width:9px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:6px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>
+                    Documented · birth record 1958 — and genetic, 3,412 cM
+                  </div>
+                </div>
+                <span class="tag tag-neutral">Kit linked</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-neutral-900);border:1px dashed var(--color-accent-700)">
+                <div style="width:30px;height:30px;border-radius:50%;background:var(--color-neutral-800);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--color-neutral-300)">?</div>
+                <div style="flex:1">
+                  <div style="font-size:13px">Kit C — unidentified</div>
+                  <div style="font-size:11px;color:var(--color-neutral-500);margin-top:2px">Estimated: half-sibling, grandparent or aunt/uncle · 1,742 cM</div>
+                  <div style="position:relative;height:8px;margin-top:6px;max-width:200px">
+                    <div style="position:absolute;top:1px;left:6%;right:24%;height:6px;border-radius:3px;background:linear-gradient(to right,transparent,var(--color-accent-700) 22%,var(--color-accent-700) 78%,transparent)"></div>
+                    <div style="position:absolute;top:0;left:34%;width:1.5px;height:8px;background:var(--color-accent-300)"></div>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" type="button">Confirm…</button>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--color-neutral-500);margin:var(--space-4) 0 0">An estimate is dashed until a person confirms it. Confirming records the evidence, it does not erase it.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6);margin-top:var(--space-3)">
+        <div class="card-kicker">Import</div>
+        <h4 style="margin:6px 0 var(--space-6)">Normalizing — the one place correctness is decided</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:var(--space-6)">
+          <div>
+            <div style="border:1px dashed var(--color-neutral-700);border-radius:var(--radius-md);padding:var(--space-8) var(--space-4);text-align:center">
+              <div style="font-size:14px;margin-bottom:4px">Drop a raw data file</div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">23andMe, AncestryDNA, MyHeritage, VCF</div>
+            </div>
+            <div style="font-size:11px;color:var(--color-neutral-500);margin-top:var(--space-2);text-align:center">Read in this browser. Never uploaded.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--color-neutral-400);margin-bottom:8px">Detected: 23andMe v5 · GRCh37</div>
+            <div style="height:6px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden;margin-bottom:8px"><div style="width:72%;height:100%;background:var(--color-accent-400)"></div></div>
+            <div style="font-size:12px;font-variant-numeric:tabular-nums">Normalizing 462,109 of 638,412 calls</div>
+            <div style="font-size:11px;color:var(--color-neutral-500);margin-top:3px">locus 0.2.1 · WASM worker</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <div style="display:flex;gap:9px;align-items:flex-start">
+              <span style="width:11px;height:11px;margin-top:4px;flex:none;background:var(--color-accent-400);box-shadow:0 0 0 1.5px var(--color-accent-800);border-radius:2px;display:block"></span>
+              <div>
+                <div style="font-size:13px">12,904 strand-ambiguous calls</div>
+                <div style="font-size:11px;color:var(--color-neutral-500)">A/T and C/G — flagged, kept, joined with lower confidence</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:9px;align-items:flex-start">
+              <span style="width:11px;height:11px;margin-top:4px;flex:none;border-radius:2px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-700);display:block"></span>
+              <div>
+                <div style="font-size:13px">3,881 no-calls</div>
+                <div style="font-size:11px;color:var(--color-neutral-500)">Kept as no-calls, not dropped</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:9px;align-items:flex-start">
+              <span style="display:flex;flex-direction:column;gap:2px;width:11px;margin-top:5px;flex:none"><span style="width:11px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:7px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>
+              <div>
+                <div style="font-size:13px">Custody record required</div>
+                <div style="font-size:11px;color:var(--color-neutral-500)">Set the data subject before analysis can read this kit</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:88px">
+      <div class="card-kicker">06 — Writing</div>
+      <h2 style="margin:8px 0 6px">What the interface may say</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-3);margin-top:var(--space-6)">
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="font-size:12px;color:var(--color-neutral-500);margin-bottom:6px">Instead of “you have a variant”</div>
+          <div style="font-size:15px">Differs from the GRCh37 reference</div>
+          <p class="card-body" style="margin-top:8px">The reference allele is the one in the assembly, not the healthy one.</p>
+        </div>
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="font-size:12px;color:var(--color-neutral-500);margin-bottom:6px">Instead of “clinical significance”</div>
+          <div style="font-size:15px">ClinVar classification</div>
+          <p class="card-body" style="margin-top:8px">“Significance” means a p-value to one science and a pathogenicity class to another. Use neither loosely.</p>
+        </div>
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="font-size:12px;color:var(--color-neutral-500);margin-bottom:6px">Instead of “23% Scandinavian”</div>
+          <div style="font-size:15px">Similarity to reference panels</div>
+          <p class="card-body" style="margin-top:8px">Panel similarity and named ancestors stay separate concepts, in separate contexts.</p>
+        </div>
+        <div class="card elev-sm" style="padding:var(--space-6)">
+          <div style="font-size:12px;color:var(--color-neutral-500);margin-bottom:6px">Instead of “your risk is”</div>
+          <div style="font-size:15px">This study reported an odds ratio of…</div>
+          <p class="card-body" style="margin-top:8px">The app shows what sources say, with citations. It computes no personal risk.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;productName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Genotype Workbench&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showRationale&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Annotation&quot;},&quot;showTrackLegend&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Annotation&quot;}}"></script>
+</body>
+</html>

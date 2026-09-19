@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "id": "gwas-catalog",
+  "title": "GWAS Catalog associations",
+  "description": "Published genome-wide associations between variants and traits. Population-level associations, not statements about any individual. Lifted from GRCh38 to GRCh37 at build time.",
+  "build": "GRCh37",
+  "scientificDomain": "statistical-genetics",
+  "evidenceKind": "statistical-association",
+  "trackKind": "variant",
+  "core": false,
+  "licence": "CC0 (NHGRI-EBI GWAS Catalog)",
+  "licenceClass": "open",
+  "source": {
+    "name": "NHGRI-EBI GWAS Catalog, all associations with ontology annotations",
+    "short": "GWAS Catalog",
+    "url": "https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/gwas-catalog-associations_ontology-annotated-full.zip"
+  },
+  "citation": "Cerezo M. et al. The NHGRI-EBI GWAS Catalog: standards for reusability, sustainability and diversity. Nucleic Acids Res. 2025;53:D998\u2013D1005",
+  "version": "2026-09-15",
+  "sourceDate": "2026-09-15",
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-19T17:16:14+00:00",
+  "file": "gwas-catalog.parquet",
+  "rows": 243,
+  "columns": [
+    "chrom",
+    "pos",
+    "rsid",
+    "risk_allele",
+    "risk_allele_freq",
+    "trait",
+    "mapped_trait",
+    "p_value",
+    "p_mlog",
+    "p_text",
+    "effect",
+    "effect_kind",
+    "ci_text",
+    "pubmed_id",
+    "first_author",
+    "pub_date",
+    "journal",
+    "study",
+    "study_accession",
+    "initial_sample",
+    "mapped_gene",
+    "context"
+  ],
+  "size": 27006,
+  "sha256": "4c61bbc4a56d77b5d0ae93d29624fea9e3027c20324f084d92a70942b86ce5fa",
+  "stats": {
+    "fixture": true,
+    "sourceRows": 1192604,
+    "associations": 981291,
+    "dropped": {
+      "multiOrNoPosition": 210297,
+      "liftoverFailed": 1016
+    }
+  }
+}

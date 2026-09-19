@@ -1,0 +1,12 @@
+{
+  "name": "@gw/storage",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Storage adapter: DuckDB-WASM over Parquet files in OPFS (ADR-0003). The only package that writes SQL.",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
+    "apache-arrow": "^17.0.0"
+  }
+}

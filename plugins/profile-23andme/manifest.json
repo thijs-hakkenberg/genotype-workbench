@@ -1,0 +1,9 @@
+{
+  "id": "profile-23andme",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": ["importer"],
+  "title": "23andMe raw data",
+  "description": "Reads 23andMe raw data files (chips v3–v5) as a declarative format profile. No plugin code runs; the core parses and normalizes.",
+  "firstParty": true
+}

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-b36023e6-ecf8-439e-8ded-bcc952382f76/styles.css">
+<script src="_ds/nocturne-b36023e6-ecf8-439e-8ded-bcc952382f76/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; }
+  a { color: var(--color-accent); }
+  a:hover { color: var(--color-accent-300); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);display:flex;flex-direction:column">
+
+  <div class="nav" style="padding:10px 18px;gap:var(--space-4);box-shadow:0 1px 0 var(--color-divider);flex:none">
+    <div class="nav-brand" style="font-size:15px;margin-right:var(--space-8)">Genotype Workbench <span class="text-muted" style="font-weight:400;font-size:12px">v0.1</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-sm)">
+      <span style="width:9px;height:9px;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+      <span style="font-size:13px">Me — 23andMe v5</span>
+      <span class="tag tag-neutral" style="font-size:10px;padding:1px 7px">Self</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
+      <input class="input" type="text" value="chr2:136,600,000-136,620,000" style="width:270px;font-variant-numeric:tabular-nums;font-size:13px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-neutral-400)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--color-accent-500);display:block"></span>
+        Offline · no network grants
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:grid;grid-template-columns:186px 1fr;min-height:0">
+
+    <nav style="border-right:1px solid var(--color-divider);padding:var(--space-4) var(--space-3);display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+        <button type="button" onClick="{{ n.go }}" style="{{ n.style }}">
+          <span style="{{ n.markStyle }}"></span>
+          <span style="flex:1;text-align:left">{{ n.label }}</span>
+          <span style="font-size:10px;color:var(--color-neutral-500);font-variant-numeric:tabular-nums">{{ n.badge }}</span>
+        </button>
+      </sc-for>
+      <div style="margin-top:auto;padding:var(--space-3);border-radius:var(--radius-sm);background:var(--color-neutral-900)">
+        <div style="font-size:11px;color:var(--color-neutral-400);line-height:1.5">1 kit · 0 packs<br>locus 0.2.1 · GRCh37</div>
+      </div>
+    </nav>
+
+    <main style="min-width:0;overflow:auto">
+
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:var(--space-8) var(--space-8) 64px;max-width:1120px">
+
+          <div style="display:flex;align-items:flex-start;gap:var(--space-8);margin-bottom:var(--space-8)">
+            <div style="flex:1">
+              <div class="card-kicker">Kit overview</div>
+              <h2 style="margin:6px 0 4px">Me — 23andMe v5</h2>
+              <div style="font-size:13px;color:var(--color-neutral-400);font-variant-numeric:tabular-nums">Imported 12 Mar 2026 · profile-23andme@0.1.0 · normalized on locus 0.2.1 · source SHA-256 7f3a…c1e9</div>
+            </div>
+            <div style="display:flex;gap:var(--space-2)">
+              <button class="btn btn-secondary" type="button">Custody record</button>
+              <button class="btn btn-primary" type="button" onClick="{{ goGenome }}">Open genome view</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3)">
+            <div class="card elev-sm" style="padding:var(--space-6);gap:var(--space-2)">
+              <div style="font-size:11px;color:var(--color-neutral-400);letter-spacing:.06em;text-transform:uppercase">Calls stored</div>
+              <div style="font-size:30px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1">638,412</div>
+              <div style="height:5px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:100%;height:100%;background:var(--color-accent-400)"></div></div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">One per locus, plus strand, GRCh37</div>
+            </div>
+            <div class="card elev-sm" style="padding:var(--space-6);gap:var(--space-2)">
+              <div style="font-size:11px;color:var(--color-neutral-400);letter-spacing:.06em;text-transform:uppercase">Call rate</div>
+              <div style="font-size:30px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1">99.4%</div>
+              <div style="height:5px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:99.4%;height:100%;background:var(--color-accent-400)"></div></div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">3,881 no-calls kept, not dropped</div>
+            </div>
+            <div class="card elev-sm" style="padding:var(--space-6);gap:var(--space-2)">
+              <div style="font-size:11px;color:var(--color-neutral-400);letter-spacing:.06em;text-transform:uppercase">Strand-ambiguous</div>
+              <div style="font-size:30px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1">12,904</div>
+              <div style="height:5px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:2%;height:100%;background:var(--color-accent-400);box-shadow:0 0 0 1.5px var(--color-accent-800)"></div></div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">A/T and C/G — 2.0% of calls, flagged</div>
+            </div>
+            <div class="card elev-sm" style="padding:var(--space-6);gap:var(--space-2)">
+              <div style="font-size:11px;color:var(--color-neutral-400);letter-spacing:.06em;text-transform:uppercase">Reference checked</div>
+              <div style="font-size:30px;font-family:var(--font-heading);font-variant-numeric:tabular-nums;line-height:1">99.98%</div>
+              <div style="height:5px;border-radius:3px;background:var(--color-neutral-900);overflow:hidden"><div style="width:99.98%;height:100%;background:var(--color-accent-400)"></div></div>
+              <div style="font-size:11px;color:var(--color-neutral-500)">Alleles matched against GRCh37 at chip loci</div>
+            </div>
+          </div>
+
+          <div style="margin-top:var(--space-8);background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+            <div style="display:flex;align-items:baseline;gap:var(--space-4);margin-bottom:var(--space-6)">
+              <h4 style="margin:0">Coverage across the genome</h4>
+              <span style="font-size:12px;color:var(--color-neutral-400)">Where the chip put probes. Density, not sequence — a chip reads about 0.02% of the genome.</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-500)">Click a chromosome to open it</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 var(--space-8)">
+              <sc-for list="{{ chroms }}" as="c" hint-placeholder-count="24">
+                <button type="button" onClick="{{ c.go }}" style="{{ c.rowStyle }}">
+                  <span style="width:26px;flex:none;text-align:right;font-size:11px;color:var(--color-neutral-400);font-variant-numeric:tabular-nums">{{ c.name }}</span>
+                  <span style="flex:1;min-width:0;display:block">
+                    <span style="{{ c.barStyle }}">
+                      <span style="{{ c.pArmStyle }}"></span>
+                      <span style="{{ c.qArmStyle }}"></span>
+                    </span>
+                  </span>
+                  <span style="width:52px;flex:none;text-align:right;font-size:10px;color:var(--color-neutral-500);font-variant-numeric:tabular-nums">{{ c.callsLabel }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;gap:var(--space-8);margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--color-divider);font-size:11px;color:var(--color-neutral-400)">
+              <span style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:9px;border-radius:2px;background:repeating-linear-gradient(to right,var(--color-accent-500) 0 1px,transparent 1px 4px),var(--color-neutral-900);display:block"></span>Probe density</span>
+              <span style="display:flex;align-items:center;gap:7px"><span style="width:6px;height:9px;background:var(--color-bg);box-shadow:inset 0 0 0 1px var(--color-neutral-700);display:block"></span>Centromere — no probes</span>
+              <span style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:9px;border-radius:2px;background:var(--color-neutral-900);display:block"></span>Unprobed span</span>
+              <span style="margin-left:auto">Bar length is chromosome length on GRCh37</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-3)">
+            <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6)">
+              <div class="card-kicker">Custody</div>
+              <h4 style="margin:6px 0 var(--space-4)">This kit is your own</h4>
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Data subject</span><span>Self</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Custodian</span><span>Self</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Consent basis</span><span class="tag tag-accent">Self</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Recorded</span><span style="font-variant-numeric:tabular-nums">12 Mar 2026</span></div>
+              </div>
+              <p style="font-size:12px;color:var(--color-neutral-500);margin:var(--space-4) 0 0">A relative's kit needs a consent record before any analysis may read it.</p>
+            </div>
+
+            <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:var(--space-6);display:flex;flex-direction:column">
+              <div class="card-kicker">Annotation library</div>
+              <h4 style="margin:6px 0 var(--space-3)">No packs installed</h4>
+              <p style="font-size:13px;color:var(--color-neutral-400);margin:0 0 var(--space-4);max-width:380px">Your calls are stored and viewable on their own. Annotation arrives as whole signed packs, downloaded in full and joined on this device — never by looking a variant up remotely.</p>
+              <div style="margin-top:auto;display:flex;gap:var(--space-2)">
+                <button class="btn btn-secondary" type="button">Browse Pack Index</button>
+                <button class="btn btn-ghost" type="button">How packs work</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGenome }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;height:100%;min-height:0">
+
+          <div style="padding:var(--space-4) var(--space-8);border-bottom:1px solid var(--color-divider);display:flex;align-items:center;gap:var(--space-6)">
+            <div style="display:flex;align-items:baseline;gap:var(--space-3)">
+              <h4 style="margin:0;font-variant-numeric:tabular-nums;white-space:nowrap">chr{{ chrom }}:136,600,000–136,620,000</h4>
+              <span class="tag tag-neutral">GRCh37</span>
+            </div>
+            <span style="font-size:12px;color:var(--color-neutral-400);font-variant-numeric:tabular-nums">20 kb · 14 calls in view</span>
+            <div style="margin-left:auto;display:flex;gap:var(--space-2);align-items:center">
+              <div class="seg">
+                <label class="seg-opt"><input type="radio" name="zoom" checked>20 kb</label>
+                <label class="seg-opt"><input type="radio" name="zoom">200 kb</label>
+                <label class="seg-opt"><input type="radio" name="zoom">2 Mb</label>
+              </div>
+              <button class="btn btn-secondary" type="button">Add track</button>
+              <button class="btn btn-secondary" type="button" onClick="{{ goOverview }}">Back to overview</button>
+            </div>
+          </div>
+
+          <div style="padding:var(--space-3) var(--space-8);border-bottom:1px solid var(--color-divider);display:flex;align-items:center;gap:var(--space-3)">
+            <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-500);flex:none">Chromosome</span>
+            <div style="display:flex;gap:3px;flex:1">
+              <sc-for list="{{ chroms }}" as="c" hint-placeholder-count="24">
+                <button type="button" onClick="{{ c.go }}" style="{{ c.chipStyle }}">{{ c.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="padding:var(--space-4) var(--space-8) 0">
+            <div style="position:relative;height:30px;margin-bottom:var(--space-3)">
+              <div style="position:absolute;left:0;right:0;top:14px;height:9px;border-radius:2px;background:repeating-linear-gradient(to right,var(--color-neutral-700) 0 1px,transparent 1px 5px),var(--color-neutral-900)"></div>
+              <div style="position:absolute;left:55.9%;top:8px;width:2px;height:21px;background:var(--color-accent-400)"></div>
+              <div style="position:absolute;left:55.9%;top:0;transform:translateX(-50%);font-size:10px;color:var(--color-accent-300);white-space:nowrap">view</div>
+              <div style="position:absolute;left:0;top:0;font-size:10px;color:var(--color-neutral-500)">chr{{ chrom }} p</div>
+              <div style="position:absolute;right:0;top:0;font-size:10px;color:var(--color-neutral-500)">q 243.2 Mb</div>
+            </div>
+          </div>
+
+          <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 330px">
+
+            <div style="min-width:0;padding:0 var(--space-8) var(--space-8);overflow:auto">
+              <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);overflow:hidden">
+
+                <div style="display:flex;justify-content:space-between;padding:var(--space-2) var(--space-4);background:var(--color-neutral-900);font-size:10px;color:var(--color-neutral-400);font-variant-numeric:tabular-nums">
+                  <span>136,600,000</span><span>136,605,000</span><span>136,610,000</span><span>136,615,000</span><span>136,620,000</span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:170px 1fr">
+                  <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;gap:8px;align-items:flex-start">
+                    <span style="width:10px;height:10px;margin-top:4px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+                    <div>
+                      <div style="font-size:13px">My calls</div>
+                      <div style="font-size:10px;color:var(--color-neutral-500)">measured · 23andMe v5</div>
+                    </div>
+                  </div>
+                  <div style="border-bottom:1px solid var(--color-divider);position:relative;height:58px">
+                    <div style="position:absolute;left:0;right:0;top:29px;height:1px;background:var(--color-neutral-800)"></div>
+                    <sc-for list="{{ calls }}" as="v" hint-placeholder-count="14">
+                      <button type="button" onClick="{{ v.go }}" style="{{ v.tickStyle }}"></button>
+                    </sc-for>
+                  </div>
+
+                  <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;gap:8px;align-items:flex-start">
+                    <span style="display:flex;flex-direction:column;gap:2px;width:10px;margin-top:5px;flex:none"><span style="width:10px;height:1.5px;background:var(--color-neutral-400);display:block"></span><span style="width:6px;height:1.5px;background:var(--color-neutral-400);display:block"></span></span>
+                    <div>
+                      <div style="font-size:13px">Gene models</div>
+                      <div style="font-size:10px;color:var(--color-neutral-500)">documentary · Ensembl 75</div>
+                    </div>
+                  </div>
+                  <div style="border-bottom:1px solid var(--color-divider);position:relative;height:52px">
+                    <div style="position:absolute;left:4%;right:34%;top:20px;height:1.5px;background:var(--color-neutral-700)"></div>
+                    <div style="position:absolute;left:4%;top:16px;width:9%;height:9px;background:var(--color-neutral-700);border-radius:1px"></div>
+                    <div style="position:absolute;left:28%;top:16px;width:5%;height:9px;background:var(--color-neutral-700);border-radius:1px"></div>
+                    <div style="position:absolute;left:52%;top:16px;width:14%;height:9px;background:var(--color-neutral-700);border-radius:1px"></div>
+                    <div style="position:absolute;left:4%;top:31px;font-size:10px;color:var(--color-neutral-400)">MCM6 — intron 13 · direction ←</div>
+                    <div style="position:absolute;right:2%;top:16px;width:12%;height:9px;background:var(--color-neutral-800);border-radius:1px"></div>
+                    <div style="position:absolute;right:2%;top:31px;font-size:10px;color:var(--color-neutral-500)">LCT</div>
+                  </div>
+
+                  <div style="padding:var(--space-3) var(--space-4);border-right:1px solid var(--color-divider);display:flex;gap:8px;align-items:flex-start">
+                    <span style="width:10px;height:10px;margin-top:4px;flex:none;border-radius:2px;border:1.5px dashed var(--color-neutral-600);display:block"></span>
+                    <div>
+                      <div style="font-size:13px;color:var(--color-neutral-400)">Annotation</div>
+                      <div style="font-size:10px;color:var(--color-neutral-500)">no packs installed</div>
+                    </div>
+                  </div>
+                  <div style="height:46px;display:flex;align-items:center;padding-left:var(--space-6)">
+                    <span style="font-size:12px;color:var(--color-neutral-500)">Install a pack to join reference knowledge here. <a href="#">Browse Pack Index</a></span>
+                  </div>
+                </div>
+
+                <div style="display:flex;flex-wrap:wrap;gap:var(--space-6);padding:var(--space-2) var(--space-4);background:var(--color-neutral-900);font-size:10px;color:var(--color-neutral-400)">
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:3px;height:10px;background:var(--color-accent-400);display:block"></span>Call</span>
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:3px;height:10px;background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-700);display:block"></span>No-call</span>
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:3px;height:10px;background:var(--color-accent-400);box-shadow:0 0 0 1.5px var(--color-accent-800);display:block"></span>Strand-ambiguous</span>
+                  <span style="margin-left:auto">view-igv 0.1 · Arrow from DuckDB</span>
+                </div>
+              </div>
+
+              <div style="background:var(--color-surface);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);margin-top:var(--space-3);padding:var(--space-3) var(--space-6) var(--space-4)">
+                <table class="table">
+                  <thead><tr><th>Position</th><th>rsID</th><th>Ref</th><th>Call</th><th>State</th></tr></thead>
+                  <tbody>
+                    <sc-for list="{{ calls }}" as="v" hint-placeholder-count="14">
+                      <tr onClick="{{ v.go }}" style="{{ v.rowStyle }}">
+                        <td style="font-variant-numeric:tabular-nums;color:var(--color-neutral-300)">{{ v.pos }}</td>
+                        <td>{{ v.rsid }}</td>
+                        <td style="color:var(--color-neutral-400)">{{ v.ref }}</td>
+                        <td style="letter-spacing:.08em">{{ v.call }}</td>
+                        <td style="font-size:12px;color:var(--color-neutral-400)">{{ v.state }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <aside style="border-left:1px solid var(--color-divider);padding:var(--space-6);overflow:auto">
+              <div class="card-kicker">Selected</div>
+              <h4 style="margin:6px 0 2px">{{ sel.rsid }}</h4>
+              <div style="font-size:11px;color:var(--color-neutral-500);font-variant-numeric:tabular-nums">chr{{ chrom }}:{{ sel.pos }} · {{ sel.ref }}&gt;{{ sel.alt }}</div>
+
+              <div style="display:flex;align-items:center;gap:var(--space-3);margin:var(--space-6) 0;padding:var(--space-4);border-radius:var(--radius-sm);background:var(--color-neutral-900)">
+                <span style="width:12px;height:12px;flex:none;background:var(--color-accent-400);border-radius:2px;display:block"></span>
+                <div>
+                  <div style="font-size:11px;color:var(--color-neutral-400)">Your call · measured</div>
+                  <div style="font-size:22px;font-family:var(--font-heading);letter-spacing:.08em">{{ sel.call }}</div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);font-size:12px">
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Locus key</span><span style="font-variant-numeric:tabular-nums;font-size:11px">{{ sel.key }}</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Strand</span><span>Plus</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Ambiguous</span><span>{{ sel.ambig }}</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Source</span><span>23andMe v5</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-400)">Normalizer</span><span>locus 0.2.1</span></div>
+              </div>
+
+              <div class="hr"></div>
+
+              <div style="padding:var(--space-4);border-radius:var(--radius-sm);border:1px dashed var(--color-neutral-700)">
+                <div style="font-size:12px;color:var(--color-neutral-300);margin-bottom:4px">Nothing is known about this position yet</div>
+                <div style="font-size:11px;color:var(--color-neutral-500);line-height:1.5">v0.1 stores and shows what your file measured. Classifications, frequencies and associations arrive with packs in v0.2, each with its citation.</div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-top:var(--space-4)">
+                <button class="btn btn-secondary btn-block" type="button" style="margin:0">Copy locus key</button>
+                <button class="btn btn-ghost btn-block" type="button" style="margin:0">Export region as VCF</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:940}}">
+const CHR = [
+  ['1',249250621,125.0],['2',243199373,93.3],['3',198022430,91.0],['4',191154276,50.4],
+  ['5',180915260,48.4],['6',171115067,61.0],['7',159138663,59.9],['8',146364022,45.6],
+  ['9',141213431,49.0],['10',135534747,40.2],['11',135006516,53.7],['12',133851895,35.8],
+  ['13',115169878,17.9],['14',107349540,17.6],['15',102531392,19.0],['16',90354753,36.6],
+  ['17',81195210,24.0],['18',78077248,17.2],['19',59128983,26.5],['20',63025520,27.5],
+  ['21',48129895,13.2],['22',51304566,14.7],['X',155270560,60.6],['Y',59373566,12.5]
+];
+// per-chromosome probe density relative to genome average (chips are denser in gene-rich regions)
+const DENS = [1.00,0.96,0.94,0.90,0.93,1.06,0.98,0.90,0.97,0.99,1.04,1.03,0.88,0.91,0.95,1.08,1.12,0.89,1.20,1.02,0.93,1.05,0.72,0.28];
+
+const VARIANTS = [
+  ['136,600,412','rs6754311','C','C/T','Measured','T'],
+  ['136,601,890','rs309180','G','G/G','Measured','A'],
+  ['136,603,241','rs4954490','A','A/G','Measured','G'],
+  ['136,604,778','rs309137','T','T/T','Measured','C'],
+  ['136,606,102','rs2322659','C','—','No-call','T'],
+  ['136,607,435','rs3754686','G','A/G','Measured','A'],
+  ['136,608,646','rs4988235','C','T/T','Measured','T'],
+  ['136,609,983','rs182549','C','T/T','Measured','T'],
+  ['136,611,204','rs4988234','G','G/A','Strand-ambiguous','A'],
+  ['136,612,877','rs3769005','T','T/C','Measured','C'],
+  ['136,614,330','rs2322660','A','A/T','Strand-ambiguous','T'],
+  ['136,615,991','rs3769008','G','G/G','Measured','C'],
+  ['136,617,402','rs4954492','C','C/T','Measured','T'],
+  ['136,619,118','rs309133','A','A/A','Measured','G']
+];
+
+class Component extends DCLogic {
+  state = { view: 'overview', chrom: '2', sel: 6 };
+
+  navBtn(id, active) {
+    return 'display:flex;align-items:center;gap:9px;width:100%;padding:7px 9px;border:0;cursor:pointer;'
+      + 'border-radius:var(--radius-sm);font:inherit;font-size:13px;text-align:left;'
+      + (active
+        ? 'background:var(--color-accent-900);color:var(--color-accent-200);'
+        : 'background:transparent;color:var(--color-neutral-300);');
+  }
+
+  renderVals() {
+    const { view, chrom, sel } = this.state;
+    const maxLen = CHR[0][1];
+    const total = 638412;
+    const weight = CHR.reduce((s, c, i) => s + c[1] * DENS[i], 0);
+
+    const chroms = CHR.map(([name, len, cenMb], i) => {
+      const pct = (len / maxLen) * 100;
+      const cenPct = Math.min(92, (cenMb * 1e6 / len) * 100);
+      const calls = Math.round((len * DENS[i] / weight) * total);
+      const active = name === chrom;
+      const tick = 'repeating-linear-gradient(to right,var(--color-accent-500) 0 1px,transparent 1px ' + (DENS[i] > 1 ? 4 : 5) + 'px),var(--color-neutral-900)';
+      const arm = 'height:11px;border-radius:2px;display:block;background:' + tick + ';';
+      return {
+        name,
+        callsLabel: calls >= 1000 ? (calls / 1000).toFixed(1) + 'k' : String(calls),
+        go: () => this.setState({ chrom: name, view: 'genome' }),
+        rowStyle: 'display:flex;align-items:center;gap:10px;width:100%;padding:4px 6px;border:0;cursor:pointer;font:inherit;'
+          + 'border-radius:var(--radius-sm);text-align:left;'
+          + (active ? 'background:transparent;box-shadow:inset 0 0 0 1px var(--color-accent-700);' : 'background:transparent;'),
+        barStyle: 'display:flex;gap:3px;width:' + pct.toFixed(2) + '%;min-width:14px;',
+        pArmStyle: arm + 'width:' + cenPct.toFixed(2) + '%;',
+        qArmStyle: arm + 'flex:1;',
+        chipStyle: 'flex:1;min-width:0;padding:4px 0;border:0;cursor:pointer;font:inherit;font-size:10px;'
+          + 'border-radius:3px;font-variant-numeric:tabular-nums;'
+          + (active
+            ? 'background:var(--color-accent-800);color:var(--color-accent-100);'
+            : 'background:var(--color-neutral-900);color:var(--color-neutral-400);')
+      };
+    });
+
+    const calls = VARIANTS.map((v, i) => {
+      const [pos, rsid, ref, call, state] = v;
+      const left = 2 + (i / (VARIANTS.length - 1)) * 94;
+      const active = i === sel;
+      let paint = 'background:var(--color-accent-400);';
+      if (state === 'No-call') paint = 'background:repeating-linear-gradient(135deg,var(--color-neutral-700) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px var(--color-neutral-700);';
+      else if (state === 'Strand-ambiguous') paint = 'background:var(--color-accent-400);box-shadow:0 0 0 1.5px var(--color-accent-800);';
+      return {
+        pos, rsid, ref, call, state,
+        go: () => this.setState({ sel: i }),
+        tickStyle: 'position:absolute;top:' + (active ? 14 : 19) + 'px;left:' + left.toFixed(2) + '%;width:3px;height:'
+          + (active ? 30 : 20) + 'px;border:0;padding:0;cursor:pointer;' + paint
+          + (active ? 'outline:1px solid var(--color-accent-200);outline-offset:2px;' : ''),
+        rowStyle: 'cursor:pointer;' + (active ? 'background:var(--color-accent-900);' : '')
+      };
+    });
+
+    const v = VARIANTS[sel];
+    return {
+      chrom, chroms, calls,
+      isOverview: view === 'overview',
+      isGenome: view === 'genome',
+      goGenome: () => this.setState({ view: 'genome' }),
+      goOverview: () => this.setState({ view: 'overview' }),
+      navItems: [
+        { label: 'Overview', badge: '', style: this.navBtn('overview', view === 'overview'), markStyle: 'width:8px;height:8px;border-radius:2px;background:var(--color-accent-400);display:block', go: () => this.setState({ view: 'overview' }) },
+        { label: 'Genome view', badge: '', style: this.navBtn('genome', view === 'genome'), markStyle: 'width:8px;height:8px;border-radius:2px;background:var(--color-accent-400);display:block', go: () => this.setState({ view: 'genome' }) },
+        { label: 'Kits', badge: '1', style: this.navBtn('kits', false), markStyle: 'width:8px;height:8px;border-radius:2px;background:var(--color-neutral-600);display:block', go: () => {} },
+        { label: 'Packs', badge: '0', style: this.navBtn('packs', false), markStyle: 'width:8px;height:8px;border-radius:2px;border:1.5px solid var(--color-neutral-600);display:block', go: () => {} },
+        { label: 'Plugins', badge: '2', style: this.navBtn('plugins', false), markStyle: 'width:8px;height:8px;border-radius:2px;background:var(--color-neutral-600);display:block', go: () => {} }
+      ],
+      sel: {
+        rsid: v[1], pos: v[0], ref: v[2], alt: v[5], call: v[3],
+        ambig: v[4] === 'Strand-ambiguous' ? 'Yes — A/T or C/G' : 'No',
+        key: 'GRCh37:' + chrom + ':' + v[0].replace(/,/g, '') + ':' + v[2] + ':' + v[5]
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

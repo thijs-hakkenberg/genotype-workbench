@@ -1,0 +1,14 @@
+[package]
+name = "locus-py"
+description = "Python bindings to the locus normalizer for the pack pipeline"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "_locus"
+crate-type = ["cdylib"]
+
+[dependencies]
+locus.workspace = true
+pyo3 = { version = "0.29", features = ["abi3-py310"] }

@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-09-19T17:16:14+00:00",
+  "packs": [
+    {
+      "schema": 1,
+      "id": "clinvar",
+      "title": "ClinVar classifications",
+      "description": "Curated classifications of variants submitted to ClinVar, with review status. A classification is a panel's judgement on a date; it can be revised.",
+      "build": "GRCh37",
+      "scientificDomain": "clinical-genetics",
+      "evidenceKind": "curated-classification",
+      "trackKind": "variant",
+      "core": false,
+      "licence": "CC0 (public domain, NCBI)",
+      "licenceClass": "open",
+      "source": {
+        "name": "ClinVar VCF, GRCh37",
+        "short": "ClinVar",
+        "url": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
+      },
+      "citation": "Landrum MJ et al. ClinVar: improvements to accessing data. Nucleic Acids Res. 2020;48:D835\u2013D844",
+      "version": "2026-09-13",
+      "sourceDate": "2026-09-13",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T17:16:14+00:00",
+      "file": "clinvar.parquet",
+      "rows": 13011,
+      "columns": [
+        "chrom",
+        "pos",
+        "ref",
+        "alt",
+        "variation_id",
+        "allele_id",
+        "rsid",
+        "classification",
+        "review_status",
+        "stars",
+        "element",
+        "element",
+        "element",
+        "origin"
+      ],
+      "size": 185469,
+      "sha256": "523c6acaba6a3e30dc1740fb089789e34f6006ea0a56def5645c711ebc52f617",
+      "stats": {
+        "fixture": true,
+        "snvs": 4162431,
+        "skipped": {
+          "notSnv": 308448,
+          "noAlt": 754,
+          "unknownChrom": 8
+        }
+      },
+      "path": "clinvar/2026-09-13/clinvar.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "genes-ensembl75",
+      "title": "Gene models (Ensembl 75)",
+      "description": "Protein-coding and lncRNA genes on GRCh37, one representative transcript per gene, so the genome view can say which gene a position falls in.",
+      "build": "GRCh37",
+      "scientificDomain": "molecular-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": "feature",
+      "core": false,
+      "licence": "No restrictions (Ensembl data policy)",
+      "licenceClass": "open",
+      "source": {
+        "name": "Ensembl release 75 (GRCh37.p13)",
+        "short": "Ensembl 75",
+        "url": "https://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/Homo_sapiens.GRCh37.75.gtf.gz"
+      },
+      "citation": "Flicek P. et al. Ensembl 2014. Nucleic Acids Res. 42:D749\u2013D755",
+      "version": "75",
+      "sourceDate": "2014-02-07",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T17:16:14+00:00",
+      "file": "genes-ensembl75.parquet",
+      "rows": 6,
+      "columns": [
+        "chrom",
+        "start",
+        "end",
+        "strand",
+        "gene_id",
+        "symbol",
+        "biotype",
+        "transcript_id",
+        "transcript_name",
+        "element",
+        "element",
+        "cds_start",
+        "cds_end"
+      ],
+      "size": 2976,
+      "sha256": "59defdf9025a477eaf3e8db2759001650fea5961c4a888a5202924fd459f09ca",
+      "stats": {
+        "fixture": true,
+        "genes": 40195
+      },
+      "path": "genes-ensembl75/75/genes-ensembl75.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "gwas-catalog",
+      "title": "GWAS Catalog associations",
+      "description": "Published genome-wide associations between variants and traits. Population-level associations, not statements about any individual. Lifted from GRCh38 to GRCh37 at build time.",
+      "build": "GRCh37",
+      "scientificDomain": "statistical-genetics",
+      "evidenceKind": "statistical-association",
+      "trackKind": "variant",
+      "core": false,
+      "licence": "CC0 (NHGRI-EBI GWAS Catalog)",
+      "licenceClass": "open",
+      "source": {
+        "name": "NHGRI-EBI GWAS Catalog, all associations with ontology annotations",
+        "short": "GWAS Catalog",
+        "url": "https://ftp.ebi.ac.uk/pub/databases/gwas/releases/latest/gwas-catalog-associations_ontology-annotated-full.zip"
+      },
+      "citation": "Cerezo M. et al. The NHGRI-EBI GWAS Catalog: standards for reusability, sustainability and diversity. Nucleic Acids Res. 2025;53:D998\u2013D1005",
+      "version": "2026-09-15",
+      "sourceDate": "2026-09-15",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T17:16:14+00:00",
+      "file": "gwas-catalog.parquet",
+      "rows": 243,
+      "columns": [
+        "chrom",
+        "pos",
+        "rsid",
+        "risk_allele",
+        "risk_allele_freq",
+        "trait",
+        "mapped_trait",
+        "p_value",
+        "p_mlog",
+        "p_text",
+        "effect",
+        "effect_kind",
+        "ci_text",
+        "pubmed_id",
+        "first_author",
+        "pub_date",
+        "journal",
+        "study",
+        "study_accession",
+        "initial_sample",
+        "mapped_gene",
+        "context"
+      ],
+      "size": 27006,
+      "sha256": "4c61bbc4a56d77b5d0ae93d29624fea9e3027c20324f084d92a70942b86ce5fa",
+      "stats": {
+        "fixture": true,
+        "sourceRows": 1192604,
+        "associations": 981291,
+        "dropped": {
+          "multiOrNoPosition": 210297,
+          "liftoverFailed": 1016
+        }
+      },
+      "path": "gwas-catalog/2026-09-15/gwas-catalog.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "reference-grch37",
+      "title": "GRCh37 reference alleles at chip loci",
+      "description": "The GRCh37 base at every known consumer-chip position. The normalizer checks each call against it to catch strand flips. Core reference data: it ships with the app.",
+      "build": "GRCh37",
+      "scientificDomain": "molecular-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": null,
+      "core": true,
+      "licence": "Public domain (GRC / 1000 Genomes hs37d5)",
+      "licenceClass": "open",
+      "source": {
+        "name": "1000 Genomes hs37d5 (GRCh37 + rCRS mitochondrion)",
+        "short": "hs37d5",
+        "url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz"
+      },
+      "citation": "Genome Reference Consortium, GRCh37 (hs37d5 assembly, 1000 Genomes Project)",
+      "version": "2026-09-19",
+      "sourceDate": null,
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T17:16:14+00:00",
+      "file": "reference-grch37.parquet",
+      "rows": 5000,
+      "columns": [
+        "chrom",
+        "pos",
+        "ref"
+      ],
+      "size": 21342,
+      "sha256": "b34817d89424ad751478d91736d8381ede8d449d9da41bb55172ebee970c3582",
+      "stats": {
+        "fixture": true,
+        "loci": 1473434,
+        "nonACGTDropped": 1
+      },
+      "path": "reference-grch37/2026-09-19/reference-grch37.parquet"
+    }
+  ]
+}

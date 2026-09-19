@@ -1,0 +1,18 @@
+{
+  "id": "genes-ensembl75",
+  "title": "Gene models (Ensembl 75)",
+  "description": "Protein-coding and lncRNA genes on GRCh37, one representative transcript per gene, so the genome view can say which gene a position falls in.",
+  "build": "GRCh37",
+  "scientificDomain": "molecular-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": "feature",
+  "core": false,
+  "licence": "No restrictions (Ensembl data policy)",
+  "licenceClass": "open",
+  "source": {
+    "name": "Ensembl release 75 (GRCh37.p13)",
+    "short": "Ensembl 75",
+    "url": "https://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/Homo_sapiens.GRCh37.75.gtf.gz"
+  },
+  "citation": "Flicek P. et al. Ensembl 2014. Nucleic Acids Res. 42:D749–D755"
+}

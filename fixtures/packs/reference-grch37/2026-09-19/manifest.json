@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "id": "reference-grch37",
+  "title": "GRCh37 reference alleles at chip loci",
+  "description": "The GRCh37 base at every known consumer-chip position. The normalizer checks each call against it to catch strand flips. Core reference data: it ships with the app.",
+  "build": "GRCh37",
+  "scientificDomain": "molecular-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": null,
+  "core": true,
+  "licence": "Public domain (GRC / 1000 Genomes hs37d5)",
+  "licenceClass": "open",
+  "source": {
+    "name": "1000 Genomes hs37d5 (GRCh37 + rCRS mitochondrion)",
+    "short": "hs37d5",
+    "url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz"
+  },
+  "citation": "Genome Reference Consortium, GRCh37 (hs37d5 assembly, 1000 Genomes Project)",
+  "version": "2026-09-19",
+  "sourceDate": null,
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-19T17:16:14+00:00",
+  "file": "reference-grch37.parquet",
+  "rows": 5000,
+  "columns": [
+    "chrom",
+    "pos",
+    "ref"
+  ],
+  "size": 21342,
+  "sha256": "b34817d89424ad751478d91736d8381ede8d449d9da41bb55172ebee970c3582",
+  "stats": {
+    "fixture": true,
+    "loci": 1473434,
+    "nonACGTDropped": 1
+  }
+}

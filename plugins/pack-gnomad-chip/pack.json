@@ -1,0 +1,18 @@
+{
+  "id": "gnomad-chip",
+  "title": "gnomAD allele frequencies at chip loci",
+  "description": "How common each allele is in gnomAD v2.1.1 genomes, overall and per genetic-ancestry group. A sampled estimate: frequencies depend on who was sampled. Pre-filtered to consumer-chip positions.",
+  "build": "GRCh37",
+  "scientificDomain": "population-genetics",
+  "evidenceKind": "probabilistic-estimate",
+  "trackKind": "signal",
+  "core": false,
+  "licence": "CC0, attribution requested; re-identification forbidden",
+  "licenceClass": "open",
+  "source": {
+    "name": "gnomAD v2.1.1 genomes (GRCh37)",
+    "short": "gnomAD v2.1.1",
+    "url": "https://gnomad.broadinstitute.org/downloads#v2"
+  },
+  "citation": "Karczewski KJ et al. The mutational constraint spectrum quantified from variation in 141,456 humans. Nature 2020;581:434–443"
+}

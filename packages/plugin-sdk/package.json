@@ -1,0 +1,8 @@
+{
+  "name": "@gw/plugin-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public types for Genotype Workbench plugin authors (host API ^0.1)",
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./genome": "./src/genome.ts" }
+}

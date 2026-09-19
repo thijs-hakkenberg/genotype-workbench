@@ -1,0 +1,23 @@
+{
+  "id": "profile-23andme",
+  "version": "0.1.0",
+  "vendor": "23andme",
+  "vendorLabel": "23andMe",
+  "build": "GRCh37",
+  "delimiter": "\t",
+  "commentPrefix": "#",
+  "headerRow": "rsid",
+  "columns": { "rsid": 0, "chrom": 1, "pos": 2, "genotype": [3] },
+  "noCallToken": "--",
+  "strand": "plus",
+  "detect": {
+    "headerContains": ["23andMe"],
+    "buildMarkers": ["build 37", "GRCh37"],
+    "rejectMarkers": ["build 36", "NCBI36"]
+  },
+  "chipVersions": [
+    { "id": "v3", "minRows": 900000, "maxRows": 1100000, "label": "v3 (Illumina OmniExpress+, 2010–2013)" },
+    { "id": "v5", "minRows": 620000, "maxRows": 700000, "label": "v5 (Illumina GSA, 2017–)" },
+    { "id": "v4", "minRows": 540000, "maxRows": 620000, "label": "v4 (Illumina OmniExpress, 2013–2017)" }
+  ]
+}

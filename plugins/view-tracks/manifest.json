@@ -1,0 +1,9 @@
+{
+  "id": "view-tracks",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": ["view"],
+  "title": "Track view",
+  "description": "The base genome view. Draws every track in its evidence kind's encoding, so an association never looks like a classification.",
+  "firstParty": true
+}

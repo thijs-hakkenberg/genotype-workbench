@@ -1,0 +1,34 @@
+# Never commit real genomes (see CLAUDE.md)
+genome_*.txt
+*23andme*.txt
+*23andMe*.txt
+*23andme*.zip
+*23andMe*.zip
+/data/
+*.vcf
+*.vcf.gz
+!fixtures/**/*.vcf
+
+# Built packs and caches
+packs-dist/
+.cache/
+keys/*.key
+
+# Build output
+node_modules/
+dist/
+target/
+pkg/
+.turbo/
+.svelte-kit/
+*.tsbuildinfo
+test-results/
+playwright-report/
+__pycache__/
+.venv/
+*.so
+
+.DS_Store
+apps/web/public/duckdb-extensions/
+dist-e2e/
+fixtures/packs/test-key.pem

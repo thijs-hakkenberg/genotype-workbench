@@ -1,0 +1,389 @@
+/**
+ * One renderer per evidence kind (UI design page, 01 and 02).
+ *
+ * The palette is mono, so kinds separate by form, not hue: how a mark is
+ * filled and how its edges end. A hard end is a known bound; a faded end is
+ * an unknown one. Nothing here encodes good or bad.
+ */
+import type { EvidenceKind, TrackItem } from '@gw/plugin-sdk';
+import { alpha, type Palette } from '../palette';
+
+export interface MarkContext {
+  ctx: CanvasRenderingContext2D;
+  palette: Palette;
+  width: number;
+  height: number;
+  /** Map a 1-based genome position to an x pixel. */
+  x(pos: number): number;
+  /** Pixels per base. */
+  scale: number;
+  selectedId: string | null;
+}
+
+/** A drawn item's clickable box, for hit testing. */
+export interface HitBox {
+  item: TrackItem;
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+}
+
+export interface MarkRenderer {
+  height(items: TrackItem[]): number;
+  draw(m: MarkContext, items: TrackItem[]): HitBox[];
+}
+
+const DENSITY_THRESHOLD = 1500;
+
+function hatch(m: MarkContext, x: number, y: number, w: number, h: number) {
+  const { ctx, palette } = m;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.strokeStyle = palette.n[700];
+  ctx.lineWidth = 1;
+  for (let i = -h; i < w + h; i += 3) {
+    ctx.beginPath();
+    ctx.moveTo(x + i, y + h);
+    ctx.lineTo(x + i + h, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.strokeStyle = palette.n[700];
+  ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), h - 1);
+}
+
+function selectedRing(m: MarkContext, x: number, y: number, w: number, h: number) {
+  m.ctx.strokeStyle = m.palette.a[200];
+  m.ctx.lineWidth = 1;
+  m.ctx.strokeRect(x - 2.5, y - 2.5, w + 5, h + 5);
+}
+
+/** Density bars when a window holds too many items to draw one by one. */
+function density(m: MarkContext, items: TrackItem[], color: string): HitBox[] {
+  const { ctx, width, height } = m;
+  const binPx = 3;
+  const bins = new Float32Array(Math.ceil(width / binPx) + 1);
+  const empty = new Float32Array(bins.length);
+  for (const it of items) {
+    const b = Math.floor(m.x(it.start) / binPx);
+    if (b < 0 || b >= bins.length) continue;
+    bins[b]! += 1;
+    if (it.state === 'no-call') empty[b]! += 1;
+  }
+  const max = Math.max(1, ...bins);
+  const base = height - 8;
+  for (let b = 0; b < bins.length; b++) {
+    if (!bins[b]) continue;
+    const h = Math.max(2, (bins[b]! / max) * (height - 16));
+    ctx.fillStyle = color;
+    ctx.fillRect(b * binPx, base - h, binPx - 1, h);
+    if (empty[b]) {
+      const eh = (empty[b]! / bins[b]!) * h;
+      hatch(m, b * binPx, base - h, binPx - 1, eh);
+    }
+  }
+  return [];
+}
+
+/** measured — a solid block with hard edges; no-calls hatched; A/T and C/G double-outlined. */
+export const measured: MarkRenderer = {
+  height: () => 58,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    ctx.fillStyle = palette.n[800];
+    ctx.fillRect(0, Math.round(height / 2), m.width, 1);
+    if (items.length > DENSITY_THRESHOLD) return density(m, items, palette.a[500]);
+    const w = items.length > 400 ? 2 : 3;
+    const hits: HitBox[] = [];
+    for (const it of items) {
+      const sel = it.id === m.selectedId;
+      const h = sel ? 30 : 20;
+      const x = Math.round(m.x(it.start) - w / 2);
+      const y = Math.round((height - h) / 2);
+      if (it.state === 'no-call') {
+        hatch(m, x, y, w, h);
+      } else {
+        if (it.state === 'strand-ambiguous') {
+          ctx.fillStyle = palette.a[800];
+          ctx.fillRect(x - 1.5, y - 1.5, w + 3, h + 3);
+        }
+        ctx.fillStyle = palette.a[400];
+        ctx.fillRect(x, y, w, h);
+      }
+      if (sel) selectedRing(m, x, y, w, h);
+      hits.push({ item: it, x0: x - 3, x1: x + w + 3, y0: y, y1: y + h });
+    }
+    return hits;
+  },
+};
+
+interface GeneRowLike {
+  strand?: string;
+  exon_starts?: number[];
+  exon_ends?: number[];
+  cds_start?: number | null;
+  cds_end?: number | null;
+}
+
+/** documentary — ruled lines in the neutral ramp, never the accent. */
+export const documentary: MarkRenderer = {
+  height(items) {
+    return 20 + Math.min(lanes(items).lanes, 4) * 26;
+  },
+  draw(m, items) {
+    const { ctx, palette } = m;
+    const { assign } = lanes(items, m);
+    const hits: HitBox[] = [];
+    ctx.font = `10px ${palette.font}`;
+    ctx.textBaseline = 'top';
+    items.forEach((it, i) => {
+      const lane = assign[i]!;
+      if (lane >= 4) return;
+      const y = 12 + lane * 26;
+      const x0 = Math.max(-2, m.x(it.start));
+      const x1 = Math.min(m.width + 2, m.x(it.end + 1));
+      const r = it.row as GeneRowLike;
+      const sel = it.id === m.selectedId;
+      ctx.fillStyle = sel ? palette.n[400] : palette.n[700];
+      ctx.fillRect(x0, y + 4, Math.max(1, x1 - x0), 1.5);
+      const starts = r.exon_starts ?? [];
+      const ends = r.exon_ends ?? [];
+      for (let e = 0; e < starts.length; e++) {
+        const s = starts[e]!;
+        const en = ends[e]!;
+        const coding = r.cds_start != null && r.cds_end != null && en >= r.cds_start && s <= r.cds_end;
+        const ex0 = m.x(s);
+        const ex1 = m.x(en + 1);
+        if (ex1 < 0 || ex0 > m.width) continue;
+        const h = coding ? 9 : 5;
+        ctx.fillRect(ex0, y + 5 - h / 2 + 0.5, Math.max(1, ex1 - ex0), h);
+      }
+      const arrow = r.strand === '-' ? '←' : '→';
+      ctx.fillStyle = sel ? palette.n[200] : palette.n[400];
+      const label = `${it.label ?? ''} ${arrow}`;
+      ctx.fillText(label, Math.max(2, Math.min(x0, m.width - ctx.measureText(label).width - 2)), y + 11);
+      hits.push({ item: it, x0, x1: Math.max(x1, x0 + 40), y0: y, y1: y + 24 });
+    });
+    return hits;
+  },
+};
+
+function lanes(items: TrackItem[], m?: MarkContext): { lanes: number; assign: number[] } {
+  const ends: number[] = [];
+  const assign: number[] = [];
+  for (const it of items) {
+    const start = m ? m.x(it.start) : it.start;
+    const labelEnd = m ? Math.max(m.x(it.end + 1), start + 8 + (it.label?.length ?? 0) * 6) : it.end;
+    let lane = ends.findIndex((e) => e + (m ? 6 : 0) < start);
+    if (lane === -1) {
+      lane = ends.length;
+      ends.push(labelEnd);
+    } else ends[lane] = labelEnd;
+    assign.push(lane);
+  }
+  return { lanes: Math.max(1, ends.length), assign };
+}
+
+/** curated-classification — an outline around a judgement, never filled. */
+export const classification: MarkRenderer = {
+  height: () => 46,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const hits: HitBox[] = [];
+    const crowded = items.length > 120;
+    ctx.font = `500 9px ${palette.font}`;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    let lastX = -Infinity;
+    let stack = 0;
+    for (const it of items) {
+      const cx = m.x(it.start);
+      stack = cx - lastX < (crowded ? 3 : 22) ? stack + 1 : 0;
+      lastX = cx;
+      if (stack > 2) continue;
+      const sel = it.id === m.selectedId;
+      const reviewed = (it.weight ?? 0) >= 1;
+      ctx.strokeStyle = sel ? palette.a[200] : reviewed ? palette.a[400] : palette.n[500];
+      ctx.lineWidth = sel ? 1.5 : 1;
+      if (crowded) {
+        const y = 10 + stack * 10;
+        ctx.strokeRect(Math.round(cx) - 2.5, y + 0.5, 5, 7);
+        hits.push({ item: it, x0: cx - 4, x1: cx + 4, y0: y, y1: y + 8 });
+        continue;
+      }
+      const label = it.label ?? '·';
+      const w = Math.max(14, ctx.measureText(label).width + 8);
+      const y = 8 + stack * 12;
+      const x = Math.round(cx - w / 2) + 0.5;
+      ctx.beginPath();
+      ctx.roundRect(x, y + 0.5, w, 14, 2);
+      ctx.stroke();
+      ctx.fillStyle = reviewed ? palette.a[200] : palette.n[300];
+      ctx.fillText(label, cx, y + 8);
+      hits.push({ item: it, x0: x, x1: x + w, y0: y, y1: y + 15 });
+    }
+    ctx.textAlign = 'start';
+    ctx.fillStyle = palette.n[800];
+    ctx.fillRect(0, height - 1, m.width, 1);
+    return hits;
+  },
+};
+
+/** statistical-association — a point inside a plume; the plume is the study population. */
+export const association: MarkRenderer = {
+  height: () => 70,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const hits: HitBox[] = [];
+    const top = 10;
+    const bottom = height - 8;
+    const maxW = Math.max(8, ...items.map((i) => Math.min(i.weight ?? 0, 60)));
+    const y = (w: number) => bottom - (Math.sqrt(Math.min(w, 60)) / Math.sqrt(maxW)) * (bottom - top);
+    ctx.fillStyle = palette.n[800];
+    ctx.fillRect(0, bottom, m.width, 1);
+    // genome-wide significance line, p = 5e-8
+    const gw = y(7.3);
+    ctx.setLineDash([2, 3]);
+    ctx.strokeStyle = palette.n[700];
+    ctx.beginPath();
+    ctx.moveTo(0, gw + 0.5);
+    ctx.lineTo(m.width, gw + 0.5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const it of items) {
+      const cx = m.x(it.start);
+      const cy = y(it.weight ?? 0);
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 11);
+      g.addColorStop(0, alpha(palette.a[500], 0.28));
+      g.addColorStop(1, alpha(palette.a[500], 0));
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - 11, cy - 11, 22, 22);
+    }
+    for (const it of items) {
+      const cx = m.x(it.start);
+      const cy = y(it.weight ?? 0);
+      const sel = it.id === m.selectedId;
+      ctx.fillStyle = sel ? palette.a[100] : palette.a[300];
+      ctx.beginPath();
+      ctx.arc(cx, cy, sel ? 3.5 : 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      if (sel) {
+        ctx.strokeStyle = palette.a[200];
+        ctx.beginPath();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      hits.push({ item: it, x0: cx - 5, x1: cx + 5, y0: cy - 5, y1: cy + 5 });
+    }
+    return hits;
+  },
+};
+
+/** probabilistic-estimate — a band that fades out at both ends, with a tick at the likeliest value. */
+export const estimate: MarkRenderer = {
+  height: () => 64,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const hits: HitBox[] = [];
+    const top = 8;
+    const bottom = height - 8;
+    const y = (v: number) => bottom - v * (bottom - top);
+    ctx.fillStyle = palette.n[800];
+    ctx.fillRect(0, bottom, m.width, 1);
+    ctx.fillStyle = palette.n[600];
+    ctx.font = `9px ${palette.font}`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('1', 2, top);
+    ctx.fillText('0', 2, bottom - 5);
+    const w = items.length > 300 ? 2 : 4;
+    for (const it of items) {
+      const cx = m.x(it.start);
+      const lo = it.lo ?? it.value ?? 0;
+      const hi = it.hi ?? it.value ?? 0;
+      const pad = 6; // the fade extends past the bounds: they are not exactly known
+      const y0 = y(Math.min(1, hi)) - pad;
+      const y1 = y(Math.max(0, lo)) + pad;
+      const g = ctx.createLinearGradient(0, y0, 0, y1);
+      g.addColorStop(0, alpha(palette.a[500], 0));
+      g.addColorStop(0.35, alpha(palette.a[500], 0.55));
+      g.addColorStop(0.65, alpha(palette.a[500], 0.55));
+      g.addColorStop(1, alpha(palette.a[500], 0));
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - w / 2, y0, w, y1 - y0);
+      const sel = it.id === m.selectedId;
+      ctx.fillStyle = sel ? palette.a[100] : palette.a[300];
+      ctx.fillRect(cx - w / 2 - 2, Math.round(y(it.value ?? 0)) - 0.5, w + 4, sel ? 2 : 1.5);
+      if (sel) selectedRing(m, cx - w / 2, y0 + pad, w, y1 - y0 - 2 * pad);
+      hits.push({ item: it, x0: cx - 5, x1: cx + 5, y0, y1 });
+    }
+    return hits;
+  },
+};
+
+export const RENDERERS: Record<EvidenceKind, MarkRenderer> = {
+  measured,
+  documentary,
+  'curated-classification': classification,
+  'statistical-association': association,
+  'probabilistic-estimate': estimate,
+};
+
+/**
+ * Binned density for wide windows, in the evidence kind's own form: measured
+ * bins are solid, classifications outlined, associations soft plumes,
+ * estimates fade out at the top. Height is the record count per bin.
+ */
+export const BINS_HEIGHT = 46;
+
+export function drawBins(m: MarkContext, items: TrackItem[], kind: EvidenceKind): HitBox[] {
+  const { ctx, palette, height } = m;
+  const max = Math.max(1, ...items.map((i) => i.count ?? 0));
+  const base = height - 6;
+  const hits: HitBox[] = [];
+  ctx.fillStyle = palette.n[800];
+  ctx.fillRect(0, base, m.width, 1);
+  for (const it of items) {
+    const x0 = m.x(it.start);
+    const w = Math.max(1, m.x(it.end + 1) - x0 - 0.5);
+    const h = Math.max(2, Math.sqrt((it.count ?? 0) / max) * (height - 12));
+    const y = base - h;
+    switch (kind) {
+      case 'measured': {
+        ctx.fillStyle = palette.a[500];
+        ctx.fillRect(x0, y, w, h);
+        if (it.value) hatch(m, x0, base - Math.max(1, (it.value / (it.count ?? 1)) * h), w, Math.max(1, (it.value / (it.count ?? 1)) * h));
+        break;
+      }
+      case 'curated-classification':
+        ctx.strokeStyle = (it.weight ?? 0) >= 1 ? palette.a[400] : palette.n[500];
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0 + 0.5, y + 0.5, Math.max(0, w - 1), h - 1);
+        break;
+      case 'statistical-association': {
+        const g = ctx.createLinearGradient(0, y, 0, base);
+        g.addColorStop(0, alpha(palette.a[500], 0.05));
+        g.addColorStop(1, alpha(palette.a[500], 0.6));
+        ctx.fillStyle = g;
+        ctx.fillRect(x0, y, w, h);
+        break;
+      }
+      case 'probabilistic-estimate': {
+        const g = ctx.createLinearGradient(0, y, 0, base);
+        g.addColorStop(0, alpha(palette.a[500], 0));
+        g.addColorStop(1, alpha(palette.a[500], 0.55));
+        ctx.fillStyle = g;
+        ctx.fillRect(x0, y, w, h);
+        break;
+      }
+      case 'documentary':
+        ctx.fillStyle = palette.n[600];
+        ctx.fillRect(x0, y, w, h);
+        break;
+    }
+    hits.push({ item: it, x0, x1: x0 + Math.max(w, 3), y0: 0, y1: height });
+  }
+  return hits;
+}
