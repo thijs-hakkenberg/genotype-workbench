@@ -2,6 +2,14 @@
 
 A local-first workbench for your own raw DNA file. Import a 23andMe export, explore it on a genome view, and join it to public databanks that arrive as whole downloaded packs. Everything runs in your browser: the file is never uploaded, and nothing reaches the network unless you grant it.
 
+![Genome view: your calls next to gene models, ClinVar classifications and GWAS associations, each drawn in its own evidence form](docs/screenshots/genome.png)
+
+| Overview | Packs |
+| --- | --- |
+| ![Kit overview with call statistics and probe coverage per chromosome](docs/screenshots/overview.png) | ![Signed pack index with licence, size and source per pack](docs/screenshots/packs.png) |
+
+<sub>Screenshots show a synthetic kit (random genotypes on real chip positions), never a real person's DNA.</sub>
+
 Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20architecture.md), [Decisions](docs/Decisions(1).md), [Scientific domains](docs/Scientific%20domains.md), the [ADRs](docs/adr/) and the Nocturne design system with the UI mockups.
 
 ## Iteration 1: what works

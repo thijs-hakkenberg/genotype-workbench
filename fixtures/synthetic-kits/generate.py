@@ -19,6 +19,7 @@ import pyarrow.parquet as pq
 REPO = Path(__file__).resolve().parents[2]
 NAMES = {**{i: str(i) for i in range(1, 23)}, 23: "X", 24: "Y", 25: "MT"}
 BASES = "ACGT"
+TRANSITION = {"A": "G", "G": "A", "C": "T", "T": "C"}
 # Always included so tests can rely on them: the LCT/MCM6 region on chr2.
 KEEP = (2, 136_500_000, 136_700_000)
 
@@ -60,7 +61,8 @@ def main() -> None:
             gt = "--"
         else:
             r = refmap.get((chrom, pos), rng.choice(BASES))
-            alt = rng.choice([b for b in BASES if b != r])
+            # Most human SNPs are transitions (A<->G, C<->T), as in real chip data.
+            alt = TRANSITION[r] if rng.random() < 0.97 else rng.choice([b for b in BASES if b not in (r, TRANSITION[r])])
             f = rng.choice([0.05, 0.2, 0.5])
             pair = [alt if rng.random() < f else r for _ in range(2)]
             haploid = chrom == 25 or (a.sex == "male" and chrom in (23, 24))
