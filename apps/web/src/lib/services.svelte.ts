@@ -9,6 +9,7 @@ import { GenotypeStore, type Kit } from '@gw/genotype-store';
 import type { Grant, PackIndex, PluginManifest } from '@gw/plugin-sdk';
 import profileManifest from '@gw/profile-23andme/manifest.json';
 import { manifest as viewManifest } from '@gw/view-tracks';
+import haplogroupsManifest from '@gw/analysis-haplogroups/manifest.json';
 import publicKey from '../../../../keys/pack-index.pub?raw';
 
 /** The Pack Index signing key. Tests build with the fixture key instead. */
@@ -94,6 +95,21 @@ export async function refreshEstimate() {
   if (services) app.estimate = await services.storage.estimate();
 }
 
+/**
+ * Whether this site can store `bytes` more. Browsers give each site a quota;
+ * the estimate is what is left of it, which may be less than the free disk.
+ */
+export async function spaceFor(bytes: number): Promise<{ ok: boolean; available: number; needed: number }> {
+  const needed = Math.round(bytes * 1.15) + 20_000_000; // headroom for DuckDB temp data
+  try {
+    const e = await navigator.storage.estimate();
+    const available = Math.max(0, (e.quota ?? Infinity) - (e.usage ?? 0));
+    return { ok: available >= needed, available, needed };
+  } catch {
+    return { ok: true, available: Infinity, needed };
+  }
+}
+
 export async function refreshIndex() {
   try {
     app.index = await svc().library.fetchIndex();
@@ -119,6 +135,7 @@ export async function boot() {
     await host.init();
     host.register(profileManifest as PluginManifest);
     host.register(viewManifest);
+    host.register(haplogroupsManifest as PluginManifest);
     await library.init();
     await store.init();
     host.setPrompter(

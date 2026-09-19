@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-19T17:16:14+00:00",
+  "generatedAt": "2026-09-19T21:06:59+00:00",
   "packs": [
     {
       "schema": 1,
@@ -8,6 +8,7 @@
       "title": "ClinVar classifications",
       "description": "Curated classifications of variants submitted to ClinVar, with review status. A classification is a panel's judgement on a date; it can be revised.",
       "build": "GRCh37",
+      "role": "classification",
       "scientificDomain": "clinical-genetics",
       "evidenceKind": "curated-classification",
       "trackKind": "variant",
@@ -23,7 +24,7 @@
       "version": "2026-09-13",
       "sourceDate": "2026-09-13",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T17:16:14+00:00",
+      "builtAt": "2026-09-19T21:06:58+00:00",
       "file": "clinvar.parquet",
       "rows": 13011,
       "columns": [
@@ -40,45 +41,189 @@
         "element",
         "element",
         "element",
+        "element",
         "origin"
       ],
-      "size": 185469,
-      "sha256": "523c6acaba6a3e30dc1740fb089789e34f6006ea0a56def5645c711ebc52f617",
+      "size": 195095,
+      "sha256": "ecb400914f17dba902f4801cfb595910dabad7c614fa9e54b50a313ad8b39d09",
       "stats": {
-        "fixture": true,
-        "snvs": 4162431,
-        "skipped": {
-          "notSnv": 308448,
-          "noAlt": 754,
-          "unknownChrom": 8
-        }
+        "fixture": true
       },
       "path": "clinvar/2026-09-13/clinvar.parquet"
     },
     {
       "schema": 1,
-      "id": "genes-ensembl75",
-      "title": "Gene models (Ensembl 75)",
-      "description": "Protein-coding and lncRNA genes on GRCh37, one representative transcript per gene, so the genome view can say which gene a position falls in.",
+      "id": "conditions-mondo",
+      "title": "Condition names (Mondo, with Orphanet links)",
+      "description": "Plain names, definitions and synonyms for the conditions ClinVar records name, from the Mondo Disease Ontology, with cross-references to Orphanet, OMIM and MedGen. Documents what a condition is; says nothing about you.",
       "build": "GRCh37",
+      "role": "conditions",
+      "scientificDomain": "clinical-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": null,
+      "core": false,
+      "licence": "CC BY 4.0 (Mondo Disease Ontology)",
+      "licenceClass": "open",
+      "source": {
+        "name": "Mondo Disease Ontology (mondo.obo, latest release)",
+        "short": "Mondo",
+        "url": "https://github.com/monarch-initiative/mondo/releases/latest/download/mondo.obo"
+      },
+      "citation": "Vasilevsky NA et al. Mondo: Unifying diseases for the world, by the world. medRxiv 2022. Orphanet cross-references: Orphanet, INSERM (CC BY 4.0)",
+      "version": "2026-09-01",
+      "sourceDate": "2026-09-01",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T21:06:59+00:00",
+      "file": "conditions-mondo.parquet",
+      "rows": 41,
+      "columns": [
+        "mondo_id",
+        "name",
+        "definition",
+        "element",
+        "element",
+        "element",
+        "element"
+      ],
+      "size": 9741,
+      "sha256": "31e7cc514e215cff405b2e77c9e7e4301e7cbc2da99eeb4724cf42f46f1125c5",
+      "stats": {
+        "fixture": true
+      },
+      "path": "conditions-mondo/2026-09-01/conditions-mondo.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "dbsnp-merges",
+      "title": "dbSNP rsID merge history",
+      "description": "Which retired rsIDs dbSNP merged into which current ones, so an old rsID on a chip or in a paper still finds its record. A lookup only: rsIDs never join data.",
+      "build": "GRCh37",
+      "role": "rsid-merges",
+      "scientificDomain": "genotyping",
+      "evidenceKind": "documentary",
+      "trackKind": null,
+      "core": false,
+      "licence": "Public domain (US government work, NCBI)",
+      "licenceClass": "open",
+      "source": {
+        "name": "dbSNP refsnp-merged (latest release)",
+        "short": "dbSNP",
+        "url": "https://ftp.ncbi.nlm.nih.gov/snp/latest_release/JSON/refsnp-merged.json.bz2"
+      },
+      "citation": "Sherry ST et al. dbSNP: the NCBI database of genetic variation. Nucleic Acids Res. 2001;29:308\u2013311",
+      "version": "2025-01-15",
+      "sourceDate": "2025-01-15",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T21:06:59+00:00",
+      "file": "dbsnp-merges.parquet",
+      "rows": 3390,
+      "columns": [
+        "old_rsid",
+        "new_rsid",
+        "build"
+      ],
+      "size": 29601,
+      "sha256": "96f29b227add2d836bcee1dba0b432b1f37ee7e7ffa439334e50b2d1c93252af",
+      "stats": {
+        "fixture": true
+      },
+      "path": "dbsnp-merges/2025-01-15/dbsnp-merges.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "freq-1000g",
+      "title": "1000 Genomes allele frequencies at chip loci",
+      "description": "How common each allele is among the 2,504 people of the 1000 Genomes Project (phase 3), overall and per continental super-population. A fact about the sampled population, not about you; frequencies depend on who was sampled.",
+      "build": "GRCh37",
+      "role": "frequency",
+      "scientificDomain": "population-genetics",
+      "evidenceKind": "population-frequency",
+      "trackKind": "signal",
+      "core": false,
+      "licence": "Open, no restrictions (IGSR / 1000 Genomes data reuse policy)",
+      "licenceClass": "open",
+      "source": {
+        "name": "1000 Genomes Project phase 3 sites (release 20130502, v5c)",
+        "short": "1000 Genomes",
+        "url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5c.20130502.sites.vcf.gz"
+      },
+      "citation": "The 1000 Genomes Project Consortium. A global reference for human genetic variation. Nature 2015;526:68\u201374",
+      "frequencyGroups": [
+        {
+          "key": "af_afr",
+          "label": "African"
+        },
+        {
+          "key": "af_amr",
+          "label": "Admixed American"
+        },
+        {
+          "key": "af_eas",
+          "label": "East Asian"
+        },
+        {
+          "key": "af_eur",
+          "label": "European"
+        },
+        {
+          "key": "af_sas",
+          "label": "South Asian"
+        }
+      ],
+      "version": "phase3",
+      "sourceDate": "2013-05-02",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T21:06:58+00:00",
+      "file": "freq-1000g.parquet",
+      "rows": 311,
+      "columns": [
+        "chrom",
+        "pos",
+        "ref",
+        "alt",
+        "ac",
+        "an",
+        "af",
+        "af_lo",
+        "af_hi",
+        "af_afr",
+        "af_amr",
+        "af_eas",
+        "af_eur",
+        "af_sas"
+      ],
+      "size": 12651,
+      "sha256": "6f7913b5897ce17304993fa052f9f3b0b920db4a2bf189fd4b2e97e484cb7dc9",
+      "stats": {
+        "fixture": true
+      },
+      "path": "freq-1000g/phase3/freq-1000g.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "genes-gencode",
+      "title": "Gene models (GENCODE 50, lifted to GRCh37)",
+      "description": "Protein-coding and non-coding genes from the current GENCODE release, mapped back to GRCh37, one representative transcript per gene (Ensembl canonical where tagged). Replaces the frozen 2014 Ensembl 75 models.",
+      "build": "GRCh37",
+      "role": "genes",
       "scientificDomain": "molecular-genetics",
       "evidenceKind": "documentary",
       "trackKind": "feature",
       "core": false,
-      "licence": "No restrictions (Ensembl data policy)",
+      "licence": "Open access, no restrictions (GENCODE / EMBL-EBI terms of use)",
       "licenceClass": "open",
       "source": {
-        "name": "Ensembl release 75 (GRCh37.p13)",
-        "short": "Ensembl 75",
-        "url": "https://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/Homo_sapiens.GRCh37.75.gtf.gz"
+        "name": "GENCODE release 50, GRCh37 mapping (basic annotation)",
+        "short": "GENCODE 50",
+        "url": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/latest_release/GRCh37_mapping/gencode.v50lift37.basic.annotation.gtf.gz"
       },
-      "citation": "Flicek P. et al. Ensembl 2014. Nucleic Acids Res. 42:D749\u2013D755",
-      "version": "75",
-      "sourceDate": "2014-02-07",
+      "citation": "Mudge JM et al. GENCODE 2025: reference gene annotation for human and mouse. Nucleic Acids Res. 2025;53:D966\u2013D975",
+      "version": "50lift37",
+      "sourceDate": "2026-06-09",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T17:16:14+00:00",
-      "file": "genes-ensembl75.parquet",
-      "rows": 6,
+      "builtAt": "2026-09-19T21:06:59+00:00",
+      "file": "genes-gencode.parquet",
+      "rows": 10,
       "columns": [
         "chrom",
         "start",
@@ -89,18 +234,56 @@
         "biotype",
         "transcript_id",
         "transcript_name",
+        "canonical",
         "element",
         "element",
         "cds_start",
         "cds_end"
       ],
-      "size": 2976,
-      "sha256": "59defdf9025a477eaf3e8db2759001650fea5961c4a888a5202924fd459f09ca",
+      "size": 3451,
+      "sha256": "6e58724fef3bf26a07e22df7a9d6e4c2b998700b651029728e8c8c02a9379cd4",
       "stats": {
-        "fixture": true,
-        "genes": 40195
+        "fixture": true
       },
-      "path": "genes-ensembl75/75/genes-ensembl75.parquet"
+      "path": "genes-gencode/50lift37/genes-gencode.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "genetic-map",
+      "title": "Genetic map (HapMap II, GRCh37)",
+      "description": "Genetic position in centimorgans at every chip locus, interpolated from the HapMap phase II recombination map. Converts a stretch of DNA into how much recombination separates its ends \u2014 what kinship analysis measures shared segments in.",
+      "build": "GRCh37",
+      "role": "genetic-map",
+      "scientificDomain": "transmission-genetics",
+      "evidenceKind": "probabilistic-estimate",
+      "trackKind": null,
+      "core": false,
+      "licence": "Public data, no restrictions (International HapMap Project)",
+      "licenceClass": "open",
+      "source": {
+        "name": "HapMap phase II genetic map, GRCh37 (2011-01)",
+        "short": "HapMap II",
+        "url": "https://ftp.ncbi.nlm.nih.gov/hapmap/recombination/2011-01_phaseII_B37/genetic_map_HapMapII_GRCh37.tar.gz"
+      },
+      "citation": "The International HapMap Consortium. A second generation human haplotype map of over 3.1 million SNPs. Nature 2007;449:851\u2013861",
+      "version": "hapmap2-2011-01",
+      "sourceDate": "2011-01-19",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T21:06:59+00:00",
+      "file": "genetic-map.parquet",
+      "rows": 1372,
+      "columns": [
+        "chrom",
+        "pos",
+        "cm",
+        "rate"
+      ],
+      "size": 8591,
+      "sha256": "f354bdd18118581b3f8d61066a832464bd74698359bd2f36751477f36920eb56",
+      "stats": {
+        "fixture": true
+      },
+      "path": "genetic-map/hapmap2-2011-01/genetic-map.parquet"
     },
     {
       "schema": 1,
@@ -108,6 +291,7 @@
       "title": "GWAS Catalog associations",
       "description": "Published genome-wide associations between variants and traits. Population-level associations, not statements about any individual. Lifted from GRCh38 to GRCh37 at build time.",
       "build": "GRCh37",
+      "role": "association",
       "scientificDomain": "statistical-genetics",
       "evidenceKind": "statistical-association",
       "trackKind": "variant",
@@ -123,7 +307,7 @@
       "version": "2026-09-15",
       "sourceDate": "2026-09-15",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T17:16:14+00:00",
+      "builtAt": "2026-09-19T21:06:59+00:00",
       "file": "gwas-catalog.parquet",
       "rows": 243,
       "columns": [
@@ -153,15 +337,89 @@
       "size": 27006,
       "sha256": "4c61bbc4a56d77b5d0ae93d29624fea9e3027c20324f084d92a70942b86ce5fa",
       "stats": {
-        "fixture": true,
-        "sourceRows": 1192604,
-        "associations": 981291,
-        "dropped": {
-          "multiOrNoPosition": 210297,
-          "liftoverFailed": 1016
-        }
+        "fixture": true
       },
       "path": "gwas-catalog/2026-09-15/gwas-catalog.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "haplotree-mt",
+      "title": "mtDNA haplogroup tree (PhyloTree 17)",
+      "description": "The human mitochondrial phylogeny: which mutations define each maternal-line haplogroup, relative to the rCRS reference. Used to find the haplogroup that best matches the mitochondrial calls on a chip.",
+      "build": "GRCh37",
+      "role": "haplotree-mt",
+      "scientificDomain": "population-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": null,
+      "core": false,
+      "licence": "PhyloTree Build 17 (van Oven 2016), packaged by HaploGrep under MIT",
+      "licenceClass": "open",
+      "source": {
+        "name": "PhyloTree Build 17 rCRS, HaploGrep tree release 17.3",
+        "short": "PhyloTree 17",
+        "url": "https://github.com/genepi/phylotree-rcrs-17/releases/download/17.3/phylotree-rcrs-17.3.zip"
+      },
+      "citation": "van Oven M. PhyloTree Build 17: Growing the human mitochondrial DNA tree. Forensic Sci Int Genet Suppl Ser 2015;5:e392\u2013e394; Sch\u00f6nherr S et al. Haplogrep 3. Nucleic Acids Res. 2023",
+      "version": "17.3",
+      "sourceDate": "2016-02-18",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T21:06:59+00:00",
+      "file": "haplotree-mt.parquet",
+      "rows": 5435,
+      "columns": [
+        "name",
+        "parent",
+        "depth",
+        "element",
+        "element"
+      ],
+      "size": 85175,
+      "sha256": "3e8551a8b099be61fea36c1eb6af7bfb7d9910382d61ab35592846152654eb3c",
+      "stats": {
+        "fixture": true
+      },
+      "path": "haplotree-mt/17.3/haplotree-mt.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "haplotree-y",
+      "title": "Y-DNA haplogroup tree (YFull YTree)",
+      "description": "The human Y-chromosome phylogeny: which SNPs define each paternal-line haplogroup, placed on GRCh37 and cut down to SNPs consumer chips probe. Used to find the deepest haplogroup the chip's Y calls support.",
+      "build": "GRCh37",
+      "role": "haplotree-y",
+      "scientificDomain": "population-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": null,
+      "core": false,
+      "licence": "Tree: CC BY 4.0 (YFull). SNP positions: YBrowse, terms not stated \u2014 licence unverified",
+      "licenceClass": "unverified",
+      "source": {
+        "name": "YFull YTree (current) with SNP positions from YBrowse snps_hg19",
+        "short": "YFull YTree",
+        "url": "https://github.com/YFullTeam/YTree"
+      },
+      "citation": "YFull YTree, https://www.yfull.com/tree/ (CC BY 4.0); SNP coordinates: YBrowse, Thomas Krahn, http://ybrowse.org",
+      "version": "14.05.0",
+      "sourceDate": "2026-09-19",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-19T21:06:59+00:00",
+      "file": "haplotree-y.parquet",
+      "rows": 69292,
+      "columns": [
+        "name",
+        "parent",
+        "depth",
+        "element",
+        "element",
+        "element",
+        "element"
+      ],
+      "size": 578051,
+      "sha256": "52a338053d3d446b57c9cdbb726ceae5085355fe2d78140a5295459dc5f93d01",
+      "stats": {
+        "fixture": true
+      },
+      "path": "haplotree-y/14.05.0/haplotree-y.parquet"
     },
     {
       "schema": 1,
@@ -169,6 +427,7 @@
       "title": "GRCh37 reference alleles at chip loci",
       "description": "The GRCh37 base at every known consumer-chip position. The normalizer checks each call against it to catch strand flips. Core reference data: it ships with the app.",
       "build": "GRCh37",
+      "role": "reference",
       "scientificDomain": "molecular-genetics",
       "evidenceKind": "documentary",
       "trackKind": null,
@@ -184,7 +443,7 @@
       "version": "2026-09-19",
       "sourceDate": null,
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T17:16:14+00:00",
+      "builtAt": "2026-09-19T21:06:59+00:00",
       "file": "reference-grch37.parquet",
       "rows": 5000,
       "columns": [
@@ -195,9 +454,7 @@
       "size": 21342,
       "sha256": "b34817d89424ad751478d91736d8381ede8d449d9da41bb55172ebee970c3582",
       "stats": {
-        "fixture": true,
-        "loci": 1473434,
-        "nonACGTDropped": 1
+        "fixture": true
       },
       "path": "reference-grch37/2026-09-19/reference-grch37.parquet"
     }

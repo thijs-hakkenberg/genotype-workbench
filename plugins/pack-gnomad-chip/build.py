@@ -43,11 +43,13 @@ def build(ctx):
         targets.write_text("".join(f"{chrom}\t{p}\n" for p in pos))
         print(f"  gnomAD chr{chrom}: streaming for {len(pos)} loci", file=sys.stderr)
         part = out.with_suffix(".part")
+        view = subprocess.Popen(["bcftools", "view", "-T", str(targets), "-f", "PASS", "-Ou", BASE.format(chrom=chrom)],
+                                stdout=subprocess.PIPE, cwd=work)
+        norm = subprocess.Popen(["bcftools", "norm", "-m", "-any", "-Ou"], stdin=view.stdout, stdout=subprocess.PIPE)
         with open(part, "w") as f:
-            subprocess.run(
-                ["bcftools", "query", "-T", str(targets), "-i", 'FILTER="PASS"', "-f", fmt, BASE.format(chrom=chrom)],
-                stdout=f, check=True, cwd=work,
-            )
+            query = subprocess.run(["bcftools", "query", "-f", fmt], stdin=norm.stdout, stdout=f)
+        if view.wait() or norm.wait() or query.returncode:
+            raise RuntimeError(f"bcftools failed on chr{chrom}")
         part.rename(out)
         print(f"  gnomAD chr{chrom}: done", file=sys.stderr)
 

@@ -26,12 +26,12 @@
   let callCount = $state<number | null>(null);
 
   const PACK_SLOTS = [
-    { id: 'genes-ensembl75', title: 'Gene models', kind: 'documentary' as const },
-    { id: 'clinvar', title: 'ClinVar', kind: 'curated-classification' as const },
-    { id: 'gwas-catalog', title: 'GWAS Catalog', kind: 'statistical-association' as const },
-    { id: 'gnomad-chip', title: 'gnomAD frequency', kind: 'probabilistic-estimate' as const },
+    { role: 'genes', title: 'Gene models', kind: 'documentary' as const },
+    { role: 'classification', title: 'ClinVar', kind: 'curated-classification' as const },
+    { role: 'association', title: 'GWAS Catalog', kind: 'statistical-association' as const },
+    { role: 'frequency', title: 'Population frequency', kind: 'population-frequency' as const },
   ];
-  const missing = $derived(PACK_SLOTS.filter((s) => !app.installed.some((p) => p.manifest.id === s.id)));
+  const missing = $derived(PACK_SLOTS.filter((s) => !app.installed.some((p) => p.manifest.role === s.role)));
 
   function tracks(): TrackSource[] {
     const { store, library } = svc();
@@ -153,7 +153,7 @@
     <div style="min-width:0;padding:0 var(--space-8) var(--space-8);overflow:auto">
       <div class="panel" style="padding:0;overflow:hidden">
         <div bind:this={host}></div>
-        {#each missing as m (m.id)}
+        {#each missing as m (m.role)}
           <div class="missing">
             <div class="label">
               <span style={markSwatch(m.kind) + ';opacity:.5'}></span>
@@ -173,6 +173,7 @@
           <span><span class="mk-ambig"></span>Strand-ambiguous</span>
           <span><span class="mk-classification" style="width:10px;height:10px"></span>Classification</span>
           <span><span class="mk-association" style="width:12px;height:12px"></span>Association</span>
+          <span><span class="mk-frequency" style="width:8px;height:10px"></span>Population frequency</span>
           <span><span class="mk-estimate" style="margin:0"></span>Estimated bounds</span>
           <span style="margin-left:auto">view-tracks 0.1 · Arrow from DuckDB · drag to pan, scroll to zoom</span>
         </div>

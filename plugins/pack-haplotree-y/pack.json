@@ -1,0 +1,19 @@
+{
+  "id": "haplotree-y",
+  "title": "Y-DNA haplogroup tree (YFull YTree)",
+  "description": "The human Y-chromosome phylogeny: which SNPs define each paternal-line haplogroup, placed on GRCh37 and cut down to SNPs consumer chips probe. Used to find the deepest haplogroup the chip's Y calls support.",
+  "build": "GRCh37",
+  "role": "haplotree-y",
+  "scientificDomain": "population-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": null,
+  "core": false,
+  "licence": "Tree: CC BY 4.0 (YFull). SNP positions: YBrowse, terms not stated — licence unverified",
+  "licenceClass": "unverified",
+  "source": {
+    "name": "YFull YTree (current) with SNP positions from YBrowse snps_hg19",
+    "short": "YFull YTree",
+    "url": "https://github.com/YFullTeam/YTree"
+  },
+  "citation": "YFull YTree, https://www.yfull.com/tree/ (CC BY 4.0); SNP coordinates: YBrowse, Thomas Krahn, http://ybrowse.org"
+}

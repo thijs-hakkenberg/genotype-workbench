@@ -17,8 +17,23 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 - **Import.** A 23andMe raw data file (chips v3–v5, build 37) is read and normalized in a Web Worker by the Rust `locus` normalizer compiled to WASM, in about 1–2 s for a 640k-row v5 file. Every call is checked against the GRCh37 reference base. Strand-ambiguous (A/T, C/G) calls are flagged, no-calls are kept, and duplicate probes are merged. A custody record (data subject, custodian, consent basis) is required before the kit is stored.
 - **Storage.** Each kit is a Parquet file in the browser's Origin Private File System, queried with DuckDB-WASM. Kits and packs survive reloads.
 - **Overview.** Call statistics, reference consistency, probe coverage per chromosome, custody, and your calls per ClinVar classification.
-- **Genome view.** A canvas track view (`plugins/view-tracks`) draws each track in its evidence kind's form: measured calls, documentary gene models, curated ClinVar classifications, GWAS associations, and gnomAD estimates. You can pan, zoom, click to select, and search by region, rsID or gene. Wide windows switch to binned density.
-- **Packs.** Five packs are available: reference GRCh37 (core), Ensembl 75 genes, ClinVar, GWAS Catalog (lifted to GRCh37), and gnomAD at chip loci. They are built by `tools/packkit` (Python + DuckDB, normalized through the same Rust code via `locus-py`) and listed in an Ed25519-signed index. The app downloads each pack whole after a network grant, checks its SHA-256, and joins it locally.
+- **Genome view.** A canvas track view (`plugins/view-tracks`) draws each track in its evidence kind's form: measured calls, documentary gene models, curated ClinVar classifications, GWAS associations, and population frequencies. You can pan, zoom, click to select, and search by region, rsID (including retired rsIDs) or gene. Wide windows switch to binned density. The selected-position panel lists every source strongest evidence first, with ClinVar conditions explained through Mondo.
+- **Lineages.** Maternal-line (mtDNA, PhyloTree 17) and paternal-line (Y, YFull YTree) haplogroups, matched on this device and shown with the markers that support them.
+- **Packs.** Packs are built by `tools/packkit` (Python + DuckDB, normalized through the same Rust code via `locus-py`) and listed in an Ed25519-signed index. The app downloads each pack whole after a network grant, checks its SHA-256, and joins it locally. Before downloading, it checks that the site's storage quota can hold the pack.
+
+| Pack | Role | Evidence kind | Licence |
+| --- | --- | --- | --- |
+| GRCh37 reference at chip loci (core) | reference | documentary | Public domain |
+| GENCODE 50 genes, lifted to GRCh37 | genes | documentary | Open access |
+| ClinVar | classification | curated classification | CC0 |
+| GWAS Catalog (lifted to GRCh37) | association | statistical association | CC0 |
+| 1000 Genomes phase 3 frequencies | frequency | population frequency | Open |
+| gnomAD v2.1.1 frequencies (on demand) | frequency | population frequency | CC0 |
+| Mondo condition names | conditions | documentary | CC BY 4.0 |
+| dbSNP rsID merges | rsid-merges | documentary | Public domain |
+| HapMap II genetic map | genetic-map | estimate | Public |
+| PhyloTree 17 mtDNA tree | haplotree-mt | documentary | MIT packaging |
+| YFull YTree + YBrowse positions | haplotree-y | documentary | CC BY 4.0 + unverified |
 
 Information, not diagnosis: the app shows what sources say, with citations. It computes no risk score.
 
@@ -35,7 +50,7 @@ pnpm dev                    # builds the WASM + DuckDB extensions, serves the ap
 
 Open the printed URL, import your raw data file, then install packs from **Packs**.
 
-The gnomAD pack streams about 460 GB of gnomAD v2.1.1 VCFs and keeps only chip loci. It takes hours; run it on purpose with `pnpm packs:build --only gnomad-chip`. The build resumes per chromosome, and `GW_GNOMAD_JOBS` sets the number of parallel streams.
+The gnomAD pack streams about 460 GB of gnomAD v2.1.1 VCFs and keeps only chip loci. It writes only the filtered result (tens of MB), not the source, so the 460 GB is download traffic, not disk space. It takes hours; run it on purpose with `pnpm packs:build --only gnomad-chip`. The build resumes per chromosome, and `GW_GNOMAD_JOBS` sets the number of parallel streams. 1000 Genomes (a 1.5 GB stream) is the default frequency pack.
 
 ## Commands
 
@@ -79,7 +94,7 @@ fixtures/                 synthetic kits and fixture packs; never real data
 - **Genome view.** A custom canvas track view replaces igv.js for now, because igv.js cannot draw the evidence-kind encodings (ADR-0004 note).
 - **Plugin sandboxing.** Sandboxed iframes are deferred until third-party plugins exist. First-party logic runs in workers (ADR-0006 note).
 - **Metadata storage.** Kit, pack and grant metadata are small JSON files in OPFS. Calls and packs are Parquet.
-- **gnomAD evidence kind.** gnomAD frequencies are drawn as `probabilistic-estimate`, a point with a Wilson 95% interval, since the five evidence kinds have no "population frequency".
+- **Six evidence kinds.** `population-frequency` was added (ADR-0011): a frequency is a fact about a sampled population, not an estimate about you, so it no longer shares the estimate's form.
 
 ## Licence
 

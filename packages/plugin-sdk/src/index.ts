@@ -13,6 +13,7 @@ export type EvidenceKind =
   | 'statistical-association'
   | 'curated-classification'
   | 'probabilistic-estimate'
+  | 'population-frequency'
   | 'documentary';
 
 export const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; short: string; meaning: string }> = {
@@ -35,6 +36,12 @@ export const EVIDENCE_KINDS: Record<EvidenceKind, { label: string; short: string
     label: 'Estimate',
     short: 'estimate',
     meaning: 'A sampled or inferred value with bounds that are not exactly known.',
+  },
+  'population-frequency': {
+    label: 'Population frequency',
+    short: 'frequency',
+    meaning:
+      'How common an allele is in a sampled reference population. A fact about that population, not a measurement or an estimate about you.',
   },
   documentary: {
     label: 'Documentary',
@@ -100,6 +107,19 @@ export interface FormatProfile {
   chipVersions: { id: string; minRows: number; maxRows: number; label: string }[];
 }
 
+/** What a pack is for; the Annotation Library finds packs by role, not by id. */
+export type PackRole =
+  | 'reference'
+  | 'genes'
+  | 'classification'
+  | 'association'
+  | 'frequency'
+  | 'rsid-merges'
+  | 'genetic-map'
+  | 'conditions'
+  | 'haplotree-mt'
+  | 'haplotree-y';
+
 /** An annotation pack as listed in the signed Pack Index (ADR-0007). */
 export interface PackManifest {
   schema: number;
@@ -107,13 +127,16 @@ export interface PackManifest {
   title: string;
   description: string;
   build: Build;
+  role: PackRole;
   scientificDomain: ScientificDomain;
   evidenceKind: EvidenceKind;
   trackKind: TrackKind | null;
   /** Core reference data the app installs without asking (same origin). */
   core: boolean;
   licence: string;
-  licenceClass: 'open' | 'share-alike' | 'non-commercial';
+  licenceClass: 'open' | 'share-alike' | 'non-commercial' | 'unverified';
+  /** Frequency packs: the population groups their `af_*` columns hold, in display order. */
+  frequencyGroups?: { key: string; label: string }[];
   source: { name: string; short: string; url: string };
   citation: string;
   version: string;

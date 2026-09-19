@@ -5,7 +5,6 @@ SNVs can ever join. Everything else is counted in the manifest stats.
 """
 
 import gzip
-import re
 from datetime import date
 
 import pyarrow as pa
@@ -35,7 +34,7 @@ def build(ctx):
     file_date = None
     cols = {k: [] for k in (
         "chrom", "pos", "ref", "alt", "variation_id", "allele_id", "rsid", "classification",
-        "review_status", "stars", "conditions", "genes", "consequence", "origin",
+        "review_status", "stars", "conditions", "condition_mondo", "genes", "consequence", "origin",
     )}
     skipped = {"notSnv": 0, "noAlt": 0, "unknownChrom": 0}
     with gzip.open(vcf, "rt") as f:
@@ -74,7 +73,19 @@ def build(ctx):
             cols["classification"].append(_text(i.get("CLNSIG")) or "not provided")
             cols["review_status"].append(_text(review))
             cols["stars"].append(STARS.get(review, 0))
-            cols["conditions"].append([_text(c) for c in re.split(r"[|,]", i.get("CLNDN", "")) if c and c != "not_provided"])
+            # CLNDN separates conditions with '|'; a comma belongs to a name
+            # ("..._1,_susceptibility_to"). CLNDISDB is aligned with CLNDN.
+            names = i.get("CLNDN", "").split("|") if i.get("CLNDN") else []
+            dbs = i.get("CLNDISDB", "").split("|") if i.get("CLNDISDB") else []
+            conds, mondo = [], []
+            for n, name in enumerate(names):
+                if not name or name in ("not_provided", "not_specified"):
+                    continue
+                ids = dbs[n].split(",") if n < len(dbs) else []
+                conds.append(_text(name))
+                mondo.append(next((x.split(":", 1)[1] for x in ids if x.startswith("MONDO:")), None))
+            cols["conditions"].append(conds)
+            cols["condition_mondo"].append(mondo)
             cols["genes"].append(genes)
             cols["consequence"].append([_text(c) for c in consequence])
             cols["origin"].append(i.get("ORIGIN"))
@@ -92,6 +103,7 @@ def build(ctx):
             "review_status": pa.array(cols["review_status"], pa.string()),
             "stars": pa.array(cols["stars"], pa.int8()),
             "conditions": pa.array(cols["conditions"], pa.list_(pa.string())),
+            "condition_mondo": pa.array(cols["condition_mondo"], pa.list_(pa.string())),
             "genes": pa.array(cols["genes"], pa.list_(pa.string())),
             "consequence": pa.array(cols["consequence"], pa.list_(pa.string())),
             "origin": pa.array(cols["origin"], pa.string()),

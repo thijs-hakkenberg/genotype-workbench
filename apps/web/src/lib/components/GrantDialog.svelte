@@ -18,7 +18,10 @@
       <div class="kv" style="margin-bottom:var(--space-4)">
         <div><span>Host</span><span class="num">{request.host}</span></div>
         <div><span>Purpose</span><span>{request.purpose}</span></div>
-        {#if request.bytes}<div><span>Size</span><span class="num">{fmtBytes(request.bytes)}</span></div>{/if}
+        {#if request.bytes}
+          <div><span>Size</span><span class="num">{fmtBytes(request.bytes)}</span></div>
+          {#if app.estimate}<div><span>Storage left for this site</span><span class="num">{fmtBytes(Math.max(0, app.estimate.quota - app.estimate.usage))}</span></div>{/if}
+        {/if}
         <div><span>Sends</span><span>Nothing about you: the whole pack is downloaded, so which variants you carry is never sent</span></div>
         <div><span>Kits read</span><span>{kits.length ? 'None — joins happen on this device' : 'None'}</span></div>
       </div>

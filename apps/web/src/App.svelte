@@ -12,6 +12,7 @@
   import Packs from './routes/Packs.svelte';
   import Plugins from './routes/Plugins.svelte';
   import Clinvar from './routes/Clinvar.svelte';
+  import Lineages from './routes/Lineages.svelte';
 
   onMount(boot);
 </script>
@@ -48,6 +49,8 @@
         <Plugins />
       {:else if route.page === 'clinvar'}
         <Clinvar />
+      {:else if route.page === 'lineages'}
+        <Lineages />
       {:else}
         <Overview />
       {/if}

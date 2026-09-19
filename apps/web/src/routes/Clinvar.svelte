@@ -1,15 +1,16 @@
 <script lang="ts">
   import { viewName } from '@gw/genotype-store';
-  import type { ClinvarRow } from '@gw/annotation-library';
+  import type { ClinvarForKitRow } from '@gw/annotation-library';
   import { activeKit, app, svc } from '../lib/services.svelte';
   import { route, go } from '../lib/router.svelte';
-  import { fmtInt } from '../lib/format';
+  import { fmtInt, fmtP } from '../lib/format';
 
-  type Row = ClinvarRow & { a1: string; a2: string | null; strand_ambiguous: boolean };
+  type Row = ClinvarForKitRow;
   const kit = $derived(activeKit());
   const cls = $derived(route.params.get('class'));
   let rows = $state<Row[] | null>(null);
-  const hasClinvar = $derived(app.installed.some((p) => p.manifest.id === 'clinvar'));
+  const hasClinvar = $derived(app.installed.some((p) => p.manifest.role === 'classification'));
+  const hasGwas = $derived(app.installed.some((p) => p.manifest.role === 'association'));
 
   $effect(() => {
     const k = kit;
@@ -31,6 +32,10 @@
         judgement on a date; it is revised over time. This is what the source says, not a diagnosis, and many records
         concern conditions that need two copies or other factors.
       </div>
+      <div class="sub" style="max-width:720px;margin-top:var(--space-2)">
+        Ordered by strength of evidence: ClinVar review status first{hasGwas ? ', then the strongest GWAS Catalog association at the same position' : ''}.
+        Neither is a probability that applies to you.
+      </div>
     </div>
     <div class="actions"><a class="btn btn-secondary" href="#/overview">Back to overview</a></div>
   </div>
@@ -43,7 +48,7 @@
       <p class="muted">No records.</p>
     {:else}
       <table class="table">
-        <thead><tr><th>Position</th><th>rsID</th><th>Allele</th><th>Your call</th><th>Classification</th><th>Review</th><th>Condition</th></tr></thead>
+        <thead><tr><th>Position</th><th>rsID</th><th>Allele</th><th>Your call</th><th>Classification</th><th>Review</th>{#if hasGwas}<th>Strongest GWAS association</th>{/if}<th>Condition</th></tr></thead>
         <tbody>
           {#each rows as r (r.variation_id + r.alt)}
             <tr onclick={() => go(`genome/${r.chrom}:${r.pos - 10000}-${r.pos + 10000}?sel=${r.chrom}:${r.pos}`)}>
@@ -53,12 +58,17 @@
               <td class="mono-allele">{r.a1}{r.a2 ? `/${r.a2}` : ''} <span class="faint" style="font-size:11px;letter-spacing:0">{copies(r) === 2 ? 'both copies' : 'one copy'}{r.strand_ambiguous ? ' · ambiguous strand' : ''}</span></td>
               <td>{r.classification}</td>
               <td class="faint" title={r.review_status ?? ''}>{stars(r.stars)}</td>
+              {#if hasGwas}
+                <td style="font-size:12px">
+                  {#if r.best_p_mlog != null}<span class="num">p = {fmtP(null, r.best_p_mlog)}</span><br /><span class="faint">{r.best_trait}</span>{:else}<span class="faint">—</span>{/if}
+                </td>
+              {/if}
               <td style="font-size:12px">{r.conditions.slice(0, 2).join('; ') || '—'}</td>
             </tr>
           {/each}
         </tbody>
       </table>
-      {#if rows.length >= 1000}<p class="faint" style="font-size:11px">Showing the first 1,000, ordered by review status.</p>{/if}
+      {#if rows.length >= 1000}<p class="faint" style="font-size:11px">Showing the first 1,000, strongest evidence first.</p>{/if}
     {/if}
   </div>
 </div>

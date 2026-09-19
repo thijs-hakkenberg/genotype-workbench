@@ -1,8 +1,8 @@
 <script lang="ts">
   import { ImportRefused, type ConsentBasis, type PreparedImport } from '@gw/genotype-store';
-  import { app, setActiveKit, svc, refreshEstimate } from '../lib/services.svelte';
+  import { app, setActiveKit, svc, refreshEstimate, spaceFor } from '../lib/services.svelte';
   import { go } from '../lib/router.svelte';
-  import { fmtInt, fmtPct } from '../lib/format';
+  import { fmtBytes, fmtInt, fmtPct } from '../lib/format';
 
   type Phase = 'pick' | 'reading' | 'review' | 'saving';
   let phase = $state<Phase>('pick');
@@ -31,6 +31,12 @@
 
   async function read(file: File) {
     error = '';
+    // A stored kit is Parquet, about a third of the text file; the check is generous.
+    const space = await spaceFor(file.size);
+    if (!space.ok) {
+      error = `Not enough storage to keep this kit: about ${fmtBytes(space.needed)} is needed and this site has ${fmtBytes(space.available)} left. Remove a pack or kit, or free disk space.`;
+      return;
+    }
     fileName = file.name;
     rowsRead = 0;
     rowsExpected = Math.max(1, file.size / 22);

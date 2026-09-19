@@ -12,7 +12,7 @@
   let bins = $state<DensityBin[]>([]);
   let overlap = $state<CallOverlap[]>([]);
   const annotationPacks = $derived(app.installed.filter((p) => !p.manifest.core));
-  const hasClinvar = $derived(app.installed.some((p) => p.manifest.id === 'clinvar'));
+  const hasClinvar = $derived(app.installed.some((p) => p.manifest.role === 'classification'));
 
   $effect(() => {
     const k = kit;

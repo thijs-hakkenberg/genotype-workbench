@@ -198,6 +198,34 @@ The core is local-first, so Elixir's strengths (long-lived concurrent connection
 
 Twenty-two integrations fit into five plugin shapes; only two of them ever need the network. Licences decide more than technology here: share-alike and non-commercial sources must ship as separate packs so they never bind the core's licence.
 
+### Iteration 2 update (2026-09-19)
+
+Licences below marked **verified** were checked against the source on 2026-09-19. The others are as recorded earlier.
+
+**Built as packs**
+
+| Source | Role / evidence kind | Licence | Status |
+| --- | --- | --- | --- |
+| 1000 Genomes phase 3 frequencies, chip loci | frequency / population-frequency | Open, no restrictions (IGSR) | Built; replaces gnomAD as the default frequency pack |
+| gnomAD v2.1.1 genomes, chip loci | frequency / population-frequency | CC0, attribution requested | Builder streams about 460 GB of VCF; run on demand |
+| dbSNP rsID merge history (refsnp-merged) | rsid-merges / documentary | Public domain (NCBI) | Built; used for lookup only |
+| HapMap II genetic map, GRCh37 | genetic-map / probabilistic-estimate | Public (HapMap) | Built; cM at every chip locus, for Kinship in v0.3 |
+| GENCODE 50 lift37 basic | genes / documentary | Open access (EMBL-EBI terms; GENCODE "open access", **verified**) | Built; replaces Ensembl 75 |
+| Mondo Disease Ontology | conditions / documentary | CC BY 4.0 | Built; names, definitions, links to Orphanet/OMIM/MedGen for ClinVar conditions |
+| PhyloTree 17 (HaploGrep rCRS 17.3) | haplotree-mt / documentary | Tree packaging MIT (**verified**) | Built; mtDNA haplogroups |
+| YFull YTree + YBrowse positions | haplotree-y / documentary | YTree CC BY 4.0 (**verified**); YBrowse terms not stated | Built, marked "licence unverified" |
+
+**Checked and not used first-party**
+
+| Source | Finding (2026-09-19) |
+| --- | --- |
+| Orphanet nomenclature and prevalence (orphadata "products") | The Orphadata legal notice puts CC BY 4.0 on Orphadata Science (ORDO, HOOM, the Scientific Knowledge Base). Product files need a data transfer agreement (**verified**). Orphanet is reached through Mondo cross-references instead. |
+| FamilyTreeDNA Mitotree | Free for academic, medical and other non-commercial use only (HaploGrep tree listing, **verified**). Third-party pack at most. |
+
+**Later (unchanged):** 1000 Genomes + HGDP reference panels (ancestry composition), UniProt + AlphaFold DB (Mol* view), AlphaMissense (would add a `computational-prediction` evidence kind), Open Archives and FamilySearch places (Pedigree connectors, network grants).
+
+**Keep out or third-party only (unchanged):** OMIM (licence), CADD/REVEL/dbNSFP (non-commercial terms), PGS Catalog (personal risk scores, principle 5), CPIC/PharmVar/PharmCAT (until the IVDR question is answered).
+
 ### Genotype sources (importers, anticorruption layer)
 
 | Source | Shape | Status and constraints | Ships |

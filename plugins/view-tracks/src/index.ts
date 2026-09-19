@@ -370,6 +370,8 @@ export function markSwatch(kind: keyof typeof EVIDENCE_KINDS): string {
       return base + 'border-radius:50%;background:radial-gradient(circle,var(--color-accent-300) 0 22%,color-mix(in srgb,var(--color-accent-500) 35%,transparent) 30%,transparent 72%)';
     case 'probabilistic-estimate':
       return base + 'background:linear-gradient(to right,transparent,var(--color-accent-500),transparent)';
+    case 'population-frequency':
+      return base + 'box-shadow:inset 0 0 0 1px var(--color-neutral-500);background:linear-gradient(to top,color-mix(in srgb,var(--color-accent-500) 70%,transparent) 45%,transparent 45%)';
     case 'documentary':
       return base + 'background:repeating-linear-gradient(to bottom,var(--color-neutral-400) 0 1.5px,transparent 1.5px 4px)';
   }

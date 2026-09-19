@@ -1,0 +1,9 @@
+{
+  "id": "analysis-haplogroups",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": ["analysis"],
+  "title": "Haplogroups",
+  "description": "Finds the maternal-line (mtDNA, PhyloTree 17) and paternal-line (Y, YFull YTree) haplogroups that best match one kit's mitochondrial and Y calls. Reads one kit, only with a consent basis; no network.",
+  "firstParty": true
+}

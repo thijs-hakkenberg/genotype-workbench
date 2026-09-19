@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
+    "@gw/analysis-haplogroups": "workspace:*",
     "@gw/annotation-library": "workspace:*",
     "@gw/genotype-store": "workspace:*",
     "@gw/plugin-host": "workspace:*",

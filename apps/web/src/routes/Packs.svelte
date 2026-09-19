@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { DOMAIN_LABELS, EVIDENCE_KINDS, type PackManifest } from '@gw/plugin-sdk';
   import { NetworkNotGranted } from '@gw/plugin-host';
-  import { app, refreshIndex, refreshEstimate, svc } from '../lib/services.svelte';
+  import { app, refreshIndex, refreshEstimate, spaceFor, svc } from '../lib/services.svelte';
   import { fmtBytes, fmtDate, fmtInt } from '../lib/format';
 
+  onMount(() => void refreshEstimate());
   let busy = $state<Record<string, number>>({});
   let errors = $state<Record<string, string>>({});
 
@@ -14,8 +16,17 @@
     ...app.installed.map((p) => p.manifest).filter((m) => !available.some((a) => a.id === m.id)),
   ]);
 
+  // Space left in this site's storage quota; packs that would not fit cannot be installed.
+  const spaceLeft = $derived(app.estimate ? Math.max(0, app.estimate.quota - app.estimate.usage) : null);
+  const fits = (m: PackManifest) => spaceLeft == null || spaceLeft >= Math.round(m.size * 1.15) + 20_000_000;
+
   async function install(m: PackManifest) {
     errors[m.id] = '';
+    const space = await spaceFor(m.size);
+    if (!space.ok) {
+      errors[m.id] = `Not enough storage: this pack needs about ${fmtBytes(space.needed)}, and this site has ${fmtBytes(space.available)} left. Remove a pack or kit, or free disk space, then try again.`;
+      return;
+    }
     busy[m.id] = 0;
     try {
       await svc().library.install(m, (done, total) => (busy[m.id] = done / total));
@@ -32,7 +43,14 @@
     void refreshEstimate();
   }
 
-  const mark = { measured: 'mk-measured', 'curated-classification': 'mk-classification', 'statistical-association': 'mk-association', 'probabilistic-estimate': 'mk-estimate', documentary: 'mk-documentary' } as const;
+  const mark = {
+    measured: 'mk-measured',
+    'curated-classification': 'mk-classification',
+    'statistical-association': 'mk-association',
+    'probabilistic-estimate': 'mk-estimate',
+    'population-frequency': 'mk-frequency',
+    documentary: 'mk-documentary',
+  } as const;
 </script>
 
 <div class="page">
@@ -56,7 +74,10 @@
     </div>
   {/if}
   {#if app.index}
-    <p class="faint num" style="font-size:11px;margin:0 0 var(--space-3)">Index signed (Ed25519, verified) · generated {fmtDate(app.index.generatedAt)}</p>
+    <p class="faint num" style="font-size:11px;margin:0 0 var(--space-3)">
+      Index signed (Ed25519, verified) · generated {fmtDate(app.index.generatedAt)}
+      {#if spaceLeft != null} · {fmtBytes(spaceLeft)} of storage left for this site{/if}
+    </p>
   {/if}
 
   <div style="display:flex;flex-direction:column;gap:var(--space-3)">
@@ -71,6 +92,7 @@
               <h4 style="margin:0">{m.title}</h4>
               <span class="faint num" style="font-size:12px">{m.id} {m.version}</span>
               {#if m.core}<span class="tag tag-neutral">core · ships with the app</span>{/if}
+              {#if m.licenceClass === 'unverified'}<span class="tag tag-outline" title="Part of this pack's data comes from a source whose terms are not stated">licence unverified</span>{/if}
             </div>
             <p class="muted" style="font-size:13px;margin:var(--space-2) 0">{m.description}</p>
             <div class="faint num" style="font-size:12px;line-height:1.6">
@@ -78,6 +100,12 @@
               <br />Source: <a href={m.source.url} rel="noreferrer noopener" target="_blank">{m.source.name}</a>{m.sourceDate ? ` (${fmtDate(m.sourceDate)})` : ''} · {m.citation}
             </div>
             {#if errors[m.id]}<div class="error-box" style="margin-top:var(--space-3)">{errors[m.id]}</div>{/if}
+            {#if !inst && !m.core && !fits(m)}
+              <div class="error-box" style="margin-top:var(--space-3)">
+                Not enough storage: this pack needs about {fmtBytes(Math.round(m.size * 1.15) + 20_000_000)}, and this site has {fmtBytes(spaceLeft ?? 0)} left.
+                Remove a pack or kit, or free disk space. Browsers give each site a share of the free disk.
+              </div>
+            {/if}
             {#if busy[m.id] !== undefined}
               <div class="progress" style="margin-top:var(--space-3)"><span style="width:{(busy[m.id] ?? 0) * 100}%"></span></div>
             {/if}
@@ -91,7 +119,8 @@
               {/if}
               {#if !m.core}<button class="btn btn-ghost" type="button" onclick={() => remove(m.id)}>Remove</button>{/if}
             {:else if !m.core}
-              <button class="btn btn-primary" type="button" disabled={busy[m.id] !== undefined} onclick={() => install(m)}>
+              <button class="btn btn-primary" type="button" disabled={busy[m.id] !== undefined || !fits(m)} onclick={() => install(m)}
+                title={fits(m) ? '' : 'Not enough storage left for this site'}>
                 {busy[m.id] !== undefined ? 'Downloading…' : `Install · ${fmtBytes(m.size)}`}
               </button>
             {/if}

@@ -6,11 +6,22 @@
  * service per variant would reveal which variants a person carries; a whole
  * pack reveals nothing.
  */
-import { BIN_ABOVE_BP, BINS_PER_WINDOW, type Chrom, type PackIndex, type PackManifest, type PluginManifest, type Region, type TrackItem, type TrackSource } from '@gw/plugin-sdk';
+import {
+  BIN_ABOVE_BP,
+  BINS_PER_WINDOW,
+  type Chrom,
+  type PackIndex,
+  type PackManifest,
+  type PackRole,
+  type PluginManifest,
+  type Region,
+  type TrackItem,
+  type TrackSource,
+} from '@gw/plugin-sdk';
 import type { PluginHost } from '@gw/plugin-host';
 import { ident, type StorageAdapter } from '@gw/storage';
-import type { ClinvarRow, GeneRow, GnomadRow, GwasRow } from './rows';
-import { classificationShort } from './rows';
+import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, MergeRow } from './rows';
+import { classificationRank, classificationShort } from './rows';
 import { sha256Hex, verifyIndexSignature } from './verify';
 
 export * from './rows';
@@ -18,6 +29,15 @@ export { sha256Hex, verifyIndexSignature } from './verify';
 export * from './alleles';
 
 const PACKS_JSON = 'meta/packs.json';
+
+/** Roles for packs installed before manifests carried one (iteration 1). */
+const LEGACY_ROLES: Record<string, PackRole> = {
+  'reference-grch37': 'reference',
+  'genes-ensembl75': 'genes',
+  clinvar: 'classification',
+  'gwas-catalog': 'association',
+  'gnomad-chip': 'frequency',
+};
 
 /** The first-party connector that downloads packs from the Pack Index host. */
 export const PACK_INDEX_PLUGIN: PluginManifest = {
@@ -42,12 +62,34 @@ export interface CallOverlap {
   n: number;
 }
 
-export interface Annotations {
-  clinvar: ClinvarRow[];
-  gwas: GwasRow[];
-  gnomad: GnomadRow[];
-  genes: GeneRow[];
+export interface FrequencyAnnotation {
+  pack: PackManifest;
+  /** One row per alternate allele, most common first. */
+  rows: FrequencyRow[];
 }
+
+export interface Annotations {
+  /** Strongest evidence first: review stars, then classification. */
+  clinvar: ClinvarRow[];
+  /** Strongest association first: smallest p-value. */
+  gwas: GwasRow[];
+  frequencies: FrequencyAnnotation[];
+  genes: GeneRow[];
+  /** Mondo records for the conditions ClinVar names here, by Mondo id. */
+  conditions: Record<string, ConditionRow>;
+  /** rsID merges touching this position's rsIDs. */
+  merges: MergeRow[];
+  /** Position on the genetic map (cM), interpolated, or null. */
+  geneticMap: { cm: number; rate: number | null; pack: PackManifest } | null;
+}
+
+export type ClinvarForKitRow = ClinvarRow & {
+  a1: string;
+  a2: string | null;
+  strand_ambiguous: boolean;
+  best_p_mlog: number | null;
+  best_trait: string | null;
+};
 
 export class PackIntegrityError extends Error {}
 
@@ -67,7 +109,11 @@ export class AnnotationLibrary {
   async init(): Promise<void> {
     this.host.register(PACK_INDEX_PLUGIN);
     this.installed = (await this.storage.readJson<InstalledPack[]>(PACKS_JSON)) ?? [];
-    for (const p of this.installed) await this.storage.attachParquet(p.file, packView(p.manifest.id));
+    for (const p of this.installed) {
+      p.manifest.role ??= LEGACY_ROLES[p.manifest.id]!;
+      if (p.manifest.id === 'gnomad-chip') p.manifest.evidenceKind = 'population-frequency';
+      await this.storage.attachParquet(p.file, packView(p.manifest.id));
+    }
   }
 
   onChange(fn: () => void): () => void {
@@ -181,59 +227,128 @@ export class AnnotationLibrary {
 
   /** The reference-grch37 columns the normalizer needs, as typed arrays. */
   async referenceColumns(): Promise<{ columns: { chrom: Uint8Array; pos: Uint32Array; base: Uint8Array }; pack: string } | null> {
-    const ref = this.get('reference-grch37');
+    const ref = this.installed.find((p) => p.manifest.role === 'reference');
     if (!ref) return null;
     const t = await this.storage.queryArrow(
       `SELECT CAST(chrom AS UTINYINT) AS chrom, CAST(pos AS UINTEGER) AS pos, CAST(ascii(ref) AS UTINYINT) AS base
-       FROM ${ident(packView('reference-grch37'))}`,
+       FROM ${ident(packView(ref.manifest.id))}`,
     );
     const col = <T>(name: string) => t.getChild(name)!.toArray() as T;
     return {
       columns: { chrom: col<Uint8Array>('chrom'), pos: col<Uint32Array>('pos'), base: col<Uint8Array>('base') },
-      pack: `reference-grch37@${ref.manifest.version}`,
+      pack: `${ref.manifest.id}@${ref.manifest.version}`,
     };
   }
 
-  /** Everything installed packs say about one position. */
-  async annotationsAt(chrom: Chrom, pos: number): Promise<Annotations> {
-    const at = <T>(id: string, cols: string) =>
-      this.has(id)
-        ? this.storage.query<T & Record<string, unknown>>(
-            `SELECT ${cols} FROM ${ident(packView(id))} WHERE chrom = ? AND pos = ?`, [chrom, pos])
-        : Promise.resolve([] as T[]);
-    const [clinvar, gwas, gnomad, genes] = await Promise.all([
-      at<ClinvarRow>('clinvar', '*'),
-      at<GwasRow>('gwas-catalog', '*'),
-      at<GnomadRow>('gnomad-chip', '*'),
-      this.has('genes-ensembl75')
-        ? this.storage.query<GeneRow & Record<string, unknown>>(
-            `SELECT * FROM ${ident(packView('genes-ensembl75'))} WHERE chrom = ? AND start <= ? AND "end" >= ?`,
-            [chrom, pos, pos])
-        : Promise.resolve([]),
+  /** Installed packs with a role, in install order. */
+  byRole(role: PackRole): PackManifest[] {
+    return this.installed.filter((p) => p.manifest.role === role).map((p) => p.manifest);
+  }
+
+  private one(role: PackRole): PackManifest | undefined {
+    return this.byRole(role)[0];
+  }
+
+  private view(m: PackManifest) {
+    return ident(packView(m.id));
+  }
+
+  private rowsAt<T>(m: PackManifest | undefined, chrom: Chrom, pos: number): Promise<T[]> {
+    if (!m) return Promise.resolve([]);
+    return this.storage.query<T & object>(`SELECT * FROM ${this.view(m)} WHERE chrom = ? AND pos = ?`, [chrom, pos]);
+  }
+
+  /** Everything installed packs say about one position, strongest evidence first within each source. */
+  async annotationsAt(chrom: Chrom, pos: number, rsids: string[] = []): Promise<Annotations> {
+    const genes = this.one('genes');
+    const [clinvar, gwas, genesAt, frequencies] = await Promise.all([
+      this.rowsAt<ClinvarRow>(this.one('classification'), chrom, pos),
+      this.rowsAt<GwasRow>(this.one('association'), chrom, pos),
+      genes
+        ? this.storage.query<GeneRow>(`SELECT * FROM ${this.view(genes)} WHERE chrom = ? AND start <= ? AND "end" >= ?`, [chrom, pos, pos])
+        : Promise.resolve([] as GeneRow[]),
+      Promise.all(
+        this.byRole('frequency').map(async (pack) => ({
+          pack,
+          rows: (await this.rowsAt<FrequencyRow>(pack, chrom, pos)).sort((a, b) => b.af - a.af),
+        })),
+      ),
     ]);
-    return {
-      clinvar: clinvar as ClinvarRow[],
-      gwas: (gwas as GwasRow[]).sort((a, b) => (b.p_mlog ?? 0) - (a.p_mlog ?? 0)),
-      gnomad: gnomad as GnomadRow[],
-      genes: genes as GeneRow[],
-    };
+    clinvar.sort((a, b) => b.stars - a.stars || classificationRank(a.classification) - classificationRank(b.classification));
+    gwas.sort((a, b) => (b.p_mlog ?? 0) - (a.p_mlog ?? 0));
+    const allRsids = [...new Set([...rsids, ...clinvar.map((c) => c.rsid), ...gwas.map((g) => g.rsid)].filter((r): r is string => !!r))];
+    const [conditions, merges, geneticMap] = await Promise.all([
+      this.conditions(clinvar.flatMap((c) => c.condition_mondo ?? []).filter((m): m is string => !!m)),
+      this.merges(allRsids),
+      this.geneticPosition(chrom, pos),
+    ]);
+    return { clinvar, gwas, frequencies: frequencies.filter((f) => f.rows.length), genes: genesAt, conditions, merges, geneticMap };
+  }
+
+  async conditions(mondoIds: string[]): Promise<Record<string, ConditionRow>> {
+    const pack = this.one('conditions');
+    const ids = [...new Set(mondoIds)];
+    if (!pack || ids.length === 0) return {};
+    const rows = await this.storage.query<ConditionRow>(
+      `SELECT * FROM ${this.view(pack)} WHERE mondo_id IN (${ids.map(() => '?').join(',')})`, ids);
+    return Object.fromEntries(rows.map((r) => [r.mondo_id, r]));
+  }
+
+  async merges(rsids: string[]): Promise<MergeRow[]> {
+    const pack = this.one('rsid-merges');
+    if (!pack || rsids.length === 0) return [];
+    const list = rsids.map(() => '?').join(',');
+    return this.storage.query<MergeRow>(
+      `SELECT * FROM ${this.view(pack)} WHERE old_rsid IN (${list}) OR new_rsid IN (${list}) LIMIT 50`, [...rsids, ...rsids]);
+  }
+
+  /** Genetic-map position by linear interpolation between the nearest map points. */
+  async geneticPosition(chrom: Chrom, pos: number): Promise<Annotations['geneticMap']> {
+    const pack = this.one('genetic-map');
+    if (!pack) return null;
+    const rows = await this.storage.query<{ pos: number; cm: number; rate: number | null }>(
+      `(SELECT pos, cm, rate FROM ${this.view(pack)} WHERE chrom = ? AND pos <= ? ORDER BY pos DESC LIMIT 1)
+       UNION ALL
+       (SELECT pos, cm, rate FROM ${this.view(pack)} WHERE chrom = ? AND pos > ? ORDER BY pos LIMIT 1)`,
+      [chrom, pos, chrom, pos]);
+    const [a, b] = [rows.find((r) => r.pos <= pos), rows.find((r) => r.pos > pos)];
+    if (!a && !b) return null;
+    if (!a || !b) return { cm: (a ?? b)!.cm, rate: (a ?? b)!.rate, pack };
+    const t = (pos - a.pos) / (b.pos - a.pos || 1);
+    return { cm: a.cm + t * (b.cm - a.cm), rate: a.rate, pack };
+  }
+
+  /** All rows of a table-like pack (e.g. a haplogroup tree), for analysis plugins. */
+  async allRows<T extends object>(role: PackRole): Promise<{ pack: PackManifest; rows: T[] } | null> {
+    const pack = this.one(role);
+    if (!pack) return null;
+    return { pack, rows: await this.storage.query<T>(`SELECT * FROM ${this.view(pack)}`) };
   }
 
   /** Gene symbol lookup for the search box. */
   async findGene(symbol: string): Promise<GeneRow | null> {
-    if (!this.has('genes-ensembl75')) return null;
-    const rows = await this.storage.query<GeneRow & Record<string, unknown>>(
-      `SELECT * FROM ${ident(packView('genes-ensembl75'))} WHERE upper(symbol) = upper(?)
+    const genes = this.one('genes');
+    if (!genes) return null;
+    const rows = await this.storage.query<GeneRow>(
+      `SELECT * FROM ${this.view(genes)} WHERE upper(symbol) = upper(?)
        ORDER BY biotype = 'protein_coding' DESC LIMIT 1`, [symbol.trim()]);
-    return (rows[0] as GeneRow) ?? null;
+    return rows[0] ?? null;
   }
 
-  /** rsID lookup in packs, for rsIDs the kit does not carry. */
+  /** The current rsID for a retired one, if dbSNP merged it. */
+  async currentRsid(rsid: string): Promise<string | null> {
+    const pack = this.one('rsid-merges');
+    if (!pack) return null;
+    const rows = await this.storage.query<{ new_rsid: string }>(
+      `SELECT new_rsid FROM ${this.view(pack)} WHERE old_rsid = ? LIMIT 1`, [rsid.trim().toLowerCase()]);
+    return rows[0]?.new_rsid ?? null;
+  }
+
+  /** rsID lookup in packs, for rsIDs the kit does not carry. rsID is a lookup, never a join key. */
   async findRsid(rsid: string): Promise<{ chrom: Chrom; pos: number } | null> {
-    for (const id of ['clinvar', 'gwas-catalog']) {
-      if (!this.has(id)) continue;
+    for (const m of [...this.byRole('classification'), ...this.byRole('association')]) {
       const rows = await this.storage.query<{ chrom: Chrom; pos: number }>(
-        `SELECT chrom, pos FROM ${ident(packView(id))} WHERE rsid = ? LIMIT 1`, [rsid.trim().toLowerCase()]);
+        `SELECT chrom, pos FROM ${this.view(m)} WHERE rsid = ? LIMIT 1`, [rsid.trim().toLowerCase()]);
       if (rows[0]) return rows[0];
     }
     return null;
@@ -244,42 +359,47 @@ export class AnnotationLibrary {
    * classification. States what the source says; computes no score.
    */
   async clinvarOverlap(kitView: string): Promise<CallOverlap[]> {
-    if (!this.has('clinvar')) return [];
-    return this.storage.query<CallOverlap & Record<string, unknown>>(
+    const clinvar = this.one('classification');
+    if (!clinvar) return [];
+    return this.storage.query<CallOverlap>(
       `SELECT c.classification, CAST(count(*) AS INTEGER) AS n
-       FROM ${ident(packView('clinvar'))} c JOIN ${ident(kitView)} k
+       FROM ${this.view(clinvar)} c JOIN ${ident(kitView)} k
          ON k.chrom = c.chrom AND k.pos = c.pos AND NOT k.is_nocall AND (k.a1 = c.alt OR k.a2 = c.alt)
-       GROUP BY 1 ORDER BY 2 DESC`) as Promise<CallOverlap[]>;
+       GROUP BY 1 ORDER BY 2 DESC`);
   }
 
-  async clinvarForKit(
-    kitView: string,
-    classification: string | null,
-    limit = 500,
-  ): Promise<(ClinvarRow & { a1: string; a2: string | null; strand_ambiguous: boolean })[]> {
-    if (!this.has('clinvar')) return [];
+  /**
+   * ClinVar records whose allele the kit carries, strongest evidence first:
+   * review stars, then the strongest GWAS association at the same position.
+   */
+  async clinvarForKit(kitView: string, classification: string | null, limit = 1000): Promise<ClinvarForKitRow[]> {
+    const clinvar = this.one('classification');
+    if (!clinvar) return [];
+    const gwas = this.one('association');
+    const best = gwas
+      ? `LEFT JOIN (SELECT chrom, pos, max(p_mlog) AS best_p_mlog, arg_max(trait, p_mlog) AS best_trait
+                    FROM ${this.view(gwas)} GROUP BY ALL) g ON g.chrom = c.chrom AND g.pos = c.pos`
+      : '';
+    const bestCols = gwas ? 'g.best_p_mlog, g.best_trait' : 'NULL AS best_p_mlog, NULL AS best_trait';
     const where = classification ? 'AND c.classification = ?' : '';
-    return this.storage.query(
-      `SELECT c.*, k.a1, k.a2, k.strand_ambiguous
-       FROM ${ident(packView('clinvar'))} c JOIN ${ident(kitView)} k
+    return this.storage.query<ClinvarForKitRow>(
+      `SELECT c.*, k.a1, k.a2, k.strand_ambiguous, ${bestCols}
+       FROM ${this.view(clinvar)} c JOIN ${ident(kitView)} k
          ON k.chrom = c.chrom AND k.pos = c.pos AND NOT k.is_nocall AND (k.a1 = c.alt OR k.a2 = c.alt)
+       ${best}
        WHERE true ${where}
-       ORDER BY c.stars DESC, c.classification, c.chrom, c.pos LIMIT ${limit}`,
-      classification ? [classification] : []) as never;
+       ORDER BY c.stars DESC, best_p_mlog DESC NULLS LAST, c.chrom, c.pos LIMIT ${limit}`,
+      classification ? [classification] : []);
   }
 
   /** Annotation tracks, each encoded by its pack's evidence kind. */
   trackSources(): TrackSource[] {
-    const out: TrackSource[] = [];
-    const genes = this.get('genes-ensembl75');
-    if (genes) out.push(this.geneTrack(genes.manifest));
-    const clinvar = this.get('clinvar');
-    if (clinvar) out.push(this.clinvarTrack(clinvar.manifest));
-    const gwas = this.get('gwas-catalog');
-    if (gwas) out.push(this.gwasTrack(gwas.manifest));
-    const gnomad = this.get('gnomad-chip');
-    if (gnomad) out.push(this.gnomadTrack(gnomad.manifest));
-    return out;
+    return [
+      ...this.byRole('genes').map((m) => this.geneTrack(m)),
+      ...this.byRole('classification').map((m) => this.clinvarTrack(m)),
+      ...this.byRole('association').map((m) => this.gwasTrack(m)),
+      ...this.byRole('frequency').map((m) => this.frequencyTrack(m)),
+    ];
   }
 
   private descriptor(m: PackManifest, title: string) {
@@ -296,11 +416,11 @@ export class AnnotationLibrary {
   }
 
   /** Record counts per bin for wide windows; `weight` carries the bin's strongest value. */
-  private async binned<T>(id: string, region: Region, strongest: string): Promise<TrackItem<T>[]> {
+  private async binned<T>(m: PackManifest, region: Region, strongest: string): Promise<TrackItem<T>[]> {
     const size = Math.max(1, Math.ceil((region.end - region.start + 1) / BINS_PER_WINDOW));
     const rows = await this.storage.query<{ b: number; n: number; w: number | null }>(
       `SELECT CAST(floor((pos - ?) / ${size}) AS INTEGER) AS b, CAST(count(*) AS INTEGER) AS n, CAST(${strongest} AS DOUBLE) AS w
-       FROM ${ident(packView(id))} WHERE chrom = ? AND pos BETWEEN ? AND ? GROUP BY 1`,
+       FROM ${this.view(m)} WHERE chrom = ? AND pos BETWEEN ? AND ? GROUP BY 1`,
       [region.start, region.chrom, region.start, region.end]);
     return rows.map((r) => ({
       id: `bin:${r.b}`,
@@ -317,20 +437,20 @@ export class AnnotationLibrary {
     return region.end - region.start > BIN_ABOVE_BP;
   }
 
-  private inRegion<T>(id: string, region: Region, cols = '*', limit = 20_000) {
-    return this.storage.query<T & Record<string, unknown>>(
-      `SELECT ${cols} FROM ${ident(packView(id))} WHERE chrom = ? AND pos BETWEEN ? AND ? ORDER BY pos LIMIT ${limit}`,
-      [region.chrom, region.start, region.end]) as Promise<T[]>;
+  private inRegion<T>(m: PackManifest, region: Region, limit = 20_000) {
+    return this.storage.query<T & object>(
+      `SELECT * FROM ${this.view(m)} WHERE chrom = ? AND pos BETWEEN ? AND ? ORDER BY pos LIMIT ${limit}`,
+      [region.chrom, region.start, region.end]);
   }
 
   private geneTrack(m: PackManifest): TrackSource<GeneRow> {
     return {
       descriptor: this.descriptor(m, 'Gene models'),
       itemsIn: async (region) => {
-        const rows = (await this.storage.query<GeneRow & Record<string, unknown>>(
-          `SELECT * FROM ${ident(packView(m.id))} WHERE chrom = ? AND start <= ? AND "end" >= ?
+        const rows = await this.storage.query<GeneRow>(
+          `SELECT * FROM ${this.view(m)} WHERE chrom = ? AND start <= ? AND "end" >= ?
            ORDER BY (biotype = 'protein_coding') DESC, "end" - start DESC LIMIT 400`,
-          [region.chrom, region.end, region.start])) as GeneRow[];
+          [region.chrom, region.end, region.start]);
         return rows.map((r): TrackItem<GeneRow> => ({ id: r.gene_id, start: r.start, end: r.end, label: r.symbol, row: r }));
       },
     };
@@ -340,14 +460,16 @@ export class AnnotationLibrary {
     return {
       descriptor: this.descriptor(m, 'ClinVar'),
       itemsIn: async (region) =>
-        this.wide(region) ? this.binned<ClinvarRow>(m.id, region, 'max(stars)') : (await this.inRegion<ClinvarRow>(m.id, region)).map((r) => ({
-          id: `${r.chrom}:${r.pos}:${r.alt}:${r.variation_id}`,
-          start: r.pos,
-          end: r.pos,
-          label: classificationShort(r.classification),
-          weight: r.stars,
-          row: r,
-        })),
+        this.wide(region)
+          ? this.binned<ClinvarRow>(m, region, 'max(stars)')
+          : (await this.inRegion<ClinvarRow>(m, region)).map((r) => ({
+              id: `${r.chrom}:${r.pos}:${r.alt}:${r.variation_id}`,
+              start: r.pos,
+              end: r.pos,
+              label: classificationShort(r.classification),
+              weight: r.stars,
+              row: r,
+            })),
     };
   }
 
@@ -355,31 +477,35 @@ export class AnnotationLibrary {
     return {
       descriptor: this.descriptor(m, 'GWAS Catalog'),
       itemsIn: async (region) =>
-        this.wide(region) ? this.binned<GwasRow>(m.id, region, 'max(p_mlog)') : (await this.inRegion<GwasRow>(m.id, region)).map((r, i) => ({
-          id: `${r.chrom}:${r.pos}:${r.study_accession}:${i}`,
-          start: r.pos,
-          end: r.pos,
-          label: r.trait,
-          weight: r.p_mlog ?? 0,
-          row: r,
-        })),
+        this.wide(region)
+          ? this.binned<GwasRow>(m, region, 'max(p_mlog)')
+          : (await this.inRegion<GwasRow>(m, region)).map((r, i) => ({
+              id: `${r.chrom}:${r.pos}:${r.study_accession}:${i}`,
+              start: r.pos,
+              end: r.pos,
+              label: r.trait,
+              weight: r.p_mlog ?? 0,
+              row: r,
+            })),
     };
   }
 
-  private gnomadTrack(m: PackManifest): TrackSource<GnomadRow> {
+  private frequencyTrack(m: PackManifest): TrackSource<FrequencyRow> {
     return {
-      descriptor: this.descriptor(m, 'gnomAD frequency'),
+      descriptor: this.descriptor(m, `${m.source.short} frequency`),
       itemsIn: async (region) =>
-        this.wide(region) ? this.binned<GnomadRow>(m.id, region, 'avg(af)') : (await this.inRegion<GnomadRow>(m.id, region)).map((r) => ({
-          id: `${r.chrom}:${r.pos}:${r.alt}`,
-          start: r.pos,
-          end: r.pos,
-          label: `${r.alt} ${r.af.toFixed(3)}`,
-          value: r.af,
-          lo: r.af_lo,
-          hi: r.af_hi,
-          row: r,
-        })),
+        this.wide(region)
+          ? this.binned<FrequencyRow>(m, region, 'avg(af)')
+          : (await this.inRegion<FrequencyRow>(m, region)).map((r) => ({
+              id: `${m.id}:${r.chrom}:${r.pos}:${r.alt}`,
+              start: r.pos,
+              end: r.pos,
+              label: `${r.alt} ${(r.af * 100).toFixed(1)}%`,
+              value: r.af,
+              lo: r.af_lo,
+              hi: r.af_hi,
+              row: r,
+            })),
     };
   }
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Chrom } from '@gw/plugin-sdk';
+  import type { Chrom, PackManifest } from '@gw/plugin-sdk';
   import { REF_CHECK_LABELS, formatCall, type CallRow, type Kit } from '@gw/genotype-store';
-  import { GNOMAD_GROUPS, relateAllele, type Annotations, type GnomadRow } from '@gw/annotation-library';
+  import { relateAllele, type Annotations, type FrequencyRow } from '@gw/annotation-library';
   import { app, svc } from '../services.svelte';
   import { fmtDate, fmtInt, fmtP } from '../format';
 
@@ -12,6 +12,7 @@
   let loading = $state(true);
   let copied = $state(false);
   let showAllGwas = $state(false);
+  let failed = $state('');
 
   $effect(() => {
     const k = kit;
@@ -20,26 +21,39 @@
     loading = true;
     showAllGwas = false;
     const { store, library } = svc();
-    void Promise.all([k ? store.callAt(k.kitId, c, p) : Promise.resolve(null), library.annotationsAt(c, p)]).then(([cr, a]) => {
-      if (c !== chrom || p !== pos) return;
-      call = cr;
-      ann = a;
-      loading = false;
-    });
+    failed = '';
+    void (async () => {
+      try {
+        const cr = k ? await store.callAt(k.kitId, c, p) : null;
+        const a = await library.annotationsAt(c, p, cr?.rsid ? [cr.rsid] : []);
+        if (c !== chrom || p !== pos) return;
+        call = cr;
+        ann = a;
+      } catch (e) {
+        console.error(e);
+        if (c === chrom && p === pos) failed = e instanceof Error ? e.message : String(e);
+      } finally {
+        if (c === chrom && p === pos) loading = false;
+      }
+    })();
   });
 
-  const pack = (id: string) => app.installed.find((p) => p.manifest.id === id)?.manifest;
-  const ref = $derived(call?.ref ?? ann?.clinvar[0]?.ref ?? ann?.gnomad[0]?.ref ?? null);
+  const packOf = (role: string) => app.installed.find((p) => p.manifest.role === role)?.manifest;
+  const ref = $derived(call?.ref ?? ann?.clinvar[0]?.ref ?? ann?.frequencies[0]?.rows[0]?.ref ?? null);
   const alt = $derived.by(() => {
     const fromCall = [call?.a1, call?.a2].find((a) => a && ref && a !== ref && 'ACGT'.includes(a));
-    return fromCall ?? ann?.clinvar[0]?.alt ?? ann?.gnomad[0]?.alt ?? null;
+    return fromCall ?? ann?.clinvar[0]?.alt ?? ann?.frequencies[0]?.rows[0]?.alt ?? null;
   });
   const key = $derived(ref ? `GRCh37:${chrom}:${pos}:${ref}${alt ? `:${alt}` : ''}` : `GRCh37:${chrom}:${pos}`);
   const rsid = $derived(call?.rsid ?? ann?.clinvar.find((c) => c.rsid)?.rsid ?? ann?.gwas[0]?.rsid ?? null);
-  const siteAlleles = $derived([ref, ...(ann?.clinvar.map((c) => c.alt) ?? []), ...(ann?.gnomad.map((g) => g.alt) ?? [])]);
+  const siteAlleles = $derived([
+    ref,
+    ...(ann?.clinvar.map((c) => c.alt) ?? []),
+    ...(ann?.frequencies.flatMap((f) => f.rows.map((r) => r.alt)) ?? []),
+  ]);
   const gwasShown = $derived(showAllGwas ? (ann?.gwas ?? []) : (ann?.gwas.slice(0, 4) ?? []));
   const nothingKnown = $derived(
-    ann && !ann.clinvar.length && !ann.gwas.length && !ann.gnomad.length && !ann.genes.length,
+    ann && !ann.clinvar.length && !ann.gwas.length && !ann.frequencies.length && !ann.genes.length,
   );
 
   const carries = (allele: string) => {
@@ -50,6 +64,8 @@
     n == null ? 'No call here' : n === 0 ? `Your call does not carry ${allele}` : `Your call carries ${allele} on ${n === 2 ? 'both copies' : call?.a2 ? 'one copy' : 'its one copy'}`;
   const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 4 - n));
   const vcv = (id: number) => `VCV${String(id).padStart(9, '0')}`;
+  const pct = (v: number) => `${(v * 100).toFixed(v < 0.01 ? 2 : 1)}%`;
+  const groupsOf = (m: PackManifest) => m.frequencyGroups ?? [];
 
   async function copyKey() {
     await navigator.clipboard.writeText(key);
@@ -57,8 +73,8 @@
     setTimeout(() => (copied = false), 1500);
   }
 
-  function gnomadBand(g: GnomadRow) {
-    return { left: g.af_lo * 100, width: Math.max(0.6, (g.af_hi - g.af_lo) * 100), tick: g.af * 100 };
+  function band(r: FrequencyRow) {
+    return { lo: r.af_lo * 100, hi: r.af_hi * 100, v: r.af * 100 };
   }
 </script>
 
@@ -66,7 +82,9 @@
 <h4 style="margin:6px 0 2px">{rsid ?? `chr${chrom}:${fmtInt(pos)}`}</h4>
 <div class="faint num" style="font-size:11px">GRCh37 chr{chrom}:{fmtInt(pos)}{ref ? ` · reference ${ref}` : ''}{ann?.genes.length ? ` · ${ann.genes.map((g) => g.symbol).join(', ')}` : ''}</div>
 
-{#if loading && !ann}
+{#if failed}
+  <div class="error-box" style="margin-top:var(--space-6)">Could not read this position: {failed}</div>
+{:else if loading && !ann}
   <p class="faint" style="font-size:12px;margin-top:var(--space-6)">Reading…</p>
 {:else}
   <div class="evidence" style="margin:var(--space-6) 0 var(--space-4)">
@@ -89,6 +107,14 @@
       <div><span>Source</span><span>{kit?.vendorLabel} {kit?.chipVersion ?? ''}</span></div>
       <div><span>Normalizer</span><span>locus {kit?.locusVersion}</span></div>
     {/if}
+    {#if ann?.geneticMap}
+      <div title="Interpolated from the {ann.geneticMap.pack.source.short} map">
+        <span>Genetic position</span><span class="num">{ann.geneticMap.cm.toFixed(2)} cM · {ann.geneticMap.pack.source.short}</span>
+      </div>
+    {/if}
+    {#each ann?.merges ?? [] as mg (mg.old_rsid + mg.new_rsid)}
+      <div><span>dbSNP</span><span>{mg.old_rsid} was merged into {mg.new_rsid}{mg.build ? ` (build ${mg.build})` : ''}</span></div>
+    {/each}
   </div>
 
   <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-6)">
@@ -98,7 +124,7 @@
         <div>
           <div class="title">{g.symbol} <span class="faint" style="font-size:11px">{g.biotype.replaceAll('_', ' ')} · {g.strand === '-' ? 'minus' : 'plus'} strand</span></div>
           <div class="what">This position lies inside the gene's span ({fmtInt(g.start)}–{fmtInt(g.end)}), transcript {g.transcript_name ?? g.transcript_id}.</div>
-          <div class="cite">{g.gene_id} · pack genes-ensembl75 · {pack('genes-ensembl75')?.licence}</div>
+          <div class="cite">{g.gene_id} · pack {packOf('genes')?.id} {packOf('genes')?.version} · {packOf('genes')?.licence}</div>
         </div>
       </div>
     {/each}
@@ -108,40 +134,58 @@
         <span class="mk mk-classification"></span>
         <div>
           <div class="title">ClinVar classification: {c.classification}</div>
-          <div class="what">
-            {c.ref}&gt;{c.alt}{c.conditions.length ? ` · ${c.conditions.slice(0, 3).join('; ')}${c.conditions.length > 3 ? ` +${c.conditions.length - 3}` : ''}` : ''}
-          </div>
+          <div class="what">{c.ref}&gt;{c.alt}</div>
           <div class="what">{copiesText(carries(c.alt), c.alt)}{call?.strand_ambiguous ? ' — strand-ambiguous call, joined with lower confidence' : ''}</div>
+          {#each c.conditions as name, i (name + i)}
+            {@const mondo = c.condition_mondo?.[i] ? ann?.conditions[c.condition_mondo[i]!] : undefined}
+            <details class="what" style="margin-top:4px">
+              <summary>{mondo?.name ?? name}</summary>
+              {#if mondo?.definition}<div style="margin:4px 0">{mondo.definition}</div>{/if}
+              {#if mondo?.synonyms.length}<div class="faint">Also called {mondo.synonyms.slice(0, 3).join('; ')}</div>{/if}
+              <div class="faint">
+                {#if mondo}<a href="https://monarchinitiative.org/{mondo.mondo_id}" target="_blank" rel="noreferrer noopener">{mondo.mondo_id}</a>{/if}
+                {#each mondo?.orphanet ?? [] as o (o)} · <a href="https://www.orpha.net/en/disease/detail/{o}" target="_blank" rel="noreferrer noopener">Orphanet {o}</a>{/each}
+                {#each mondo?.omim ?? [] as o (o)} · <a href="https://omim.org/entry/{o}" target="_blank" rel="noreferrer noopener">OMIM {o}</a>{/each}
+                {#if !mondo}{packOf('conditions') ? 'No Mondo record for this name' : 'Install the Mondo pack for a plain-language definition'}{/if}
+              </div>
+            </details>
+          {/each}
           <div class="cite">
             <span title="ClinVar review status">{stars(c.stars)}</span> {c.review_status ?? ''}<br />
-            {vcv(c.variation_id)} · pack clinvar {pack('clinvar')?.version} · {pack('clinvar')?.licence}
+            {vcv(c.variation_id)} · pack clinvar {packOf('classification')?.version} · {packOf('classification')?.licence}
+            {#if ann && Object.keys(ann.conditions).length} · condition names: Mondo {packOf('conditions')?.version}, CC BY 4.0{/if}
           </div>
         </div>
       </div>
     {/each}
 
-    {#each ann?.gnomad ?? [] as g (g.alt)}
-      {@const band = gnomadBand(g)}
-      <div class="evidence">
-        <span class="mk mk-estimate"></span>
-        <div style="flex:1;min-width:0">
-          <div class="title num">Allele frequency, {g.alt}: {g.af.toFixed(3)} ({g.af_lo.toFixed(3)}–{g.af_hi.toFixed(3)}, all gnomAD genomes)</div>
-          <div class="bar-est" style="margin:var(--space-2) 0">
-            <span class="band" style="left:{band.left}%;width:{band.width}%"></span>
-            <span class="tick" style="left:{band.tick}%"></span>
-          </div>
-          <div class="what">Sampling-dependent — frequency varies by reference panel. {copiesText(carries(g.alt), g.alt)}.</div>
-          <details class="what">
-            <summary>By genetic-ancestry group</summary>
-            <div class="kv num" style="font-size:11px;gap:2px;margin-top:4px">
-              {#each GNOMAD_GROUPS as grp (grp.key)}
-                {#if g[grp.key] != null}<div><span>{grp.label}</span><span>{(g[grp.key] as number).toFixed(3)}</span></div>{/if}
-              {/each}
+    {#each ann?.frequencies ?? [] as f (f.pack.id)}
+      {#each f.rows as r (r.alt)}
+        {@const b = band(r)}
+        <div class="evidence">
+          <span class="mk mk-frequency"></span>
+          <div style="flex:1;min-width:0">
+            <div class="title num">{r.alt}: {pct(r.af)} of {f.pack.source.short} chromosomes</div>
+            <div class="bar-freq" style="margin:var(--space-2) 0" title="Sampling interval {pct(r.af_lo)}–{pct(r.af_hi)}">
+              <span class="share" style="width:{b.lo}%"></span>
+              <span class="fade" style="left:{b.lo}%;width:{Math.max(0.5, b.hi - b.lo)}%"></span>
+              <span class="tick" style="left:{b.v}%"></span>
             </div>
-          </details>
-          <div class="cite">AC {fmtInt(g.ac)} / AN {fmtInt(g.an)} · gnomAD v2.1.1 · pack gnomad-chip · {pack('gnomad-chip')?.licence}</div>
+            <div class="what">How common this allele is in the sampled population ({pct(r.af_lo)}–{pct(r.af_hi)}). A fact about that population, not about you. {copiesText(carries(r.alt), r.alt)}.</div>
+            {#if groupsOf(f.pack).length}
+              <details class="what">
+                <summary>By population group</summary>
+                <div class="kv num" style="font-size:11px;gap:2px;margin-top:4px">
+                  {#each [...groupsOf(f.pack)].sort((x, y) => ((r[y.key as `af_${string}`] ?? -1) - (r[x.key as `af_${string}`] ?? -1))) as grp (grp.key)}
+                    {#if r[grp.key as `af_${string}`] != null}<div><span>{grp.label}</span><span>{pct(r[grp.key as `af_${string}`] as number)}</span></div>{/if}
+                  {/each}
+                </div>
+              </details>
+            {/if}
+            <div class="cite">AC {fmtInt(r.ac)} / AN {fmtInt(r.an)} · pack {f.pack.id} {f.pack.version} · {f.pack.licence}</div>
+          </div>
         </div>
-      </div>
+      {/each}
     {/each}
 
     {#each gwasShown as a (a.study_accession + a.trait + a.p_text + a.pubmed_id)}
@@ -161,13 +205,13 @@
             </div>
           {/if}
           <div class="what">GWAS Catalog · population-level association, not a statement about you</div>
-          <div class="cite">{a.first_author} {a.pub_date?.slice(0, 4)} · PMID {a.pubmed_id} · {a.study_accession} · pack gwas-catalog {pack('gwas-catalog')?.version} · CC0</div>
+          <div class="cite">{a.first_author} {a.pub_date?.slice(0, 4)} · PMID {a.pubmed_id} · {a.study_accession} · pack gwas-catalog {packOf('association')?.version} · CC0</div>
         </div>
       </div>
     {/each}
     {#if (ann?.gwas.length ?? 0) > 4}
       <button class="btn btn-ghost" type="button" onclick={() => (showAllGwas = !showAllGwas)}>
-        {showAllGwas ? 'Show fewer associations' : `Show all ${ann?.gwas.length} associations`}
+        {showAllGwas ? 'Show fewer associations' : `Show all ${ann?.gwas.length} associations, strongest first`}
       </button>
     {/if}
 

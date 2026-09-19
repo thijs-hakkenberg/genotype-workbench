@@ -11,6 +11,8 @@ export interface ClinvarRow {
   review_status: string | null;
   stars: number;
   conditions: string[];
+  /** Mondo id per condition, aligned with `conditions` (null when ClinVar gives none). */
+  condition_mondo: (string | null)[];
   genes: string[];
   consequence: string[];
 }
@@ -39,7 +41,8 @@ export interface GwasRow {
   mapped_gene: string | null;
 }
 
-export interface GnomadRow {
+/** A population-frequency row; `af_<group>` columns are named by the pack's `frequencyGroups`. */
+export interface FrequencyRow {
   chrom: Chrom;
   pos: number;
   ref: string;
@@ -49,14 +52,7 @@ export interface GnomadRow {
   af: number;
   af_lo: number;
   af_hi: number;
-  af_afr: number | null;
-  af_amr: number | null;
-  af_asj: number | null;
-  af_eas: number | null;
-  af_fin: number | null;
-  af_nfe: number | null;
-  af_sas: number | null;
-  af_oth: number | null;
+  [group: `af_${string}`]: number | null;
 }
 
 export interface GeneRow {
@@ -75,16 +71,31 @@ export interface GeneRow {
   cds_end: number | null;
 }
 
-export const GNOMAD_GROUPS: { key: keyof GnomadRow; label: string }[] = [
-  { key: 'af_afr', label: 'African/African American' },
-  { key: 'af_amr', label: 'Latino/Admixed American' },
-  { key: 'af_asj', label: 'Ashkenazi Jewish' },
-  { key: 'af_eas', label: 'East Asian' },
-  { key: 'af_fin', label: 'Finnish' },
-  { key: 'af_nfe', label: 'Non-Finnish European' },
-  { key: 'af_sas', label: 'South Asian' },
-  { key: 'af_oth', label: 'Other' },
-];
+export interface ConditionRow {
+  mondo_id: string;
+  name: string;
+  definition: string | null;
+  synonyms: string[];
+  orphanet: string[];
+  omim: string[];
+  medgen: string[];
+}
+
+export interface MergeRow {
+  old_rsid: string;
+  new_rsid: string;
+  /** dbSNP build in which the merge happened. */
+  build: number | null;
+}
+
+/** ClinVar's own ordering of classifications, strongest judgement first, for ties on review status. */
+export function classificationRank(c: string): number {
+  const s = c.toLowerCase();
+  const order = ['pathogenic', 'pathogenic/likely pathogenic', 'likely pathogenic', 'risk factor', 'drug response',
+    'association', 'protective', 'conflicting', 'uncertain', 'likely benign', 'benign/likely benign', 'benign', 'not provided'];
+  const i = order.findIndex((o) => s.startsWith(o));
+  return i === -1 ? order.length : i;
+}
 
 /** Short label drawn inside the classification outline. */
 export function classificationShort(c: string): string {

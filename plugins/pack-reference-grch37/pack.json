@@ -3,6 +3,7 @@
   "title": "GRCh37 reference alleles at chip loci",
   "description": "The GRCh37 base at every known consumer-chip position. The normalizer checks each call against it to catch strand flips. Core reference data: it ships with the app.",
   "build": "GRCh37",
+  "role": "reference",
   "scientificDomain": "molecular-genetics",
   "evidenceKind": "documentary",
   "trackKind": null,

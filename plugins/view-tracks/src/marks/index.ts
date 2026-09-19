@@ -323,12 +323,61 @@ export const estimate: MarkRenderer = {
   },
 };
 
+/**
+ * population-frequency — a framed column filled to the allele's share. The
+ * frame is the sampled population (a known size, so hard edges); the top of
+ * the fill fades across the sampling interval, because that bound is not
+ * exactly known. It never reads as a measurement of, or estimate about, you.
+ */
+export const frequency: MarkRenderer = {
+  height: () => 64,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const hits: HitBox[] = [];
+    const top = 8;
+    const bottom = height - 8;
+    const y = (v: number) => bottom - v * (bottom - top);
+    ctx.fillStyle = palette.n[600];
+    ctx.font = `9px ${palette.font}`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('100%', 2, top);
+    ctx.fillText('0', 2, bottom - 5);
+    const w = items.length > 300 ? 3 : 6;
+    for (const it of items) {
+      const cx = m.x(it.start);
+      const x = Math.round(cx - w / 2) + 0.5;
+      const sel = it.id === m.selectedId;
+      const v = Math.min(1, Math.max(0, it.value ?? 0));
+      const lo = Math.max(0, it.lo ?? v);
+      const hi = Math.min(1, it.hi ?? v);
+      ctx.strokeStyle = sel ? palette.a[200] : palette.n[600];
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, top + 0.5, w, bottom - top);
+      // solid share up to the lower bound, then a fade across [lo, hi]
+      ctx.fillStyle = alpha(palette.a[500], 0.7);
+      ctx.fillRect(x + 0.5, y(lo), w - 1, bottom - y(lo));
+      if (hi > lo) {
+        const g = ctx.createLinearGradient(0, y(hi), 0, y(lo));
+        g.addColorStop(0, alpha(palette.a[500], 0));
+        g.addColorStop(1, alpha(palette.a[500], 0.7));
+        ctx.fillStyle = g;
+        ctx.fillRect(x + 0.5, y(hi), w - 1, y(lo) - y(hi));
+      }
+      ctx.fillStyle = sel ? palette.a[100] : palette.a[300];
+      ctx.fillRect(x - 1, Math.round(y(v)) - 0.5, w + 2, 1.5);
+      hits.push({ item: it, x0: x - 3, x1: x + w + 3, y0: top, y1: bottom });
+    }
+    return hits;
+  },
+};
+
 export const RENDERERS: Record<EvidenceKind, MarkRenderer> = {
   measured,
   documentary,
   'curated-classification': classification,
   'statistical-association': association,
   'probabilistic-estimate': estimate,
+  'population-frequency': frequency,
 };
 
 /**
@@ -378,6 +427,13 @@ export function drawBins(m: MarkContext, items: TrackItem[], kind: EvidenceKind)
         ctx.fillRect(x0, y, w, h);
         break;
       }
+      case 'population-frequency':
+        ctx.strokeStyle = palette.n[600];
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0 + 0.5, y + 0.5, Math.max(0, w - 1), h - 1);
+        ctx.fillStyle = alpha(palette.a[500], 0.45);
+        ctx.fillRect(x0 + 0.5, y + h / 2, Math.max(0, w - 1), h / 2);
+        break;
       case 'documentary':
         ctx.fillStyle = palette.n[600];
         ctx.fillRect(x0, y, w, h);

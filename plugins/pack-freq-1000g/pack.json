@@ -1,0 +1,26 @@
+{
+  "id": "freq-1000g",
+  "title": "1000 Genomes allele frequencies at chip loci",
+  "description": "How common each allele is among the 2,504 people of the 1000 Genomes Project (phase 3), overall and per continental super-population. A fact about the sampled population, not about you; frequencies depend on who was sampled.",
+  "build": "GRCh37",
+  "role": "frequency",
+  "scientificDomain": "population-genetics",
+  "evidenceKind": "population-frequency",
+  "trackKind": "signal",
+  "core": false,
+  "licence": "Open, no restrictions (IGSR / 1000 Genomes data reuse policy)",
+  "licenceClass": "open",
+  "source": {
+    "name": "1000 Genomes Project phase 3 sites (release 20130502, v5c)",
+    "short": "1000 Genomes",
+    "url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.wgs.phase3_shapeit2_mvncall_integrated_v5c.20130502.sites.vcf.gz"
+  },
+  "citation": "The 1000 Genomes Project Consortium. A global reference for human genetic variation. Nature 2015;526:68–74",
+  "frequencyGroups": [
+    { "key": "af_afr", "label": "African" },
+    { "key": "af_amr", "label": "Admixed American" },
+    { "key": "af_eas", "label": "East Asian" },
+    { "key": "af_eur", "label": "European" },
+    { "key": "af_sas", "label": "South Asian" }
+  ]
+}

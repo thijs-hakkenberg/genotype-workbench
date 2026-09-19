@@ -4,6 +4,7 @@
   "title": "GRCh37 reference alleles at chip loci",
   "description": "The GRCh37 base at every known consumer-chip position. The normalizer checks each call against it to catch strand flips. Core reference data: it ships with the app.",
   "build": "GRCh37",
+  "role": "reference",
   "scientificDomain": "molecular-genetics",
   "evidenceKind": "documentary",
   "trackKind": null,
@@ -19,7 +20,7 @@
   "version": "2026-09-19",
   "sourceDate": null,
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T17:16:14+00:00",
+  "builtAt": "2026-09-19T21:06:59+00:00",
   "file": "reference-grch37.parquet",
   "rows": 5000,
   "columns": [
@@ -30,8 +31,6 @@
   "size": 21342,
   "sha256": "b34817d89424ad751478d91736d8381ede8d449d9da41bb55172ebee970c3582",
   "stats": {
-    "fixture": true,
-    "loci": 1473434,
-    "nonACGTDropped": 1
+    "fixture": true
   }
 }

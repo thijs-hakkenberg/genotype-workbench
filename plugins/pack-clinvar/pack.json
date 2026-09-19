@@ -3,6 +3,7 @@
   "title": "ClinVar classifications",
   "description": "Curated classifications of variants submitted to ClinVar, with review status. A classification is a panel's judgement on a date; it can be revised.",
   "build": "GRCh37",
+  "role": "classification",
   "scientificDomain": "clinical-genetics",
   "evidenceKind": "curated-classification",
   "trackKind": "variant",

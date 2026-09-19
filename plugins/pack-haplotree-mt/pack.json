@@ -1,0 +1,19 @@
+{
+  "id": "haplotree-mt",
+  "title": "mtDNA haplogroup tree (PhyloTree 17)",
+  "description": "The human mitochondrial phylogeny: which mutations define each maternal-line haplogroup, relative to the rCRS reference. Used to find the haplogroup that best matches the mitochondrial calls on a chip.",
+  "build": "GRCh37",
+  "role": "haplotree-mt",
+  "scientificDomain": "population-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": null,
+  "core": false,
+  "licence": "PhyloTree Build 17 (van Oven 2016), packaged by HaploGrep under MIT",
+  "licenceClass": "open",
+  "source": {
+    "name": "PhyloTree Build 17 rCRS, HaploGrep tree release 17.3",
+    "short": "PhyloTree 17",
+    "url": "https://github.com/genepi/phylotree-rcrs-17/releases/download/17.3/phylotree-rcrs-17.3.zip"
+  },
+  "citation": "van Oven M. PhyloTree Build 17: Growing the human mitochondrial DNA tree. Forensic Sci Int Genet Suppl Ser 2015;5:e392–e394; Schönherr S et al. Haplogrep 3. Nucleic Acids Res. 2023"
+}

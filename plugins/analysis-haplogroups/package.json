@@ -1,0 +1,9 @@
+{
+  "name": "@gw/analysis-haplogroups",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Analysis plugin: maternal (mtDNA) and paternal (Y) haplogroups from a kit's haploid calls",
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./manifest.json": "./manifest.json" },
+  "dependencies": { "@gw/plugin-sdk": "workspace:*" }
+}

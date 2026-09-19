@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "id": "conditions-mondo",
+  "title": "Condition names (Mondo, with Orphanet links)",
+  "description": "Plain names, definitions and synonyms for the conditions ClinVar records name, from the Mondo Disease Ontology, with cross-references to Orphanet, OMIM and MedGen. Documents what a condition is; says nothing about you.",
+  "build": "GRCh37",
+  "role": "conditions",
+  "scientificDomain": "clinical-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": null,
+  "core": false,
+  "licence": "CC BY 4.0 (Mondo Disease Ontology)",
+  "licenceClass": "open",
+  "source": {
+    "name": "Mondo Disease Ontology (mondo.obo, latest release)",
+    "short": "Mondo",
+    "url": "https://github.com/monarch-initiative/mondo/releases/latest/download/mondo.obo"
+  },
+  "citation": "Vasilevsky NA et al. Mondo: Unifying diseases for the world, by the world. medRxiv 2022. Orphanet cross-references: Orphanet, INSERM (CC BY 4.0)",
+  "version": "2026-09-01",
+  "sourceDate": "2026-09-01",
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-19T21:06:59+00:00",
+  "file": "conditions-mondo.parquet",
+  "rows": 41,
+  "columns": [
+    "mondo_id",
+    "name",
+    "definition",
+    "element",
+    "element",
+    "element",
+    "element"
+  ],
+  "size": 9741,
+  "sha256": "31e7cc514e215cff405b2e77c9e7e4301e7cbc2da99eeb4724cf42f46f1125c5",
+  "stats": {
+    "fixture": true
+  }
+}

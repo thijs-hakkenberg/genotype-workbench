@@ -4,6 +4,7 @@
   "title": "ClinVar classifications",
   "description": "Curated classifications of variants submitted to ClinVar, with review status. A classification is a panel's judgement on a date; it can be revised.",
   "build": "GRCh37",
+  "role": "classification",
   "scientificDomain": "clinical-genetics",
   "evidenceKind": "curated-classification",
   "trackKind": "variant",
@@ -19,7 +20,7 @@
   "version": "2026-09-13",
   "sourceDate": "2026-09-13",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T17:16:14+00:00",
+  "builtAt": "2026-09-19T21:06:58+00:00",
   "file": "clinvar.parquet",
   "rows": 13011,
   "columns": [
@@ -36,17 +37,12 @@
     "element",
     "element",
     "element",
+    "element",
     "origin"
   ],
-  "size": 185469,
-  "sha256": "523c6acaba6a3e30dc1740fb089789e34f6006ea0a56def5645c711ebc52f617",
+  "size": 195095,
+  "sha256": "ecb400914f17dba902f4801cfb595910dabad7c614fa9e54b50a313ad8b39d09",
   "stats": {
-    "fixture": true,
-    "snvs": 4162431,
-    "skipped": {
-      "notSnv": 308448,
-      "noAlt": 754,
-      "unknownChrom": 8
-    }
+    "fixture": true
   }
 }

@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "id": "dbsnp-merges",
+  "title": "dbSNP rsID merge history",
+  "description": "Which retired rsIDs dbSNP merged into which current ones, so an old rsID on a chip or in a paper still finds its record. A lookup only: rsIDs never join data.",
+  "build": "GRCh37",
+  "role": "rsid-merges",
+  "scientificDomain": "genotyping",
+  "evidenceKind": "documentary",
+  "trackKind": null,
+  "core": false,
+  "licence": "Public domain (US government work, NCBI)",
+  "licenceClass": "open",
+  "source": {
+    "name": "dbSNP refsnp-merged (latest release)",
+    "short": "dbSNP",
+    "url": "https://ftp.ncbi.nlm.nih.gov/snp/latest_release/JSON/refsnp-merged.json.bz2"
+  },
+  "citation": "Sherry ST et al. dbSNP: the NCBI database of genetic variation. Nucleic Acids Res. 2001;29:308\u2013311",
+  "version": "2025-01-15",
+  "sourceDate": "2025-01-15",
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-19T21:06:59+00:00",
+  "file": "dbsnp-merges.parquet",
+  "rows": 3390,
+  "columns": [
+    "old_rsid",
+    "new_rsid",
+    "build"
+  ],
+  "size": 29601,
+  "sha256": "96f29b227add2d836bcee1dba0b432b1f37ee7e7ffa439334e50b2d1c93252af",
+  "stats": {
+    "fixture": true
+  }
+}

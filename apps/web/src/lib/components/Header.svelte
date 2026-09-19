@@ -16,10 +16,17 @@
     if (region) return go(`genome/${region.chrom}:${region.start}-${region.end}`);
     const { store, library } = svc();
     if (/^(rs|i)\d+$/i.test(q)) {
-      const call = kit ? await store.findRsid(kit.kitId, q) : null;
-      const at = call ?? (await library.findRsid(q));
-      if (at) return go(`genome/${at.chrom}:${at.pos - 10_000}-${at.pos + 10_000}?sel=${at.chrom}:${at.pos}`);
-      message = `${q} is not in this kit or in any installed pack`;
+      const find = async (id: string) => (kit ? await store.findRsid(kit.kitId, id) : null) ?? (await library.findRsid(id));
+      let at = await find(q);
+      const current = at ? null : await library.currentRsid(q);
+      if (!at && current) at = await find(current);
+      if (at) {
+        if (current) message = `${q} was merged into ${current} by dbSNP`;
+        return go(`genome/${at.chrom}:${at.pos - 10_000}-${at.pos + 10_000}?sel=${at.chrom}:${at.pos}`);
+      }
+      message = current
+        ? `${q} was merged into ${current}, which is not in this kit or any installed pack`
+        : `${q} is not in this kit or in any installed pack`;
       return;
     }
     const gene = await library.findGene(q);
@@ -27,7 +34,7 @@
       const pad = Math.round((gene.end - gene.start) * 0.15) + 2000;
       return go(`genome/${gene.chrom}:${gene.start - pad}-${gene.end + pad}`);
     }
-    message = library.has('genes-ensembl75')
+    message = library.byRole('genes').length
       ? `No region, rsID or gene called “${q}”`
       : 'Install the gene models pack to search by gene name';
   }

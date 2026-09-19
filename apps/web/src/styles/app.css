@@ -77,11 +77,18 @@ main { min-width: 0; overflow: auto; }
 .mk-classification { width: 12px; height: 12px; border-radius: 2px; border: 1.5px solid var(--color-accent-400); display: block; }
 .mk-association { width: 14px; height: 14px; border-radius: 50%; display: block; background: radial-gradient(circle, var(--color-accent-300) 0 20%, color-mix(in srgb, var(--color-accent-500) 35%, transparent) 30%, transparent 72%); }
 .mk-estimate { width: 16px; height: 8px; margin-top: 5px; display: block; background: linear-gradient(to right, transparent, var(--color-accent-500), transparent); }
+.mk-frequency { width: 10px; height: 13px; display: block; box-shadow: inset 0 0 0 1px var(--color-neutral-500); background: linear-gradient(to top, color-mix(in srgb, var(--color-accent-500) 70%, transparent) 45%, transparent 45%); }
 .mk-documentary { width: 12px; height: 12px; display: block; background: repeating-linear-gradient(to bottom, var(--color-neutral-400) 0 1.5px, transparent 1.5px 4px); }
 .mk-nocall { width: 3px; height: 10px; display: block; background: repeating-linear-gradient(135deg, var(--color-neutral-700) 0 2px, transparent 2px 4px); box-shadow: inset 0 0 0 1px var(--color-neutral-700); }
 .mk-ambig { width: 3px; height: 10px; display: block; background: var(--color-accent-400); box-shadow: 0 0 0 1.5px var(--color-accent-800); }
 .mk-call { width: 3px; height: 10px; display: block; background: var(--color-accent-400); }
 .mk-proposed { width: 12px; height: 12px; border-radius: 2px; border: 1.5px dashed var(--color-neutral-500); display: block; }
+
+/* Share-of-population bar for frequencies: hard frame, fill to the share, faded across the sampling interval */
+.bar-freq { position: relative; height: 9px; box-shadow: inset 0 0 0 1px var(--color-neutral-600); border-radius: 1px; overflow: hidden; }
+.bar-freq .share { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--color-accent-500) 70%, transparent); }
+.bar-freq .fade { position: absolute; top: 0; bottom: 0; background: linear-gradient(to right, color-mix(in srgb, var(--color-accent-500) 70%, transparent), transparent); }
+.bar-freq .tick { position: absolute; top: -1px; bottom: -1px; width: 2px; background: var(--color-accent-200); }
 
 /* Faded-end bar for estimates (UI page 02) */
 .bar-est { position: relative; height: 9px; background: var(--color-neutral-900); border-radius: 1px; }

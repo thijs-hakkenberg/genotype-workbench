@@ -53,6 +53,36 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   await expect(page.locator('aside')).toContainText('ClinVar classification');
   await expect(page.locator('aside')).toContainText('VCV');
 
+  // More sources: frequencies (population-frequency), GWAS, Mondo, the trees. The grant already holds.
+  await page.goto('/#/packs');
+  for (const title of ['1000 Genomes allele frequencies', 'GWAS Catalog associations', 'Condition names (Mondo', 'mtDNA haplogroup tree', 'Y-DNA haplogroup tree', 'Genetic map', 'dbSNP rsID merge history']) {
+    const panel = page.locator('.panel', { hasText: title });
+    await panel.getByRole('button', { name: /Install/ }).click();
+    await expect(panel.getByText(/Installed/)).toBeVisible();
+  }
+  await page.goto('/#/genome/2:136590000-136625000?sel=2:136608646');
+  await expect(page.locator('aside')).toContainText('of 1000 Genomes chromosomes', { timeout: 20_000 });
+  await expect(page.locator('aside')).toContainText('not about you');
+  await expect(page.locator('aside')).toContainText('Genetic position');
+  await expect(page.getByText('Population frequency').first()).toBeVisible();
+
+  // A retired rsID still finds its record through the dbSNP merge history
+  await page.getByRole('searchbox').fill('rs58590436');
+  await page.getByRole('searchbox').press('Enter');
+  await expect(page.getByRole('status')).toContainText('merged into rs3754689');
+  await expect(page).toHaveURL(/sel=2:136590746/);
+
+  // ClinVar list: strongest evidence first, with the GWAS column
+  await page.goto('/#/clinvar');
+  await expect(page.getByText('Ordered by strength of evidence')).toBeVisible();
+  await expect(page.locator('thead')).toContainText('Strongest GWAS association');
+
+  // Lineages: both lines placed or explained, with their tree and licence
+  await page.goto('/#/lineages');
+  await expect(page.getByText('Maternal line · mtDNA')).toBeVisible();
+  await expect(page.locator('.panel', { hasText: 'Maternal line' })).toContainText(/Best-matching haplogroup for your mother|Not placed/);
+  await expect(page.getByText('licence unverified').first()).toBeVisible();
+
   // Persisted in OPFS across a reload
   await page.reload();
   await page.goto('/#/kits');
@@ -68,4 +98,17 @@ test('refuses a file that is not a 23andMe export', async ({ page }) => {
   await page.goto('/#/import');
   await page.setInputFiles('input[type=file]', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello\nworld\n') });
   await expect(page.getByRole('alert')).toContainText('not a format this version can read');
+});
+
+test('says so, and does not download, when the site has too little storage for a pack', async ({ page }) => {
+  // Simulate a nearly full storage quota: 10 MB left for this site.
+  await page.addInitScript(() => {
+    const real = navigator.storage.estimate.bind(navigator.storage);
+    navigator.storage.estimate = async () => ({ ...(await real()), quota: 40_000_000, usage: 30_000_000 });
+  });
+  await page.goto('/#/packs');
+  const clinvar = page.locator('.panel', { hasText: 'ClinVar classifications' });
+  await expect(clinvar.getByText(/Not enough storage/)).toBeVisible();
+  await expect(clinvar.getByRole('button', { name: /Install/ })).toBeDisabled();
+  await expect(page.getByText(/of storage left for this site/)).toBeVisible();
 });

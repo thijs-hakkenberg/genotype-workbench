@@ -3,6 +3,7 @@
   "title": "GWAS Catalog associations",
   "description": "Published genome-wide associations between variants and traits. Population-level associations, not statements about any individual. Lifted from GRCh38 to GRCh37 at build time.",
   "build": "GRCh37",
+  "role": "association",
   "scientificDomain": "statistical-genetics",
   "evidenceKind": "statistical-association",
   "trackKind": "variant",

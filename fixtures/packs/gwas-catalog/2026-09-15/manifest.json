@@ -4,6 +4,7 @@
   "title": "GWAS Catalog associations",
   "description": "Published genome-wide associations between variants and traits. Population-level associations, not statements about any individual. Lifted from GRCh38 to GRCh37 at build time.",
   "build": "GRCh37",
+  "role": "association",
   "scientificDomain": "statistical-genetics",
   "evidenceKind": "statistical-association",
   "trackKind": "variant",
@@ -19,7 +20,7 @@
   "version": "2026-09-15",
   "sourceDate": "2026-09-15",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T17:16:14+00:00",
+  "builtAt": "2026-09-19T21:06:59+00:00",
   "file": "gwas-catalog.parquet",
   "rows": 243,
   "columns": [
@@ -49,12 +50,6 @@
   "size": 27006,
   "sha256": "4c61bbc4a56d77b5d0ae93d29624fea9e3027c20324f084d92a70942b86ce5fa",
   "stats": {
-    "fixture": true,
-    "sourceRows": 1192604,
-    "associations": 981291,
-    "dropped": {
-      "multiOrNoPosition": 210297,
-      "liftoverFailed": 1016
-    }
+    "fixture": true
   }
 }

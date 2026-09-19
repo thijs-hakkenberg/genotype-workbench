@@ -16,7 +16,10 @@ from .manifest import BuiltPack, PackSpec, all_specs, pack_dir, refresh_manifest
 from .paths import CACHE, DIST
 
 # Build order matters: later packs may read earlier ones (e.g. the reference).
-ORDER = ["reference-grch37", "genes-ensembl75", "clinvar", "gwas-catalog", "gnomad-chip"]
+ORDER = [
+    "reference-grch37", "genes-gencode", "clinvar", "gwas-catalog", "conditions-mondo", "freq-1000g",
+    "dbsnp-merges", "genetic-map", "haplotree-mt", "haplotree-y", "gnomad-chip",
+]
 
 
 @dataclass

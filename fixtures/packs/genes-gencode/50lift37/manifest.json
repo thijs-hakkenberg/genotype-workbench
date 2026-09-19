@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "genes-gencode",
+  "title": "Gene models (GENCODE 50, lifted to GRCh37)",
+  "description": "Protein-coding and non-coding genes from the current GENCODE release, mapped back to GRCh37, one representative transcript per gene (Ensembl canonical where tagged). Replaces the frozen 2014 Ensembl 75 models.",
+  "build": "GRCh37",
+  "role": "genes",
+  "scientificDomain": "molecular-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": "feature",
+  "core": false,
+  "licence": "Open access, no restrictions (GENCODE / EMBL-EBI terms of use)",
+  "licenceClass": "open",
+  "source": {
+    "name": "GENCODE release 50, GRCh37 mapping (basic annotation)",
+    "short": "GENCODE 50",
+    "url": "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/latest_release/GRCh37_mapping/gencode.v50lift37.basic.annotation.gtf.gz"
+  },
+  "citation": "Mudge JM et al. GENCODE 2025: reference gene annotation for human and mouse. Nucleic Acids Res. 2025;53:D966\u2013D975",
+  "version": "50lift37",
+  "sourceDate": "2026-06-09",
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-19T21:06:59+00:00",
+  "file": "genes-gencode.parquet",
+  "rows": 10,
+  "columns": [
+    "chrom",
+    "start",
+    "end",
+    "strand",
+    "gene_id",
+    "symbol",
+    "biotype",
+    "transcript_id",
+    "transcript_name",
+    "canonical",
+    "element",
+    "element",
+    "cds_start",
+    "cds_end"
+  ],
+  "size": 3451,
+  "sha256": "6e58724fef3bf26a07e22df7a9d6e4c2b998700b651029728e8c8c02a9379cd4",
+  "stats": {
+    "fixture": true
+  }
+}
