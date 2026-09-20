@@ -5,6 +5,24 @@
 
 export const HOST_API_VERSION = '0.1.0';
 
+/**
+ * Does `range` (a manifest's `hostApi`) accept `version`?
+ *
+ * Only the two forms manifests actually use: an exact version, or a caret
+ * range. Below 1.0.0 a caret pins the minor, so `^0.1` accepts 0.1.x and
+ * refuses 0.2.0 — the host API is still allowed to break between minors.
+ */
+export function satisfiesHostApi(range: string, version = HOST_API_VERSION): boolean {
+  const parts = (s: string) => s.replace(/^[\^~]/, '').split('.').map((n) => Number.parseInt(n, 10) || 0);
+  const [major, minor, patch] = parts(version);
+  if (!range.startsWith('^') && !range.startsWith('~')) return range === version;
+  const [wantMajor, wantMinor, wantPatch = 0] = parts(range);
+  if (major !== wantMajor) return false;
+  // A caret on 0.x, and a tilde anywhere, pin the minor too.
+  if (major === 0 || range.startsWith('~')) return minor === wantMinor && patch! >= wantPatch;
+  return minor! > wantMinor! || (minor === wantMinor && patch! >= wantPatch);
+}
+
 export type Capability = 'importer' | 'annotation-pack' | 'view' | 'connector' | 'analysis';
 
 /** How a fact is known. Views choose their encoding from this (ADR-0005). */

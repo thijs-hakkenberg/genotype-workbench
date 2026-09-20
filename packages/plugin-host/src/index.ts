@@ -2,7 +2,7 @@
  * Plugin Host (ADR-0006). No plugin reaches the network unless its manifest
  * lists the host and the user granted it. Grants name what they cover.
  */
-import type { Grant, PluginManifest } from '@gw/plugin-sdk';
+import { HOST_API_VERSION, satisfiesHostApi, type Grant, type PluginManifest } from '@gw/plugin-sdk';
 import type { StorageAdapter } from '@gw/storage';
 
 const GRANTS_JSON = 'meta/grants.json';
@@ -37,7 +37,13 @@ export class PluginHost {
     this.persistent = (await this.storage.readJson<Grant[]>(GRANTS_JSON)) ?? [];
   }
 
+  /** Refuses a plugin built against a host API this host does not implement. */
   register(manifest: PluginManifest): void {
+    if (!satisfiesHostApi(manifest.hostApi)) {
+      throw new Error(
+        `${manifest.id} ${manifest.version} asks for host API ${manifest.hostApi}; this host is ${HOST_API_VERSION}.`,
+      );
+    }
     this.plugins.set(manifest.id, manifest);
     this.changed();
   }

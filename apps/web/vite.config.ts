@@ -1,10 +1,19 @@
 import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { VitePWA } from 'vite-plugin-pwa';
-import { cpSync, createReadStream, existsSync, statSync } from 'node:fs';
+import { cpSync, createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const repo = resolve(import.meta.dirname, '../..');
+
+/**
+ * The app's own version, from the root package.json.
+ *
+ * Deliberately not the locus version: that one is stamped on every kit and
+ * pack at import time to record which normalizer produced those calls, so it
+ * moves only when crates/locus does. Two numbers, two meanings.
+ */
+const appVersion = JSON.parse(readFileSync(join(repo, 'package.json'), 'utf8')).version as string;
 const packsDir = process.env.GW_PACKS_DIR ? resolve(process.env.GW_PACKS_DIR) : join(repo, 'packs-dist');
 
 /**
@@ -58,6 +67,7 @@ const headers = {
 };
 
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   plugins: [
     svelte(),
     packIndex(),

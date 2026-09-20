@@ -41,7 +41,7 @@
 </script>
 
 <header class="nav topbar">
-  <div class="nav-brand">Genotype Workbench <small>v0.1</small></div>
+  <div class="nav-brand">Genotype Workbench <small>v{__APP_VERSION__}</small></div>
   {#if kit}
     <label class="kit-pill" title="Active kit">
       <span class="swatch"></span>
