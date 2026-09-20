@@ -11,7 +11,7 @@ import profileAncestryDna from '@gw/profile-ancestrydna/profile.json';
 import profileMyHeritage from '@gw/profile-myheritage/profile.json';
 import profileFamilyTreeDna from '@gw/profile-familytreedna/profile.json';
 import type { ImportColumns, ImportWorkerApi, ReferenceColumns } from './import.worker';
-import type { CallRow, Custody, DensityBin, ImportMeta, Kit, RefCheck } from './types';
+import type { CallRow, ConsentBasis, Custody, DensityBin, ImportMeta, Kit, RefCheck } from './types';
 
 export * from './types';
 export type { ReferenceColumns } from './import.worker';
@@ -157,6 +157,32 @@ export class GenotypeStore {
     };
     await this.storage.attachParquet(file, viewName(kitId));
     this.kits.push(kit);
+    await this.storage.writeJson(KITS_JSON, this.kits);
+    this.emit({ type: 'KitImported', kit });
+    return kit;
+  }
+
+  /**
+   * Record a consent basis for a kit imported without one.
+   *
+   * Calls stay immutable; only the custody record moves, and it moves by
+   * appending: the previous basis is kept in `history` so the record still
+   * says what was true before. Consent may be added, never quietly rewritten.
+   */
+  async recordConsent(kitId: string, consentBasis: ConsentBasis, consentNote?: string): Promise<Kit> {
+    const kit = this.get(kitId);
+    if (!kit) throw new Error(`No kit ${kitId}`);
+    const previous = kit.custody;
+    kit.custody = {
+      ...previous,
+      consentBasis,
+      consentNote,
+      recordedAt: new Date().toISOString(),
+      history: [
+        ...(previous.history ?? []),
+        { consentBasis: previous.consentBasis, consentNote: previous.consentNote, recordedAt: previous.recordedAt },
+      ],
+    };
     await this.storage.writeJson(KITS_JSON, this.kits);
     this.emit({ type: 'KitImported', kit });
     return kit;

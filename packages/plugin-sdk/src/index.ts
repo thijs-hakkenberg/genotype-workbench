@@ -248,6 +248,23 @@ export interface Grant {
   scope: 'session' | 'persistent';
 }
 
+/**
+ * A kit as a grant dialog must name it: whose DNA it is, not just its id.
+ *
+ * A person consenting on behalf of a relative should be able to read the
+ * sentence aloud to them, so the subject's name travels with the kit
+ * (docs/…/Genotype Workbench UI.dc.html section 04).
+ */
+export interface KitSubject {
+  kitId: string;
+  /** What the kit is called, e.g. "Mother — AncestryDNA". */
+  label: string;
+  /** Whose DNA it is, from the custody record. */
+  dataSubject: string;
+  /** `none` means no analysis may read it, whatever the user answers. */
+  consentBasis: 'self' | 'recorded-consent' | 'none';
+}
+
 export interface ViewHandle {
   setRegion(region: Region): void;
   setTracks(tracks: TrackSource[]): void;

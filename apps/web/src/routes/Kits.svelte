@@ -1,8 +1,18 @@
 <script lang="ts">
+  import type { ConsentBasis } from '@gw/genotype-store';
   import { app, setActiveKit, svc, refreshEstimate } from '../lib/services.svelte';
   import { fmtBytes, fmtDate, fmtInt, fmtPct } from '../lib/format';
 
   let confirmDelete = $state<string | null>(null);
+  let recording = $state<string | null>(null);
+  let basis = $state<ConsentBasis>('recorded-consent');
+  let note = $state('');
+
+  async function saveConsent(kitId: string) {
+    await svc().store.recordConsent(kitId, basis, note.trim() || undefined);
+    recording = null;
+    note = '';
+  }
 
   async function remove(id: string) {
     await svc().store.delete(id);
@@ -40,7 +50,13 @@
               <td>{k.custody.custodian}</td>
               <td>
                 <span class="tag {k.custody.consentBasis === 'none' ? 'tag-outline' : 'tag-accent'}">{basisLabel[k.custody.consentBasis]}</span>
-                {#if k.custody.consentBasis === 'none'}<div class="faint" style="font-size:11px;margin-top:2px">Analysis blocked</div>{/if}
+                {#if k.custody.consentBasis === 'none'}
+                  <div class="faint" style="font-size:11px;margin-top:2px">Analysis blocked</div>
+                  <button class="btn btn-ghost" type="button" style="margin-top:4px"
+                          onclick={(e) => (e.stopPropagation(), (recording = k.kitId))}>Record one</button>
+                {:else if k.custody.history?.length}
+                  <div class="faint" style="font-size:11px;margin-top:2px">recorded {fmtDate(k.custody.recordedAt)}</div>
+                {/if}
               </td>
               <td class="num" style="text-align:right">{fmtInt(k.stats.calls)}</td>
               <td class="num" style="text-align:right">{fmtPct((k.stats.calls - k.stats.noCalls) / k.stats.calls)}</td>
@@ -56,6 +72,33 @@
           {/each}
         </tbody>
       </table>
+    {/if}
+
+    {#if recording}
+      {@const k = app.kits.find((x) => x.kitId === recording)}
+      <div class="panel" style="margin-top:var(--space-4);background:var(--color-bg)">
+        <div class="card-kicker">Consent record</div>
+        <h4>On what basis may {k?.custody.dataSubject}'s kit be analysed?</h4>
+        <p class="notice" style="margin:0 0 var(--space-4)">
+          The custodian records this, and the record says who said so and when. The earlier record is kept, not replaced.
+          Nothing about the kit's calls changes.
+        </p>
+        <div class="field" style="max-width:420px">
+          <label for="consent-basis">Basis</label>
+          <select id="consent-basis" class="input" bind:value={basis}>
+            <option value="recorded-consent">Recorded consent — {k?.custody.dataSubject} agreed to this</option>
+            <option value="self">Self — this is the custodian's own DNA</option>
+          </select>
+        </div>
+        <div class="field" style="max-width:420px;margin-top:var(--space-3)">
+          <label for="consent-note">How it was given</label>
+          <input id="consent-note" class="input" bind:value={note} placeholder="Signed form, 14 March 2026" />
+        </div>
+        <div class="actions" style="margin-top:var(--space-4)">
+          <button class="btn btn-ghost" type="button" onclick={() => (recording = null)}>Cancel</button>
+          <button class="btn btn-primary" type="button" onclick={() => saveConsent(recording!)}>Record consent</button>
+        </div>
+      </div>
     {/if}
   </div>
 

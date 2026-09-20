@@ -3,7 +3,7 @@
  * Contexts talk through their public APIs only (Core architecture, context map).
  */
 import { OpfsDuckDbStorage, isStorageBusyError, requestPersistence, type StorageEstimate } from '@gw/storage';
-import { PluginHost, type NetworkRequest, type PromptAnswer } from '@gw/plugin-host';
+import { PluginHost, type GrantRequest, type PromptAnswer } from '@gw/plugin-host';
 import { AnnotationLibrary, type InstalledPack } from '@gw/annotation-library';
 import { GenotypeStore, type Kit } from '@gw/genotype-store';
 import type { Grant, PackIndex, PluginManifest } from '@gw/plugin-sdk';
@@ -34,6 +34,8 @@ export const app = $state({
   errorKind: 'other' as 'other' | 'busy' | 'unsupported',
   kits: [] as Kit[],
   activeKitId: null as string | null,
+  /** The second kit, when two are being compared (v0.3, kinship). */
+  compareKitId: null as string | null,
   installed: [] as InstalledPack[],
   index: null as PackIndex | null,
   indexError: '',
@@ -42,7 +44,7 @@ export const app = $state({
   plugins: [] as PluginManifest[],
   locusVersion: '',
   estimate: null as StorageEstimate | null,
-  grantRequest: null as (NetworkRequest & { answer(a: PromptAnswer): void }) | null,
+  grantRequest: null as (GrantRequest & { answer(a: PromptAnswer): void }) | null,
 });
 
 let services: Services | null = null;
@@ -53,6 +55,7 @@ export function svc(): Services {
 }
 
 const ACTIVE_KIT = 'gw.activeKit';
+const COMPARE_KIT = 'gw.compareKit';
 
 function remember(key: string, value: string | null) {
   try {
@@ -78,12 +81,42 @@ export function activeKit(): Kit | null {
 export function setActiveKit(id: string | null) {
   app.activeKitId = id;
   remember(ACTIVE_KIT, id);
+  // Nobody is ever compared with themselves.
+  if (app.compareKitId === id) setCompareKit(null);
+}
+
+/** The kit the active one is being compared against, if any. */
+export function compareKit(): Kit | null {
+  return app.kits.find((k) => k.kitId === app.compareKitId) ?? null;
+}
+
+export function setCompareKit(id: string | null) {
+  app.compareKitId = id === app.activeKitId ? null : id;
+  remember(COMPARE_KIT, app.compareKitId);
+}
+
+/** The kits an analysis may read: every kit whose custody records a basis. */
+export function analysableKits(): Kit[] {
+  return app.kits.filter((k) => k.custody.consentBasis !== 'none');
+}
+
+/**
+ * Why an analysis may not read this kit, in the words the UI shows.
+ *
+ * The host refuses these kits too (`ensureKits`); this is only so a page can
+ * say so before asking, rather than opening a dialog that cannot be answered.
+ */
+export function consentBlock(kit: Kit): string | null {
+  return kit.custody.consentBasis === 'none'
+    ? `No consent is recorded for ${kit.custody.dataSubject}'s kit, so no analysis may read it.`
+    : null;
 }
 
 function syncKits() {
   const s = svc();
   app.kits = s.store.list();
   if (!app.kits.some((k) => k.kitId === app.activeKitId)) setActiveKit(app.kits[0]?.kitId ?? null);
+  if (app.compareKitId && !app.kits.some((k) => k.kitId === app.compareKitId)) setCompareKit(null);
 }
 
 function syncPacks() {
@@ -159,6 +192,7 @@ export async function boot() {
     library.onChange(syncPacks);
     store.on(syncKits);
     app.activeKitId = recall(ACTIVE_KIT);
+    app.compareKitId = recall(COMPARE_KIT);
     syncKits();
     syncPacks();
     syncHost();

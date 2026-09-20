@@ -6,7 +6,7 @@
 import { mtHaplogroup, yHaplogroup, type HaplogroupResult, type MtNode, type YNode } from '@gw/analysis-haplogroups';
 import type { PackManifest } from '@gw/plugin-sdk';
 import type { Kit } from '@gw/genotype-store';
-import { svc } from './services.svelte';
+import { consentBlock, svc } from './services.svelte';
 
 export interface LineageResult {
   result: HaplogroupResult;
@@ -34,9 +34,8 @@ export function lineagesFor(kit: Kit): Promise<Lineages> {
 }
 
 async function run(kit: Kit): Promise<Lineages> {
-  if (kit.custody.consentBasis === 'none') {
-    return { mt: null, y: null, blocked: `No consent is recorded for ${kit.custody.dataSubject}'s kit, so no analysis may read it.` };
-  }
+  const blocked = consentBlock(kit);
+  if (blocked) return { mt: null, y: null, blocked };
   const { store, library } = svc();
   const [mtTree, yTree] = await Promise.all([library.allRows<MtNode>('haplotree-mt'), library.allRows<YNode>('haplotree-y')]);
   const haploid = async (chrom: 'MT' | 'Y') => {

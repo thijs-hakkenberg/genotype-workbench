@@ -9,6 +9,12 @@ export interface Custody {
   consentBasis: ConsentBasis;
   consentNote?: string;
   recordedAt: string;
+  /**
+   * Every earlier basis, oldest first. A consent record may be added after
+   * import, but what it used to say is never overwritten: who allowed what,
+   * and when, is the whole point of the record.
+   */
+  history?: { consentBasis: ConsentBasis; consentNote?: string; recordedAt: string }[];
 }
 
 export type RefCheck =
