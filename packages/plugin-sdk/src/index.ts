@@ -179,7 +179,7 @@ export interface PackIndex {
   packs: PackManifest[];
 }
 
-export type TrackKind = 'variant' | 'feature' | 'segment' | 'signal' | 'sequence' | 'protein';
+export type TrackKind = 'variant' | 'feature' | 'segment' | 'signal' | 'sequence' | 'protein' | 'helix';
 
 /** Below this window width the reference sequence can be drawn base by base. */
 export const SEQUENCE_BELOW_BP = 20_000;

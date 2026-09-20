@@ -22,8 +22,8 @@ import {
 import type { PluginHost } from '@gw/plugin-host';
 import { ident, type StorageAdapter } from '@gw/storage';
 import { SequenceIndex, type CodingTranscript } from '@gw/protein';
-import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, MergeRow, ProteinRow, SharedLocus } from './rows';
-import { classificationRank, classificationShort } from './rows';
+import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, HelixRow, MergeRow, ProteinRow, SharedLocus } from './rows';
+import { classificationRank, classificationShort, helixRow } from './rows';
 import { codonItems, pickTranscript, sequenceItems, type CodonRow, type SequenceItemRow } from './sequence';
 import { sha256Hex, verifyIndexSignature } from './verify';
 
@@ -41,6 +41,14 @@ const PACKS_JSON = 'meta/packs.json';
  * for ADR-0013 has all of them.
  */
 const CODING_COLUMNS = ['canonical', 'cds_start', 'cds_end', 'cds_starts', 'cds_ends', 'cds_frames'];
+
+/**
+ * Widest window the helix is drawn in.
+ *
+ * A turn is 10.5 bases, so beyond a few hundred the twist is finer than a
+ * pixel and the drawing says nothing true about the shape.
+ */
+export const HELIX_BELOW_BP = 400;
 
 /** Shown wherever a coding feature cannot run because the genes pack predates it. */
 export const CODING_PACK_NEEDED =
@@ -735,6 +743,60 @@ export class AnnotationLibrary {
           `SELECT * FROM ${this.view(m)} WHERE chrom = ? AND "end" >= ? AND start <= ? ORDER BY start LIMIT 500`,
           [region.chrom, region.start, region.end]);
         return sequenceItems(rows, region.chrom);
+      },
+    };
+  }
+
+  /**
+   * The molecule itself: reference bases, with this kit's calls placed on it.
+   *
+   * Built here rather than in the view because it needs both a reference pack
+   * and a kit, and only this package writes SQL. Where the two copies differ
+   * the reference base stands, and the call travels alongside it — chip data
+   * is unphased, so neither base can be assigned to one molecule.
+   */
+  helixTrack(kitView: string | null): TrackSource<HelixRow> | null {
+    const m = this.one('sequence');
+    if (!m) return null;
+    return {
+      descriptor: {
+        ...this.descriptor(m, 'Double helix'),
+        id: 'pack:helix',
+        kind: 'helix',
+        evidenceKind: 'documentary',
+        // Two reasons there may be nothing, and the row has one line to say so:
+        // the window is too wide for a turn to mean anything, or this pack has
+        // no sequence here. Both are true of the same sentence.
+        emptyMessage: `Nothing to draw: the molecule is drawn below ${HELIX_BELOW_BP} bases, where this pack has reference sequence`,
+      },
+      itemsIn: async (region) => {
+        if (region.end - region.start > HELIX_BELOW_BP) return [];
+        const ranges = await this.storage.query<{ start: number; seq: string }>(
+          `SELECT start, seq FROM ${this.view(m)} WHERE chrom = ? AND "end" >= ? AND start <= ? ORDER BY start LIMIT 200`,
+          [region.chrom, region.start, region.end]);
+        if (ranges.length === 0) return [];
+        const calls = kitView
+          ? await this.storage.query<{ pos: number; a1: string | null; a2: string | null; is_nocall: boolean }>(
+            `SELECT pos, a1, a2, is_nocall FROM ${ident(kitView)}
+             WHERE chrom = ? AND pos BETWEEN ? AND ?`, [region.chrom, region.start, region.end])
+          : [];
+        const called = new Map(calls.map((c) => [c.pos, c]));
+
+        const items: TrackItem<HelixRow>[] = [];
+        for (const r of ranges) {
+          for (let i = 0; i < r.seq.length; i++) {
+            const pos = r.start + i;
+            if (pos < region.start || pos > region.end) continue;
+            const c = called.get(pos);
+            items.push({
+              id: `${region.chrom}:${pos}`,
+              start: pos,
+              end: pos,
+              row: helixRow(r.seq[i]!.toUpperCase(), c?.a1 ?? null, c?.a2 ?? null, !!c?.is_nocall),
+            });
+          }
+        }
+        return items;
       },
     };
   }

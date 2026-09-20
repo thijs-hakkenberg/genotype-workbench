@@ -113,6 +113,33 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   expect(offOrigin).toEqual([]);
 });
 
+test('the molecule is drawn, and says what it is and is not', async ({ page }) => {
+  await page.goto('/#/import');
+  await page.setInputFiles('input[type=file]', KIT);
+  await page.getByRole('button', { name: 'Store kit on this device' }).click();
+  await expect(page.getByText('Kit overview')).toBeVisible();
+  await page.goto('/#/packs');
+  await page.getByRole('button', { name: /^Install all/ }).click();
+  await expect(page.getByText('Grant requested')).toBeVisible();
+  await page.getByRole('button', { name: 'Grant for this session' }).click();
+  await expect(page.getByText('Installing…')).toHaveCount(0, { timeout: 120_000 });
+
+  // Close enough in for a turn to be worth drawing: 10.5 bases is one turn.
+  await page.goto('/#/genome/2:136608610-136608690?sel=2:136608646');
+  await expect(page.locator('.gw-tracks')).toContainText('Double helix');
+
+  const molecule = page.locator('.dock section', { hasText: 'The molecule' });
+  await expect(molecule).toContainText('End-on, down the axis');
+  await expect(molecule).toContainText('10.5 bp');
+  // It never claims to be a picture of this person's own molecule.
+  await expect(molecule).toContainText(/reference|copies read/);
+
+  // Too far out for a turn to mean anything, and the row says so rather than
+  // drawing a smear. (The canvas hint is not in the DOM; the empty row is.)
+  await page.goto('/#/genome/2:136600000-136620000');
+  await expect(page.locator('canvas[aria-label*="molecule is drawn below 400 bases"]')).toHaveCount(1);
+});
+
 test('the version in the header leads to what changed', async ({ page }) => {
   await page.goto('/');
   const version = page.locator('.nav-brand a');

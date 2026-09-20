@@ -22,6 +22,7 @@ import { readPalette, type Palette } from './palette';
 
 export { RENDERERS } from './marks';
 export { alpha, readPalette, type Palette } from './palette';
+export * from './helix';
 
 export const manifest = manifestJson as PluginManifest;
 
@@ -221,7 +222,16 @@ export class TrackView implements TrackViewHandle {
         m.ctx.fillStyle = this.palette.n[500];
         m.ctx.textBaseline = 'middle';
         const empty = row.source.descriptor.emptyMessage ?? 'Nothing in this window';
-        m.ctx.fillText(row.error ? `Could not read this track: ${row.error}` : empty, 12, height / 2);
+        const message = row.error ? `Could not read this track: ${row.error}` : empty;
+        m.ctx.fillText(message, 12, height / 2);
+        // Also on the element: text painted into a canvas is invisible to a
+        // screen reader, and an empty track has something to say.
+        row.canvas.setAttribute('aria-label', `${row.source.descriptor.title}: ${message}`);
+      } else {
+        row.canvas.setAttribute(
+          'aria-label',
+          `${row.source.descriptor.title}: ${row.items.length} drawn in this window`,
+        );
       }
       row.label.style.opacity = row.loading ? '0.6' : '1';
     }
@@ -380,6 +390,6 @@ export function markSwatch(kind: keyof typeof EVIDENCE_KINDS): string {
 
 export const viewTracks: ViewPlugin = {
   manifest,
-  supports: (kind: TrackKind) => ['variant', 'feature', 'signal', 'sequence', 'protein', 'segment'].includes(kind),
+  supports: (kind: TrackKind) => ['variant', 'feature', 'signal', 'sequence', 'protein', 'segment', 'helix'].includes(kind),
   mount: (el, tracks, options) => new TrackView(el, tracks, options),
 };

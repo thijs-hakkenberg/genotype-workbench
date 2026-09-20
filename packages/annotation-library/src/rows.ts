@@ -144,3 +144,33 @@ export interface SharedLocus {
   het_a: boolean;
   het_b: boolean;
 }
+
+/** What the molecule carries at one position, and how well that is known. */
+export interface HelixRow {
+  /** The GRCh37 reference base here. */
+  base: string;
+  /** The kit's genotype, or null where this position was not read. */
+  call: string | null;
+  /** The base drawn on the molecule. */
+  drawn: string;
+  /**
+   * `measured` — the kit read this position and both copies agree, so either
+   * molecule carries the drawn base.
+   * `heterozygous` — the two copies differ. Chip data is unphased, so neither
+   * base can be placed on this molecule; the reference is drawn and both
+   * letters are shown beside it.
+   * `no-call` — read, but the chip could not tell.
+   * `reference` — not on the chip at all; the reference base stands in.
+   */
+  state: 'reference' | 'measured' | 'heterozygous' | 'no-call';
+}
+
+/** The reference base, your call, and what that means for one position. */
+export function helixRow(base: string, a1: string | null, a2: string | null, isNoCall: boolean): HelixRow {
+  const clean = (b: string | null) => (b && 'ACGT'.includes(b) ? b : null);
+  const [x, y] = [clean(a1), clean(a2)];
+  if (isNoCall || !x) return { base, call: null, drawn: base, state: isNoCall ? 'no-call' : 'reference' };
+  // A haploid call (MT, and Y or X in a male) has one copy, so it is not ambiguous.
+  if (!y || x === y) return { base, call: x, drawn: x, state: 'measured' };
+  return { base, call: `${x}${y}`, drawn: base, state: 'heterozygous' };
+}

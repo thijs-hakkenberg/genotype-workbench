@@ -7,6 +7,7 @@
  */
 import type { EvidenceKind, TrackItem, TrackKind } from '@gw/plugin-sdk';
 import { alpha, type Palette } from '../palette';
+import { strandPoint } from '../helix';
 
 export interface MarkContext {
   ctx: CanvasRenderingContext2D;
@@ -35,6 +36,15 @@ export interface MarkRenderer {
 }
 
 const DENSITY_THRESHOLD = 1500;
+/** The other strand reads the complement, which is what makes it a copy. */
+const COMPLEMENT: Record<string, string> = { A: 'T', T: 'A', C: 'G', G: 'C' };
+
+/** What the helix renderer needs of a row, without depending on who built it. */
+interface HelixRow {
+  drawn: string;
+  call: string | null;
+  state: 'reference' | 'measured' | 'heterozygous' | 'no-call';
+}
 /** Pixels per base at which letters replace marks, for calls and for the reference. */
 const LETTERS_ABOVE_PX = 5.5;
 
@@ -465,6 +475,172 @@ export const segment: MarkRenderer = {
   },
 };
 
+/**
+ * helix — the molecule itself, as a ribbon model.
+ *
+ * Two backbones winding round a shared axis with the base pairs between them,
+ * drawn from the published B-form parameters (see ../helix.ts), so the turn,
+ * the right-handedness and the unequal grooves are real rather than stylised.
+ * Depth is carried by weight and fade: a strand in front is solid, the same
+ * strand behind is thin and faint, and they swap every half turn.
+ *
+ * What is drawn on it is not all equally known, and the forms say which. A
+ * position the chip read where both copies agree carries your own base, marked
+ * as measured. A position where your two copies differ carries the reference
+ * base and both of your letters beside it: chip data is unphased, so placing
+ * either one on this molecule would be a guess about which parent it came
+ * from. Everything else is the reference standing in, in the neutral ramp.
+ */
+export const helix: MarkRenderer = {
+  height: () => 132,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const cy = height / 2;
+    const radius = height * 0.3;
+
+    if (m.scale < 3) {
+      ctx.font = `11px ${palette.font}`;
+      ctx.fillStyle = palette.n[600];
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Zoom in to see the double helix', 12, cy);
+      return [];
+    }
+
+    const visible = items.filter((it) => {
+      const x = m.x(it.start);
+      return x > -m.scale * 2 && x < m.width + m.scale * 2;
+    });
+    if (visible.length === 0) return [];
+
+    const hits: HitBox[] = [];
+    const letters = m.scale >= 9;
+    const cxOf = (pos: number) => m.x(pos) + m.scale / 2;
+    const yOf = (across: number) => cy + across * radius;
+    const fade = (depth: number) => 0.22 + 0.78 * ((depth + 1) / 2);
+
+    // Sampled finer than one point per base pair: a turn is only 10.5 bases, so
+    // joining the bases directly draws a polygon rather than a curve.
+    const from = visible[0]!.start;
+    const to = visible[visible.length - 1]!.start;
+    type Run = { points: { x: number; y: number }[]; front: boolean };
+    const backbone = (strand: 0 | 1): Run[] => {
+      const runs: Run[] = [];
+      let run: Run | null = null;
+      for (let pos = from; pos <= to + 1e-6; pos += 0.2) {
+        const sp = strandPoint(pos, strand);
+        const point = { x: cxOf(pos), y: yOf(sp.across) };
+        const front = sp.depth >= 0;
+        if (!run || run.front !== front) {
+          if (run) {
+            run.points.push(point); // meet at the crossing, so there is no gap
+            runs.push(run);
+          }
+          run = { points: [point], front };
+        } else {
+          run.points.push(point);
+        }
+      }
+      if (run) runs.push(run);
+      return runs;
+    };
+
+    const stroke = (runs: Run[]) => {
+      for (const run of runs) {
+        if (run.points.length < 2) continue;
+        // The strands are told apart by depth, not by colour: the near one is
+        // solid, the far one thin and faint, and they trade places each half
+        // turn. Colour stays free to mean what it means everywhere else.
+        ctx.strokeStyle = alpha(palette.n[300]!, run.front ? 0.92 : 0.26);
+        ctx.lineWidth = run.front ? 2.4 : 1.1;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(run.points[0]!.x, run.points[0]!.y);
+        for (const pt of run.points.slice(1)) ctx.lineTo(pt.x, pt.y);
+        ctx.stroke();
+      }
+    };
+
+    const runs = [...backbone(0), ...backbone(1)];
+    stroke(runs.filter((r) => !r.front));
+
+    for (const it of visible) {
+      const row = it.row as HelixRow;
+      const cx = cxOf(it.start);
+      const a = strandPoint(it.start, 0);
+      const b = strandPoint(it.start, 1);
+      const known = row.state === 'measured';
+      const ambiguous = row.state === 'heterozygous';
+      const ink = known || ambiguous ? palette.a[400]! : palette.n[500]!;
+      const depth = (a.depth + b.depth) / 2;
+
+      ctx.strokeStyle = alpha(ink, fade(depth) * (known || ambiguous ? 1 : 0.45));
+      ctx.lineWidth = known || ambiguous ? 2 : 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, yOf(a.across));
+      ctx.lineTo(cx, yOf(b.across));
+      ctx.stroke();
+
+      // Two copies that disagree: the rung is doubled, the way anything
+      // unresolved is doubled elsewhere.
+      if (ambiguous) {
+        ctx.lineWidth = 1.4;
+        for (const dx of [-2.2, 2.2]) {
+          ctx.beginPath();
+          ctx.moveTo(cx + dx, yOf(a.across));
+          ctx.lineTo(cx + dx, yOf(b.across));
+          ctx.stroke();
+        }
+      }
+      hits.push({ item: it, x0: cx - m.scale / 2, x1: cx + m.scale / 2, y0: 0, y1: height });
+    }
+
+    stroke(runs.filter((r) => r.front));
+
+    if (letters) {
+      const size = Math.min(13, Math.max(8, m.scale * 0.72));
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (const it of visible) {
+        const row = it.row as HelixRow;
+        const cx = cxOf(it.start);
+        const a = strandPoint(it.start, 0);
+        const b = strandPoint(it.start, 1);
+        const known = row.state === 'measured';
+        const ambiguous = row.state === 'heterozygous';
+
+        // A base sits just inside its own backbone, and is legible over it.
+        const write = (text: string, across: number, depth: number, colour: string, weight: number) => {
+          const y = yOf(across * 0.58);
+          ctx.font = `${weight >= 600 ? '600 ' : ''}${size}px ${palette.font}`;
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = alpha(palette.bg, 0.85);
+          ctx.strokeText(text, cx, y);
+          ctx.fillStyle = alpha(colour, fade(depth));
+          ctx.fillText(text, cx, y);
+        };
+
+        write(row.drawn, a.across, a.depth, known ? palette.a[300]! : palette.n[300]!, known ? 600 : 400);
+        write(COMPLEMENT[row.drawn] ?? 'N', b.across, b.depth, palette.n[500]!, 400);
+
+        if (ambiguous && row.call) {
+          // Both of your letters, beside the rung rather than on it: neither
+          // one can be placed on this molecule.
+          ctx.font = `600 ${Math.max(8, size - 2)}px ${palette.font}`;
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = alpha(palette.bg, 0.9);
+          const label = `${row.call[0]}/${row.call[1]}`;
+          ctx.strokeText(label, cx, height - 8);
+          ctx.fillStyle = palette.a[300]!;
+          ctx.fillText(label, cx, height - 8);
+        }
+        if (it.id === m.selectedId) selectedRing(m, cx - m.scale / 2, 2, Math.max(m.scale, 3), height - 4);
+      }
+      ctx.textAlign = 'start';
+    }
+    return hits;
+  },
+};
+
 export const sequence: MarkRenderer = {
   height: () => 30,
   draw(m, items) {
@@ -559,6 +735,7 @@ export const KIND_RENDERERS: Partial<Record<TrackKind, MarkRenderer>> = {
   sequence,
   protein,
   segment,
+  helix,
 };
 
 export const RENDERERS: Record<EvidenceKind, MarkRenderer> = {

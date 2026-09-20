@@ -1,8 +1,25 @@
 # Changelog
 
-Milestones follow the roadmap in `docs/Core architecture.md`. The app version
-is its own number: the **locus version** shown beside each kit records which
-normalizer produced that kit's calls, and moves only when `crates/locus` does.
+Milestones follow the roadmap in `docs/Core architecture.md`, and the app
+version follows the milestones — but it can advance within one, so 0.3.1 is
+still the v0.3 milestone rather than the start of v0.4.
+
+The app version is also its own number: the **locus version** shown beside each
+kit records which normalizer produced that kit's calls, and moves only when
+`crates/locus` does.
+
+## 0.3.1 — 2026-09-21
+
+The molecule everything else is a reading of.
+
+### Added
+
+- **The double helix**, drawn from the published B-form measurements — 10.5 base pairs per turn, 3.38 Å rise, 20 Å across, a 12 Å minor and a 22 Å major groove — so the turn, the handedness and the unequal grooves are real rather than stylised. A track in the genome view shows it from the side, below the sequence and protein; a card in the detail dock shows it end-on, looking down the axis, where the ten or so nearest base pairs form a rosette.
+- The two views are honest about whose bases they show. Where both your copies agree, your base is drawn and marked as measured. Where they differ, the reference base is drawn and both of your letters appear beside a doubled rung: chip data is unphased, so neither base can be placed on one molecule without guessing which parent it came from. Everything else is the reference standing in, because a chip reads positions rather than stretches.
+
+### Changed
+
+- Each track's empty or failed state is now also set as an `aria-label` on its canvas. Text painted into a canvas is invisible to a screen reader, and an empty track has something to say.
 
 ## 0.3.0 — 2026-09-20
 

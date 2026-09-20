@@ -4,7 +4,8 @@
   import { EVIDENCE_KINDS, SEQUENCE_BELOW_BP } from '@gw/plugin-sdk';
   import { CHROM_LENGTH, GRCH37, clampRegion, formatRegion, formatWidth, parseRegion } from '@gw/plugin-sdk/genome';
   import { TrackView, markSwatch } from '@gw/view-tracks';
-  import { formatCall, type CallRow } from '@gw/genotype-store';
+  import { formatCall, viewName, type CallRow } from '@gw/genotype-store';
+  import { HELIX_BELOW_BP } from '@gw/annotation-library';
   import { app, activeKit, svc } from '../lib/services.svelte';
   import { route, go } from '../lib/router.svelte';
   import { fmtInt } from '../lib/format';
@@ -30,7 +31,7 @@
     { role: 'classification', title: 'ClinVar', kind: 'curated-classification' as const },
     { role: 'association', title: 'GWAS Catalog', kind: 'statistical-association' as const },
     { role: 'frequency', title: 'Population frequency', kind: 'population-frequency' as const },
-    { role: 'sequence', title: 'Reference sequence and protein', kind: 'documentary' as const },
+    { role: 'sequence', title: 'Reference sequence, protein and the double helix', kind: 'documentary' as const },
   ];
   const missing = $derived(PACK_SLOTS.filter((s) => !app.installed.some((p) => p.manifest.role === s.role)));
   const hasSequence = $derived(app.installed.some((p) => p.manifest.role === 'sequence'));
@@ -39,7 +40,9 @@
     const { store, library } = svc();
     const t: TrackSource[] = [];
     if (kit) t.push(store.trackSource(kit.kitId));
-    return [...t, ...library.trackSources()];
+    // The molecule last: it is what everything above is a reading of.
+    const helix = library.helixTrack(kit ? viewName(kit.kitId) : null);
+    return [...t, ...library.trackSources(), ...(helix ? [helix] : [])];
   }
 
   function navigate(r: Region, replace = true) {
@@ -119,7 +122,7 @@
     </div>
     <span class="muted num" style="font-size:12px">
       {formatWidth(width)} · {callCount == null ? '…' : callCount > 5000 ? 'over 5,000' : fmtInt(callCount)} calls in view
-      {#if width > SEQUENCE_BELOW_BP && hasSequence}· <button type="button" class="linkish" onclick={() => zoomTo(100)}>zoom in for bases and codons</button>{/if}
+      {#if width > SEQUENCE_BELOW_BP && hasSequence}· <button type="button" class="linkish" onclick={() => zoomTo(100)}>zoom in for bases and codons</button>{:else if width > HELIX_BELOW_BP && hasSequence}· <button type="button" class="linkish" onclick={() => zoomTo(120)}>zoom in for the double helix</button>{/if}
     </span>
     <div style="margin-left:auto;display:flex;gap:var(--space-2);align-items:center">
       <div class="seg" role="radiogroup" aria-label="Window width">

@@ -34,6 +34,14 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 
 ![At 101 bases: a heterozygous call shown as stacked letters, the reference sequence, and MTHFR's codons with their amino acids](docs/screenshots/sequence.png)
 
+**The double helix.** Keep going and the molecule itself is drawn, from the published B-form measurements — 10.5 base pairs per turn, 3.38 Å rise, 20 Å across, a 12 Å minor and a 22 Å major groove — so the turn, the handedness and the unequal grooves are real rather than stylised. It is a ribbon model, not an atomic one: the atoms are left out rather than approximated.
+
+![The double helix track below the sequence and protein tracks, with base letters on both strands and the reference sequence above](docs/screenshots/helix.png)
+
+A helix is *one* molecule, and you have two copies of each autosome, so the drawing says which bases are yours. Where both copies agree, your base is drawn and marked as measured. Where they differ, the reference base is drawn with both of your letters beside a doubled rung: chip data is unphased, so placing either one on this molecule would be a guess about which parent it came from. Everything else is the reference standing in, because a chip reads positions, not stretches. The detail dock shows the same geometry end-on, looking down the axis.
+
+![The detail dock at rs4988235, with the molecule shown end-on as a rosette of stacked base pairs and the B-form measurements beside it](docs/screenshots/helix-endon.png)
+
 **3D structure.** A coding position names its residue and what the allele changes it to, computed here from GENCODE coding blocks and the GRCh37 sequence. Mol\* then shows the residue in the protein's predicted shape, after you grant the one request it takes.
 
 ![MTHFR p.Ala222Val: codon 222 reads GCC in the reference and GTC with A, with residue 222 marked in the AlphaFold structure](docs/screenshots/genome-protein.png)
@@ -159,6 +167,7 @@ Kits and packs are files on the device, and the query engine opens them exclusiv
 - **Metadata storage.** Kit, pack and grant metadata are small JSON files in OPFS. Calls and packs are Parquet.
 - **Chromosome painting.** Drawn by an in-house canvas view rather than Gosling.js (ADR-0016). A segment's two ends mean different things — one is a boundary a mismatch proves, the other a run that left the chip — and no general genomics grammar expresses an end whose position is unknown. Adopting one would have meant bending the design system on the exact point it exists to make, and bringing React and HiGlass along with it.
 - **Kinship compute.** A DuckDB join and a TypeScript walk, not Rust in a Worker (ADR-0016). Both kits are already database views, so the expensive half is a query; the walk over the result is linear. `crates/locus` still normalizes every call.
+- **The double helix.** A ribbon model from published B-form parameters, not an atomic structure (ADR-0017). Mol\* could render the atoms, and may later, but a wrong nucleotide template is a quiet scientific error rather than a visible bug, so it waits for its provenance to be carried properly.
 - **Six evidence kinds.** `population-frequency` was added (ADR-0011): a frequency is a fact about a sampled population, not an estimate about you, so it no longer shares the estimate's form.
 
 ## Licence

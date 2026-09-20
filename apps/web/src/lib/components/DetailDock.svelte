@@ -11,6 +11,7 @@
   import { app, svc } from '../services.svelte';
   import { fmtInt, fmtP } from '../format';
   import StructurePanel from './StructurePanel.svelte';
+  import HelixPanel from './HelixPanel.svelte';
 
   let { kit, chrom, pos, onclose }: { kit: Kit | null; chrom: Chrom; pos: number; onclose?: () => void } = $props();
 
@@ -66,6 +67,7 @@
   });
 
   const packOf = (role: string) => app.installed.find((p) => p.manifest.role === role)?.manifest;
+  const hasSequence = $derived(!!packOf('sequence'));
   const ref = $derived(call?.ref ?? ann?.clinvar[0]?.ref ?? ann?.frequencies[0]?.rows[0]?.ref ?? null);
   const callForCoding = $derived.by(() => {
     const alt = [call?.a1, call?.a2].find((a) => a && ref && a !== ref && 'ACGT'.includes(a));
@@ -216,6 +218,13 @@
               caption={`Residue ${c.residue} of ${coding.protein.length ?? '?'}, marked in the accent colour`}
             />
           {/if}
+        </section>
+      {/if}
+
+      {#if hasSequence}
+        <section class="card-plain wide">
+          <div class="card-kicker">The molecule · documentary</div>
+          <HelixPanel {kit} {chrom} {pos} />
         </section>
       {/if}
 

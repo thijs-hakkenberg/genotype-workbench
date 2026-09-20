@@ -1,6 +1,6 @@
 {
   "name": "genotype-workbench",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Local-first genotype workbench: bring your raw DNA file, explore it on a genome view, enrich it with whole downloaded packs.",
   "type": "module",
