@@ -2,8 +2,12 @@ packages:
   - apps/*
   - packages/*
   - plugins/*
+
+# Mol* pulls in @scarf/scarf, whose install script reports installs home.
+# This app does not phone home, not even while being built.
 allowBuilds:
-  '@scarf/scarf': set this to true or false
+  '@scarf/scarf': false
+
 minimumReleaseAgeExclude:
   - '@turbo/darwin-64@2.11.2'
   - '@turbo/darwin-arm64@2.11.2'
