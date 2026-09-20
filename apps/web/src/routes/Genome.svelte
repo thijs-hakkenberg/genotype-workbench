@@ -30,6 +30,7 @@
     { role: 'classification', title: 'ClinVar', kind: 'curated-classification' as const },
     { role: 'association', title: 'GWAS Catalog', kind: 'statistical-association' as const },
     { role: 'frequency', title: 'Population frequency', kind: 'population-frequency' as const },
+    { role: 'sequence', title: 'Reference sequence and protein', kind: 'documentary' as const },
   ];
   const missing = $derived(PACK_SLOTS.filter((s) => !app.installed.some((p) => p.manifest.role === s.role)));
 

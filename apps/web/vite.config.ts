@@ -16,7 +16,9 @@ export const CSP = [
   "default-src 'self'",
   "script-src 'self' 'wasm-unsafe-eval'",
   "worker-src 'self' blob:",
-  "connect-src 'self'",
+  // The only host any plugin may ever reach: AlphaFold, for one structure file
+  // per protein, and only after the user grants it (Plugin Host).
+  "connect-src 'self' https://alphafold.ebi.ac.uk",
   "img-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",

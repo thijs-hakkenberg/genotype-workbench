@@ -222,7 +222,9 @@ Licences below marked **verified** were checked against the source on 2026-09-19
 | Orphanet nomenclature and prevalence (orphadata "products") | The Orphadata legal notice puts CC BY 4.0 on Orphadata Science (ORDO, HOOM, the Scientific Knowledge Base). Product files need a data transfer agreement (**verified**). Orphanet is reached through Mondo cross-references instead. |
 | FamilyTreeDNA Mitotree | Free for academic, medical and other non-commercial use only (HaploGrep tree listing, **verified**). Third-party pack at most. |
 
-**Later (unchanged):** 1000 Genomes + HGDP reference panels (ancestry composition), UniProt + AlphaFold DB (Mol* view), AlphaMissense (would add a `computational-prediction` evidence kind), Open Archives and FamilySearch places (Pedigree connectors, network grants).
+**Built since (20 Sep 2026):** hs37d5 sequence at coding exons and chip loci (`sequence-grch37`); UniProt reviewed human proteome (`proteins-uniprot`, CC BY 4.0); AlphaFold DB structures fetched per protein under a grant and cached (CC BY 4.0).
+
+**Later (unchanged):** 1000 Genomes + HGDP reference panels (ancestry composition), AlphaMissense (would add a `computational-prediction` evidence kind), Open Archives and FamilySearch places (Pedigree connectors, network grants).
 
 **Keep out or third-party only (unchanged):** OMIM (licence), CADD/REVEL/dbNSFP (non-commercial terms), PGS Catalog (personal risk scores, principle 5), CPIC/PharmVar/PharmCAT (until the IVDR question is answered).
 
@@ -272,6 +274,8 @@ Licences below marked **verified** were checked against the source on 2026-09-19
 | Gosling.js | Chromosome painting, custom encodings | v0.3 |
 | SeqViz | Sequence detail for a gene or region | Later |
 | Mol\* | 3D structure for variants in known proteins | Later |
+
+**Outcome (20 Sep 2026, ADR-0013).** The base view is the app's own canvas track view, not igv.js (ADR-0004 note). Sequence and protein became track kinds in that same view rather than a SeqViz panel, so one zoom links the scales; SeqViz's other strengths (circular maps, enzymes, primers) target plasmids, which this app does not handle. Mol\* is in, as a view plugin drawing into a canvas with no React. Gosling stays parked until kinship gives it segments to paint.
 
 ## Revised context map
 

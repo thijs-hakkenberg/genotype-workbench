@@ -56,6 +56,10 @@ export interface FrequencyRow {
 }
 
 export interface GeneRow {
+  canonical?: boolean;
+  cds_starts?: number[];
+  cds_ends?: number[];
+  cds_frames?: number[];
   chrom: Chrom;
   start: number;
   end: number;
@@ -69,6 +73,16 @@ export interface GeneRow {
   exon_ends: number[];
   cds_start: number | null;
   cds_end: number | null;
+}
+
+export interface ProteinRow {
+  accession: string;
+  entry_name: string;
+  name: string;
+  symbol: string | null;
+  length: number | null;
+  sequence: string | null;
+  transcripts: string[];
 }
 
 export interface ConditionRow {

@@ -1,0 +1,10 @@
+{
+  "id": "view-structure",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": ["view"],
+  "title": "Protein structure",
+  "description": "Shows a protein's predicted shape (AlphaFold) and marks the residue a call changes. Asks for one structure file per protein, which tells AlphaFold which protein you are looking at; files are kept on this device afterwards.",
+  "firstParty": true,
+  "permissions": { "network": ["alphafold.ebi.ac.uk"] }
+}

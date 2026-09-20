@@ -18,7 +18,9 @@
     "@gw/plugin-host": "workspace:*",
     "@gw/plugin-sdk": "workspace:*",
     "@gw/profile-23andme": "workspace:*",
+    "@gw/protein": "workspace:*",
     "@gw/storage": "workspace:*",
+    "@gw/view-structure": "workspace:*",
     "@gw/view-tracks": "workspace:*",
     "phosphor-svelte": "^3.1.0"
   },

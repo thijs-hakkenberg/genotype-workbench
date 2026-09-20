@@ -20,7 +20,7 @@
   "version": "14.05.0",
   "sourceDate": "2026-09-19",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:59+00:00",
+  "builtAt": "2026-09-20T01:40:40+00:00",
   "file": "haplotree-y.parquet",
   "rows": 69292,
   "columns": [

@@ -9,6 +9,7 @@
 import {
   BIN_ABOVE_BP,
   BINS_PER_WINDOW,
+  SEQUENCE_BELOW_BP,
   type Chrom,
   type PackIndex,
   type PackManifest,
@@ -20,11 +21,14 @@ import {
 } from '@gw/plugin-sdk';
 import type { PluginHost } from '@gw/plugin-host';
 import { ident, type StorageAdapter } from '@gw/storage';
-import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, MergeRow } from './rows';
+import { SequenceIndex, type CodingTranscript } from '@gw/protein';
+import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, MergeRow, ProteinRow } from './rows';
 import { classificationRank, classificationShort } from './rows';
+import { codonItems, pickTranscript, sequenceItems, type CodonRow, type SequenceItemRow } from './sequence';
 import { sha256Hex, verifyIndexSignature } from './verify';
 
 export * from './rows';
+export * from './sequence';
 export { sha256Hex, verifyIndexSignature } from './verify';
 export * from './alleles';
 
@@ -318,6 +322,38 @@ export class AnnotationLibrary {
     return { cm: a.cm + t * (b.cm - a.cm), rate: a.rate, pack };
   }
 
+  /** Reference bases overlapping a region, from the sequence pack. */
+  async sequenceIn(region: Region): Promise<SequenceIndex | null> {
+    const pack = this.one('sequence');
+    if (!pack) return null;
+    const rows = await this.storage.query<{ chrom: Chrom; start: number; end: number; seq: string }>(
+      `SELECT * FROM ${this.view(pack)} WHERE chrom = ? AND "end" >= ? AND start <= ? ORDER BY start`,
+      [region.chrom, region.start, region.end]);
+    return new SequenceIndex(rows);
+  }
+
+  /** Coding transcripts overlapping a position, canonical first. */
+  async codingTranscriptsAt(chrom: Chrom, pos: number): Promise<(GeneRow & CodingTranscript)[]> {
+    const genes = this.one('genes');
+    if (!genes) return [];
+    const rows = await this.storage.query<GeneRow>(
+      `SELECT * FROM ${this.view(genes)}
+       WHERE chrom = ? AND cds_start <= ? AND cds_end >= ? AND len(cds_starts) > 0`, [chrom, pos, pos]);
+    return rows.filter((g) => g.cds_starts?.length) as (GeneRow & CodingTranscript)[];
+  }
+
+  /** The protein a transcript makes, from the proteins pack. */
+  async proteinFor(transcriptId: string | null, symbol?: string): Promise<ProteinRow | null> {
+    const pack = this.one('proteins');
+    if (!pack || (!transcriptId && !symbol)) return null;
+    const rows = await this.storage.query<ProteinRow>(
+      `SELECT * FROM ${this.view(pack)}
+       WHERE (? IS NOT NULL AND list_contains(transcripts, ?)) OR (? IS NOT NULL AND symbol = ?)
+       ORDER BY list_contains(transcripts, ?) DESC, length DESC LIMIT 1`,
+      [transcriptId, transcriptId, symbol ?? null, symbol ?? null, transcriptId]);
+    return rows[0] ?? null;
+  }
+
   /** All rows of a table-like pack (e.g. a haplogroup tree), for analysis plugins. */
   async allRows<T extends object>(role: PackRole): Promise<{ pack: PackManifest; rows: T[] } | null> {
     const pack = this.one(role);
@@ -399,6 +435,8 @@ export class AnnotationLibrary {
       ...this.byRole('classification').map((m) => this.clinvarTrack(m)),
       ...this.byRole('association').map((m) => this.gwasTrack(m)),
       ...this.byRole('frequency').map((m) => this.frequencyTrack(m)),
+      ...this.byRole('sequence').map((m) => this.sequenceTrack(m)),
+      ...(this.one('sequence') && this.one('genes') ? [this.proteinTrack(this.one('sequence')!)] : []),
     ];
   }
 
@@ -487,6 +525,48 @@ export class AnnotationLibrary {
               weight: r.p_mlog ?? 0,
               row: r,
             })),
+    };
+  }
+
+  /** The reference bases themselves, drawn only when the window is small enough to read. */
+  private sequenceTrack(m: PackManifest): TrackSource<SequenceItemRow> {
+    return {
+      descriptor: { ...this.descriptor(m, 'Reference sequence'), kind: 'sequence' },
+      itemsIn: async (region) => {
+        if (region.end - region.start > SEQUENCE_BELOW_BP) return [];
+        const rows = await this.storage.query<{ chrom: Chrom; start: number; end: number; seq: string }>(
+          `SELECT * FROM ${this.view(m)} WHERE chrom = ? AND "end" >= ? AND start <= ? ORDER BY start LIMIT 500`,
+          [region.chrom, region.start, region.end]);
+        return sequenceItems(rows, region.chrom);
+      },
+    };
+  }
+
+  /** Codons and amino acids of the coding transcript in view. */
+  private proteinTrack(seqPack: PackManifest): TrackSource<CodonRow> {
+    const genes = this.one('genes')!;
+    return {
+      descriptor: {
+        id: 'pack:protein',
+        kind: 'protein',
+        build: genes.build,
+        source: `${genes.source.short} + ${seqPack.source.short}`,
+        version: genes.version,
+        evidenceKind: 'documentary',
+        title: 'Protein',
+        licence: genes.licence,
+      },
+      itemsIn: async (region) => {
+        if (region.end - region.start > SEQUENCE_BELOW_BP) return [];
+        const rows = await this.storage.query<GeneRow>(
+          `SELECT * FROM ${this.view(genes)}
+           WHERE chrom = ? AND cds_start <= ? AND cds_end >= ? AND len(cds_starts) > 0`,
+          [region.chrom, region.end, region.start]);
+        const tx = pickTranscript(rows);
+        const sequence = await this.sequenceIn(region);
+        if (!tx || !sequence) return [];
+        return codonItems(tx, sequence, region);
+      },
     };
   }
 

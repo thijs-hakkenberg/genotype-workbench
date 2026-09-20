@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "id": "proteins-uniprot",
+  "title": "Proteins (UniProt reviewed human proteome)",
+  "description": "Which protein a transcript makes, its sequence and length, and the AlphaFold model that shows its shape. Lets a coding variant be placed on a residue.",
+  "build": "GRCh37",
+  "role": "proteins",
+  "scientificDomain": "molecular-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": null,
+  "core": false,
+  "licence": "CC BY 4.0 (UniProt)",
+  "licenceClass": "open",
+  "source": {
+    "name": "UniProtKB reviewed human proteome (Swiss-Prot), via the UniProt REST stream",
+    "short": "UniProt",
+    "url": "https://rest.uniprot.org/uniprotkb/stream?query=organism_id:9606+AND+reviewed:true"
+  },
+  "citation": "The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Res. 2025",
+  "version": "2026-09-20",
+  "sourceDate": "2026-09-20",
+  "locusVersion": "0.1.0",
+  "builtAt": "2026-09-20T01:40:40+00:00",
+  "file": "proteins-uniprot.parquet",
+  "rows": 9,
+  "columns": [
+    "accession",
+    "entry_name",
+    "name",
+    "symbol",
+    "length",
+    "sequence",
+    "element"
+  ],
+  "size": 7697,
+  "sha256": "3e1a0efb71dc199bc5f67935cb9304e2e3b35831e7ec39b78f61668d890b4b8d",
+  "stats": {
+    "fixture": true
+  }
+}

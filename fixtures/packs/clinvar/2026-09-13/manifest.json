@@ -20,9 +20,9 @@
   "version": "2026-09-13",
   "sourceDate": "2026-09-13",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:58+00:00",
+  "builtAt": "2026-09-20T01:40:39+00:00",
   "file": "clinvar.parquet",
-  "rows": 13011,
+  "rows": 13960,
   "columns": [
     "chrom",
     "pos",
@@ -40,8 +40,8 @@
     "element",
     "origin"
   ],
-  "size": 195095,
-  "sha256": "ecb400914f17dba902f4801cfb595910dabad7c614fa9e54b50a313ad8b39d09",
+  "size": 214994,
+  "sha256": "39a95da62ea844e71071b991af1c2276eaa8df603f6dfa54fb01d00f79eed9f5",
   "stats": {
     "fixture": true
   }

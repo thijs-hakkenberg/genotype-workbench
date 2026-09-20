@@ -2,6 +2,8 @@ packages:
   - apps/*
   - packages/*
   - plugins/*
+allowBuilds:
+  '@scarf/scarf': set this to true or false
 minimumReleaseAgeExclude:
   - '@turbo/darwin-64@2.11.2'
   - '@turbo/darwin-arm64@2.11.2'

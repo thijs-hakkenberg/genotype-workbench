@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { Chrom, PackManifest } from '@gw/plugin-sdk';
   import { REF_CHECK_LABELS, formatCall, type CallRow, type Kit } from '@gw/genotype-store';
-  import { relateAllele, type Annotations, type FrequencyRow } from '@gw/annotation-library';
+  import { pickTranscript, relateAllele, type Annotations, type FrequencyRow, type ProteinRow } from '@gw/annotation-library';
+  import { CONSEQUENCE_WORDS, consequenceOf, type Consequence } from '@gw/protein';
+  import StructurePanel from './StructurePanel.svelte';
   import { app, svc } from '../services.svelte';
   import { fmtDate, fmtInt, fmtP } from '../format';
 
@@ -13,6 +15,7 @@
   let copied = $state(false);
   let showAllGwas = $state(false);
   let failed = $state('');
+  let coding = $state<{ consequence: Consequence | null; symbol: string; transcriptName: string | null; protein: ProteinRow | null; altBase: string | null } | null>(null);
 
   $effect(() => {
     const k = kit;
@@ -36,6 +39,34 @@
         if (c === chrom && p === pos) loading = false;
       }
     })();
+  });
+
+  // What this position does to a protein, computed here from the gene's coding
+  // blocks and the reference bases: deterministic bookkeeping, not a judgement.
+  $effect(() => {
+    const c = chrom;
+    const p = pos;
+    const call = callForCoding;
+    coding = null;
+    const { library } = svc();
+    void (async () => {
+      const genes = await library.codingTranscriptsAt(c, p);
+      const tx = pickTranscript(genes);
+      if (!tx) return;
+      const sequence = await library.sequenceIn({ chrom: c, start: p - 3000, end: p + 3000 });
+      if (!sequence) return;
+      const protein = await library.proteinFor(tx.transcript_id, tx.symbol);
+      const alt = call?.alt ?? null;
+      const consequence = alt ? consequenceOf(tx, sequence, p, alt) : null;
+      if (c !== chrom || p !== pos) return;
+      coding = { consequence, symbol: tx.symbol, transcriptName: tx.transcript_name ?? null, protein, altBase: alt };
+    })();
+  });
+
+  // The allele to translate: the call's non-reference base, else what a pack records here.
+  const callForCoding = $derived.by(() => {
+    const alt = [call?.a1, call?.a2].find((a) => a && ref && a !== ref && 'ACGT'.includes(a));
+    return { alt: alt ?? ann?.clinvar[0]?.alt ?? null };
   });
 
   const packOf = (role: string) => app.installed.find((p) => p.manifest.role === role)?.manifest;
@@ -213,6 +244,39 @@
       <button class="btn btn-ghost" type="button" onclick={() => (showAllGwas = !showAllGwas)}>
         {showAllGwas ? 'Show fewer associations' : `Show all ${ann?.gwas.length} associations, strongest first`}
       </button>
+    {/if}
+
+    {#if coding?.consequence}
+      {@const c = coding.consequence}
+      <div class="evidence">
+        <span class="mk mk-documentary"></span>
+        <div style="flex:1;min-width:0">
+          <div class="title">
+            {coding.symbol} {c.hgvsP}
+            <span class="faint" style="font-size:11px">· {c.kind.replace('-', ' ')}</span>
+          </div>
+          <div class="what">
+            Codon {c.residue} reads {c.refCodon} in the reference and {c.altCodon} with {coding.altBase} here, giving
+            {CONSEQUENCE_WORDS[c.kind]}.
+            {#if callForCoding.alt && !(call && [call.a1, call.a2].includes(callForCoding.alt))}
+              Your call does not carry {coding.altBase}; this is what that allele would do.
+            {/if}
+          </div>
+          <div class="cite">
+            Computed on this device from {packOf('genes')?.source.short} coding blocks and the {packOf('sequence')?.source.short}
+            sequence · transcript {coding.transcriptName ?? c.transcriptId}
+            {#if coding.protein} · {coding.protein.accession} ({coding.protein.length} residues, UniProt CC BY 4.0){/if}
+          </div>
+          {#if coding.protein}
+            <StructurePanel
+              accession={coding.protein.accession}
+              proteinName={coding.protein.name || coding.symbol}
+              residue={c.residue}
+              caption={`Residue ${c.residue} of ${coding.protein.length ?? '?'}, marked in the accent colour`}
+            />
+          {/if}
+        </div>
+      </div>
     {/if}
 
     {#if nothingKnown}

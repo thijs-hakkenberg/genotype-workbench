@@ -1,0 +1,9 @@
+{
+  "name": "@gw/protein",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Genome position to codon and residue: what a call changes in a protein, computed from GENCODE CDS and the GRCh37 sequence",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@gw/plugin-sdk": "workspace:*" }
+}

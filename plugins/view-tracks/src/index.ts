@@ -17,7 +17,7 @@ import type {
 import { EVIDENCE_KINDS } from '@gw/plugin-sdk';
 import { clampRegion, formatWidth } from '@gw/plugin-sdk/genome';
 import manifestJson from '../manifest.json';
-import { BINS_HEIGHT, RENDERERS, drawBins, type HitBox, type MarkContext } from './marks';
+import { BINS_HEIGHT, KIND_RENDERERS, RENDERERS, drawBins, type HitBox, type MarkContext } from './marks';
 import { readPalette, type Palette } from './palette';
 
 export { RENDERERS } from './marks';
@@ -210,7 +210,7 @@ export class TrackView implements TrackViewHandle {
     this.drawRuler();
     for (const row of this.rows) {
       const kind = row.source.descriptor.evidenceKind;
-      const renderer = RENDERERS[kind];
+      const renderer = KIND_RENDERERS[row.source.descriptor.kind] ?? RENDERERS[kind];
       const binned = row.items[0]?.count != null;
       const height = binned ? BINS_HEIGHT : renderer.height(row.items);
       const m = this.context(row.canvas, height);
@@ -379,6 +379,6 @@ export function markSwatch(kind: keyof typeof EVIDENCE_KINDS): string {
 
 export const viewTracks: ViewPlugin = {
   manifest,
-  supports: (kind: TrackKind) => ['variant', 'feature', 'signal'].includes(kind),
+  supports: (kind: TrackKind) => ['variant', 'feature', 'signal', 'sequence', 'protein'].includes(kind),
   mount: (el, tracks, options) => new TrackView(el, tracks, options),
 };

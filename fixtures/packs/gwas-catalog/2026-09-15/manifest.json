@@ -20,9 +20,9 @@
   "version": "2026-09-15",
   "sourceDate": "2026-09-15",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:59+00:00",
+  "builtAt": "2026-09-20T01:40:39+00:00",
   "file": "gwas-catalog.parquet",
-  "rows": 243,
+  "rows": 369,
   "columns": [
     "chrom",
     "pos",
@@ -47,8 +47,8 @@
     "mapped_gene",
     "context"
   ],
-  "size": 27006,
-  "sha256": "4c61bbc4a56d77b5d0ae93d29624fea9e3027c20324f084d92a70942b86ce5fa",
+  "size": 37134,
+  "sha256": "7f2865df8498c930bc21d0091f2e8e5b8c0925a4bfc2ba5d5af56d0a0b656eec",
   "stats": {
     "fixture": true
   }

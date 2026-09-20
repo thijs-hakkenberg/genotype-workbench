@@ -10,6 +10,7 @@ import type { Grant, PackIndex, PluginManifest } from '@gw/plugin-sdk';
 import profileManifest from '@gw/profile-23andme/manifest.json';
 import { manifest as viewManifest } from '@gw/view-tracks';
 import haplogroupsManifest from '@gw/analysis-haplogroups/manifest.json';
+import structureManifest from '@gw/view-structure/manifest.json';
 import publicKey from '../../../../keys/pack-index.pub?raw';
 
 /** The Pack Index signing key. Tests build with the fixture key instead. */
@@ -136,6 +137,7 @@ export async function boot() {
     host.register(profileManifest as PluginManifest);
     host.register(viewManifest);
     host.register(haplogroupsManifest as PluginManifest);
+    host.register(structureManifest as PluginManifest);
     await library.init();
     await store.init();
     host.setPrompter(

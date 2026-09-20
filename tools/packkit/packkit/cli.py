@@ -17,7 +17,7 @@ from .paths import CACHE, DIST
 
 # Build order matters: later packs may read earlier ones (e.g. the reference).
 ORDER = [
-    "reference-grch37", "genes-gencode", "clinvar", "gwas-catalog", "conditions-mondo", "freq-1000g",
+    "reference-grch37", "genes-gencode", "sequence-grch37", "proteins-uniprot", "clinvar", "gwas-catalog", "conditions-mondo", "freq-1000g",
     "dbsnp-merges", "genetic-map", "haplotree-mt", "haplotree-y", "gnomad-chip",
 ]
 

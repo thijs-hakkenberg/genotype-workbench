@@ -42,9 +42,9 @@
   "version": "phase3",
   "sourceDate": "2013-05-02",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:58+00:00",
+  "builtAt": "2026-09-20T01:40:39+00:00",
   "file": "freq-1000g.parquet",
-  "rows": 311,
+  "rows": 381,
   "columns": [
     "chrom",
     "pos",
@@ -61,8 +61,8 @@
     "af_eur",
     "af_sas"
   ],
-  "size": 12651,
-  "sha256": "6f7913b5897ce17304993fa052f9f3b0b920db4a2bf189fd4b2e97e484cb7dc9",
+  "size": 15534,
+  "sha256": "090a37836ccbc81f315fdb2e1cb9b56cb72df39b6aeab6b093106e0fc93dc4dd",
   "stats": {
     "fixture": true
   }

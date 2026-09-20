@@ -1,0 +1,12 @@
+{
+  "name": "@gw/view-structure",
+  "version": "0.1.0",
+  "private": true,
+  "description": "View plugin: the protein's 3D shape from AlphaFold, with the residue a call changes highlighted",
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./manifest.json": "./manifest.json" },
+  "dependencies": {
+    "@gw/plugin-sdk": "workspace:*",
+    "molstar": "^5.11.0"
+  }
+}

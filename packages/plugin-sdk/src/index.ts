@@ -118,7 +118,9 @@ export type PackRole =
   | 'genetic-map'
   | 'conditions'
   | 'haplotree-mt'
-  | 'haplotree-y';
+  | 'haplotree-y'
+  | 'sequence'
+  | 'proteins';
 
 /** An annotation pack as listed in the signed Pack Index (ADR-0007). */
 export interface PackManifest {
@@ -159,7 +161,10 @@ export interface PackIndex {
   packs: PackManifest[];
 }
 
-export type TrackKind = 'variant' | 'feature' | 'segment' | 'signal';
+export type TrackKind = 'variant' | 'feature' | 'segment' | 'signal' | 'sequence' | 'protein';
+
+/** Below this window width the reference sequence can be drawn base by base. */
+export const SEQUENCE_BELOW_BP = 20_000;
 
 export interface TrackDescriptor {
   id: string;

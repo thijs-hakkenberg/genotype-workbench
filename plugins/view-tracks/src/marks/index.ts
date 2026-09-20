@@ -5,7 +5,7 @@
  * filled and how its edges end. A hard end is a known bound; a faded end is
  * an unknown one. Nothing here encodes good or bad.
  */
-import type { EvidenceKind, TrackItem } from '@gw/plugin-sdk';
+import type { EvidenceKind, TrackItem, TrackKind } from '@gw/plugin-sdk';
 import { alpha, type Palette } from '../palette';
 
 export interface MarkContext {
@@ -35,6 +35,8 @@ export interface MarkRenderer {
 }
 
 const DENSITY_THRESHOLD = 1500;
+/** Pixels per base at which letters replace marks, for calls and for the reference. */
+const LETTERS_ABOVE_PX = 7;
 
 function hatch(m: MarkContext, x: number, y: number, w: number, h: number) {
   const { ctx, palette } = m;
@@ -96,8 +98,10 @@ export const measured: MarkRenderer = {
     ctx.fillStyle = palette.n[800];
     ctx.fillRect(0, Math.round(height / 2), m.width, 1);
     if (items.length > DENSITY_THRESHOLD) return density(m, items, palette.a[500]);
+    const letters = m.scale >= LETTERS_ABOVE_PX; // room for the call's own letters
     const w = items.length > 400 ? 2 : 3;
     const hits: HitBox[] = [];
+    if (letters) return calls(m, items);
     for (const it of items) {
       const sel = it.id === m.selectedId;
       const h = sel ? 30 : 20;
@@ -119,6 +123,51 @@ export const measured: MarkRenderer = {
     return hits;
   },
 };
+
+interface CallRowLike {
+  a1?: string | null;
+  a2?: string | null;
+  ref?: string | null;
+  is_nocall?: boolean;
+}
+
+/**
+ * Deep zoom: the kit's own bases, letter by letter. A base that differs from
+ * the reference is drawn in the accent, one that matches in the neutral ramp;
+ * a no-call keeps the hatched form.
+ */
+function calls(m: MarkContext, items: TrackItem[]): HitBox[] {
+  const { ctx, palette, height } = m;
+  const hits: HitBox[] = [];
+  const size = Math.min(15, Math.max(8, m.scale * 0.95));
+  ctx.font = `500 ${size}px ${palette.font}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const it of items) {
+    const r = (it.row ?? {}) as CallRowLike;
+    const cx = m.x(it.start) + m.scale / 2;
+    const sel = it.id === m.selectedId;
+    const alleles = [r.a1, r.a2].filter((a): a is string => !!a);
+    const rows = r.is_nocall || alleles.length === 0 ? ['—'] : [...new Set(alleles)];
+    const top = height / 2 - (rows.length - 1) * (size * 0.62);
+    if (r.is_nocall) {
+      hatch(m, cx - m.scale / 2 + 1, height / 2 - 10, Math.max(3, m.scale - 2), 20);
+    } else {
+      rows.forEach((base, i) => {
+        const differs = r.ref ? base !== r.ref : false;
+        ctx.fillStyle = sel ? palette.a[100] : differs ? palette.a[300] : palette.n[400];
+        ctx.fillText(base, cx, top + i * size * 1.24);
+      });
+    }
+    if (sel) {
+      ctx.strokeStyle = palette.a[200];
+      ctx.strokeRect(cx - m.scale / 2, height / 2 - 16, Math.max(6, m.scale), 32);
+    }
+    hits.push({ item: it, x0: cx - m.scale / 2, x1: cx + m.scale / 2, y0: 0, y1: height });
+  }
+  ctx.textAlign = 'start';
+  return hits;
+}
 
 interface GeneRowLike {
   strand?: string;
@@ -369,6 +418,102 @@ export const frequency: MarkRenderer = {
     }
     return hits;
   },
+};
+
+/** The reference bases: letters when there is room, a quiet ruler below that. */
+export const sequence: MarkRenderer = {
+  height: () => 30,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const y = height / 2;
+    if (m.scale < 2.2) {
+      ctx.font = `11px ${palette.font}`;
+      ctx.fillStyle = palette.n[600];
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Zoom in to read the bases', 12, y);
+      return [];
+    }
+    const letters = m.scale >= LETTERS_ABOVE_PX;
+    const size = Math.min(14, Math.max(8, m.scale * 0.95));
+    ctx.font = `${size}px ${palette.font}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const it of items) {
+      const seq = String((it.row as { seq?: string }).seq ?? '');
+      for (let i = 0; i < seq.length; i++) {
+        const pos = it.start + i;
+        const cx = m.x(pos) + m.scale / 2;
+        if (cx < -m.scale || cx > m.width + m.scale) continue;
+        if (letters) {
+          ctx.fillStyle = palette.n[400];
+          ctx.fillText(seq[i]!, cx, y);
+        } else {
+          ctx.fillStyle = palette.n[800];
+          ctx.fillRect(m.x(pos) + 0.5, y - 5, Math.max(1, m.scale - 1), 10);
+        }
+      }
+    }
+    ctx.textAlign = 'start';
+    return [];
+  },
+};
+
+interface CodonRowLike {
+  residue?: number;
+  aa?: string;
+  codon?: string;
+  blocks?: [number, number][];
+  symbol?: string;
+  strand?: string;
+}
+
+/** Codons as blocks along the transcript, with their amino acid when it fits. */
+export const protein: MarkRenderer = {
+  height: () => 34,
+  draw(m, items) {
+    const { ctx, palette, height } = m;
+    const hits: HitBox[] = [];
+    const y = 9;
+    const h = 16;
+    const size = 10;
+    ctx.font = `${size}px ${palette.font}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const it of items) {
+      const r = (it.row ?? {}) as CodonRowLike;
+      const sel = it.id === m.selectedId;
+      const blocks = r.blocks ?? [[it.start, it.end]];
+      const even = (r.residue ?? 0) % 2 === 0;
+      ctx.fillStyle = sel ? palette.a[800] : even ? palette.n[800] : palette.n[900];
+      let widest = { w: 0, cx: 0 };
+      for (const [bs, be] of blocks) {
+        const x0 = m.x(bs);
+        const w = m.x(be + 1) - x0;
+        ctx.fillRect(x0, y, Math.max(1, w - 0.5), h);
+        if (w > widest.w) widest = { w, cx: x0 + w / 2 };
+      }
+      if (widest.w >= size * 1.1 && r.aa) {
+        ctx.fillStyle = sel ? palette.a[100] : r.aa === '*' ? palette.n[300] : palette.n[400];
+        ctx.fillText(r.aa, widest.cx, y + h / 2);
+      }
+      hits.push({ item: it, x0: m.x(it.start), x1: m.x(it.end + 1), y0: y, y1: y + h });
+    }
+    if (items.length) {
+      const first = (items[0]!.row ?? {}) as CodonRowLike;
+      ctx.textAlign = 'start';
+      ctx.font = `10px ${palette.font}`;
+      ctx.fillStyle = palette.n[500];
+      ctx.fillText(`${first.symbol ?? ''} ${first.strand === '-' ? '←' : '→'} · residue ${first.residue ?? ''}…`, 4, height - 6);
+    }
+    ctx.textAlign = 'start';
+    return hits;
+  },
+};
+
+/** Tracks whose kind decides the form, whatever their evidence kind. */
+export const KIND_RENDERERS: Partial<Record<TrackKind, MarkRenderer>> = {
+  sequence,
+  protein,
 };
 
 export const RENDERERS: Record<EvidenceKind, MarkRenderer> = {

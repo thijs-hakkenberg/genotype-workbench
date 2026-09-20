@@ -8,6 +8,12 @@ A local-first workbench for your own raw DNA file. Import a 23andMe export, expl
 | --- | --- |
 | ![Kit overview with call statistics and probe coverage per chromosome](docs/screenshots/overview.png) | ![Signed pack index with licence, size and source per pack](docs/screenshots/packs.png) |
 
+One zoom runs from the chromosome to the bases and the codons; a coding position names its residue and shows it in the protein.
+
+| Sequence and protein in the same view | Residue in 3D |
+| --- | --- |
+| ![Tracks zoomed to 81 bases: calls as letters, reference sequence, and the codons of MTHFR](docs/screenshots/scales.png) | ![The consequence card: MTHFR p.Ala222Val with the residue marked in the AlphaFold structure](docs/screenshots/structure.png) |
+
 <sub>Screenshots show a synthetic kit (random genotypes on real chip positions), never a real person's DNA.</sub>
 
 Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20architecture.md), [Decisions](docs/Decisions(1).md), [Scientific domains](docs/Scientific%20domains.md), the [ADRs](docs/adr/) and the Nocturne design system with the UI mockups.
@@ -18,6 +24,8 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 - **Storage.** Each kit is a Parquet file in the browser's Origin Private File System, queried with DuckDB-WASM. Kits and packs survive reloads.
 - **Overview.** Call statistics, reference consistency, probe coverage per chromosome, custody, and your calls per ClinVar classification.
 - **Genome view.** A canvas track view (`plugins/view-tracks`) draws each track in its evidence kind's form: measured calls, documentary gene models, curated ClinVar classifications, GWAS associations, and population frequencies. You can pan, zoom, click to select, and search by region, rsID (including retired rsIDs) or gene. Wide windows switch to binned density. The selected-position panel lists every source strongest evidence first, with ClinVar conditions explained through Mondo.
+- **Sequence and protein.** Keep zooming and the tracks become the reference bases, your own called bases, and the codons of the gene in view. Select a coding position and the panel names the residue and what the allele changes it to (for example MTHFR p.Ala222Val), computed on this device from GENCODE coding blocks and the GRCh37 sequence.
+- **3D structure.** Mol* shows the protein's predicted shape from AlphaFold with that residue marked. The structure is fetched once per protein, only after you grant it, and then kept on this device.
 - **Lineages.** Maternal-line (mtDNA, PhyloTree 17) and paternal-line (Y, YFull YTree) haplogroups, matched on this device and shown with the markers that support them.
 - **Packs.** Packs are built by `tools/packkit` (Python + DuckDB, normalized through the same Rust code via `locus-py`) and listed in an Ed25519-signed index. The app downloads each pack whole after a network grant, checks its SHA-256, and joins it locally. Before downloading, it checks that the site's storage quota can hold the pack.
 
@@ -32,6 +40,8 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 | Mondo condition names | conditions | documentary | CC BY 4.0 |
 | dbSNP rsID merges | rsid-merges | documentary | Public domain |
 | HapMap II genetic map | genetic-map | estimate | Public |
+| GRCh37 sequence at coding exons and chip loci | sequence | documentary | Public domain |
+| UniProt reviewed human proteome | proteins | documentary | CC BY 4.0 |
 | PhyloTree 17 mtDNA tree | haplotree-mt | documentary | MIT packaging |
 | YFull YTree + YBrowse positions | haplotree-y | documentary | CC BY 4.0 + unverified |
 
@@ -78,7 +88,9 @@ packages/storage/         DuckDB-WASM over Parquet in OPFS
 packages/genotype-store/  Kit, Call, Custody; import and read API
 packages/annotation-library/  signed index, pack install, local joins, annotation tracks
 packages/plugin-host/     manifests, grants, guarded fetch
-plugins/                  profile-23andme, view-tracks, pack-* build scripts
+packages/protein/         genome position to codon and residue; the genetic code
+plugins/                  profile-23andme, view-tracks, view-structure (Mol*),
+                          analysis-haplogroups, pack-* build scripts
 tools/packkit/            pack pipeline (uv)
 fixtures/                 synthetic kits and fixture packs; never real data
 ```
@@ -86,7 +98,7 @@ fixtures/                 synthetic kits and fixture packs; never real data
 ## Privacy guard rails
 
 - Real raw-data exports are never committed: `.gitignore` covers them, and CI runs `scripts/check-no-genomes.sh`.
-- A Content Security Policy limits the app to its own origin. DuckDB extensions are vendored (`scripts/vendor-duckdb-extensions.mjs`, hash-pinned), and fonts are bundled.
+- A Content Security Policy limits the app to its own origin, plus one host: `alphafold.ebi.ac.uk`, for protein structures. The policy is the outer bound; a Plugin Host grant is still required before anything is fetched (ADR-0013). DuckDB extensions are vendored (`scripts/vendor-duckdb-extensions.mjs`, hash-pinned), and fonts are bundled.
 - Packs are whole files. No variant is ever looked up remotely.
 
 ## Deviations from the docs, by design

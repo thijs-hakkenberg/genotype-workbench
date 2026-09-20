@@ -23,13 +23,15 @@ ATTR = re.compile(r'(\w+) "([^"]*)"')
 def build(ctx):
     gtf = ctx.fetch(URL)
     genes: dict[str, dict] = {}
-    tx: dict[str, dict] = defaultdict(lambda: {"exons": [], "cds": [], "tags": set()})
+    tx: dict[str, dict] = defaultdict(lambda: {"exons": [], "cds": [], "frames": [], "tags": set()})
     with gzip.open(gtf, "rt") as f:
         for line in f:
             if line.startswith("#"):
                 continue
-            chrom, _, feature, start, end, _, strand, _, attrs = line.rstrip("\n").split("\t")
-            if feature not in ("gene", "transcript", "exon", "CDS"):
+            chrom, _, feature, start, end, _, strand, frame, attrs = line.rstrip("\n").split("\t")
+            # GENCODE keeps the terminator out of CDS; include it so the coding
+            # sequence ends in a stop and stop-lost changes can be read.
+            if feature not in ("gene", "transcript", "exon", "CDS", "stop_codon"):
                 continue
             chrom = locus_py.canonical_chrom(chrom)
             if chrom is None:
@@ -54,8 +56,9 @@ def build(ctx):
                 t["tags"].update(v for k, v in pairs if k == "tag")
             elif feature == "exon":
                 t["exons"].append((start, end))
-            else:
+            else:  # CDS or stop_codon
                 t["cds"].append((start, end))
+                t["frames"].append(int(frame) if frame.isdigit() else 0)
 
     best: dict[str, tuple] = {}
     for tid, t in tx.items():
@@ -69,7 +72,8 @@ def build(ctx):
         tid = best.get(gid, (None, None))[1]
         t = tx.get(tid) if tid else None
         exons = sorted(t["exons"]) if t else []
-        cds = t["cds"] if t else []
+        cds_blocks = sorted(zip(t["cds"], t["frames"])) if t else []
+        cds = [c for c, _ in cds_blocks]
         for k, v in g.items():
             rows[k].append(v)
         rows["transcript_id"].append(tid.split(".")[0] if tid else None)
@@ -79,6 +83,10 @@ def build(ctx):
         rows["exon_ends"].append([e for _, e in exons])
         rows["cds_start"].append(min(s for s, _ in cds) if cds else None)
         rows["cds_end"].append(max(e for _, e in cds) if cds else None)
+        rows["cds_starts"].append([s for s, _ in cds])
+        rows["cds_ends"].append([e for _, e in cds])
+        # GTF frame: bases of this block to skip before the first complete codon
+        rows["cds_frames"].append([f for _, f in cds_blocks])
 
     table = pa.table({
         "chrom": pa.array(rows["chrom"], pa.string()),
@@ -95,6 +103,9 @@ def build(ctx):
         "exon_ends": pa.array(rows["exon_ends"], pa.list_(pa.int32())),
         "cds_start": pa.array(rows["cds_start"], pa.int32()),
         "cds_end": pa.array(rows["cds_end"], pa.int32()),
+        "cds_starts": pa.array(rows["cds_starts"], pa.list_(pa.int32())),
+        "cds_ends": pa.array(rows["cds_ends"], pa.list_(pa.int32())),
+        "cds_frames": pa.array(rows["cds_frames"], pa.list_(pa.int8())),
     })
     source_date = ctx.last_modified(URL)
     version = "50lift37"

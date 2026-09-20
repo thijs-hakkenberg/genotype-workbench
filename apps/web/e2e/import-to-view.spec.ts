@@ -55,7 +55,7 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
 
   // More sources: frequencies (population-frequency), GWAS, Mondo, the trees. The grant already holds.
   await page.goto('/#/packs');
-  for (const title of ['1000 Genomes allele frequencies', 'GWAS Catalog associations', 'Condition names (Mondo', 'mtDNA haplogroup tree', 'Y-DNA haplogroup tree', 'Genetic map', 'dbSNP rsID merge history']) {
+  for (const title of ['Gene models (GENCODE', '1000 Genomes allele frequencies', 'GWAS Catalog associations', 'Condition names (Mondo', 'mtDNA haplogroup tree', 'Y-DNA haplogroup tree', 'Genetic map', 'dbSNP rsID merge history', 'GRCh37 sequence at coding regions', 'Proteins (UniProt']) {
     const panel = page.locator('.panel', { hasText: title });
     await panel.getByRole('button', { name: /Install/ }).click();
     await expect(panel.getByText(/Installed/)).toBeVisible();
@@ -65,6 +65,22 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   await expect(page.locator('aside')).toContainText('not about you');
   await expect(page.locator('aside')).toContainText('Genetic position');
   await expect(page.getByText('Population frequency').first()).toBeVisible();
+
+  // Sequence and protein: zoom past the track scale into bases and codons
+  await page.goto('/#/genome/1:11856340-11856420?sel=1:11856378');
+  await expect(page.getByText('Reference sequence', { exact: false }).first()).toBeVisible();
+  await expect(page.locator('aside')).toContainText('MTHFR p.Ala222Val', { timeout: 45_000 });
+  await expect(page.locator('aside')).toContainText('Codon 222 reads GCC in the reference');
+  await expect(page.locator('aside')).toContainText('Computed on this device');
+
+  // 3D asks before it fetches anything, and fetches nothing when refused
+  const beforeDeny = offOrigin.length;
+  await page.getByRole('button', { name: /show the 3D structure/i }).click();
+  await expect(page.getByText('Grant requested')).toBeVisible();
+  await expect(page.getByText('alphafold.ebi.ac.uk')).toBeVisible();
+  await page.getByRole('button', { name: 'Deny' }).click();
+  await expect(page.getByText(/access to AlphaFold was not granted/)).toBeVisible();
+  expect(offOrigin.length).toBe(beforeDeny);
 
   // A retired rsID still finds its record through the dbSNP merge history
   await page.getByRole('searchbox').fill('rs58590436');

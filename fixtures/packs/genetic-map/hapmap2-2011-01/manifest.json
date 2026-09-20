@@ -20,17 +20,17 @@
   "version": "hapmap2-2011-01",
   "sourceDate": "2011-01-19",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:59+00:00",
+  "builtAt": "2026-09-20T01:40:39+00:00",
   "file": "genetic-map.parquet",
-  "rows": 1372,
+  "rows": 1478,
   "columns": [
     "chrom",
     "pos",
     "cm",
     "rate"
   ],
-  "size": 8591,
-  "sha256": "f354bdd18118581b3f8d61066a832464bd74698359bd2f36751477f36920eb56",
+  "size": 10162,
+  "sha256": "857824ba40391937d78121a47797a1ffd2adea97fe6a086ecc322d19e6b6dd73",
   "stats": {
     "fixture": true
   }

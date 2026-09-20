@@ -16,7 +16,7 @@ from .paths import DIST, REPO
 
 OUT = REPO / "fixtures" / "packs"
 KIT = REPO / "fixtures" / "synthetic-kits" / "synthetic-v5-small.txt"
-REGIONS = [("2", 136_500_000, 136_700_000), ("17", 41_190_000, 41_290_000)]
+REGIONS = [("2", 136_500_000, 136_700_000), ("17", 41_190_000, 41_290_000), ("1", 11_845_000, 11_870_000)]
 
 
 def build() -> Path:
@@ -37,8 +37,8 @@ def build() -> Path:
     manifests = [m for m in manifests if m["id"] in specs]
     cut: dict[str, Path] = {}
 
-    def order(m):  # conditions and merges are cut from the ClinVar/GWAS fixtures
-        return m.get("role") in ("conditions", "rsid-merges")
+    def order(m):  # these are cut from other fixtures, so they come after them
+        return m.get("role") in ("conditions", "rsid-merges", "proteins")
 
     for m in sorted(manifests, key=order):
         src = m["_dir"] / m["file"]
@@ -50,6 +50,14 @@ def build() -> Path:
             sql = f"SELECT r.* FROM '{src}' r JOIN kit k USING (chrom, pos) ORDER BY chrom, pos"
         elif role == "genes":
             sql = f"SELECT * FROM '{src}' WHERE {gene_where}"
+        elif role == "sequence":
+            sql = f"SELECT * FROM '{src}' WHERE {gene_where}"
+        elif role == "proteins":
+            genes = cut.get("genes")
+            sql = (f"""SELECT p.* FROM '{src}' p WHERE EXISTS (
+                         SELECT 1 FROM '{genes}' g WHERE g.symbol = p.symbol
+                            OR list_contains(p.transcripts, g.transcript_id))"""
+                   if genes else f"SELECT * FROM '{src}' LIMIT 0")
         elif role == "conditions":
             clinvar = cut.get("classification")
             sql = (f"SELECT * FROM '{src}' WHERE mondo_id IN (SELECT DISTINCT unnest(condition_mondo) FROM '{clinvar}')"

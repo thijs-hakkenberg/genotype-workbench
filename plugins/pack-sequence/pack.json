@@ -1,0 +1,19 @@
+{
+  "id": "sequence-grch37",
+  "title": "GRCh37 sequence at coding regions and chip loci",
+  "description": "The reference bases themselves: every protein-coding exon, and a 25-base window around each consumer-chip position. Lets the genome view keep zooming past single positions into the sequence, and lets codons be read.",
+  "build": "GRCh37",
+  "role": "sequence",
+  "scientificDomain": "molecular-genetics",
+  "evidenceKind": "documentary",
+  "trackKind": "feature",
+  "core": false,
+  "licence": "Public domain (GRC / 1000 Genomes hs37d5)",
+  "licenceClass": "open",
+  "source": {
+    "name": "1000 Genomes hs37d5 (GRCh37 + rCRS mitochondrion), cut to coding exons and chip loci",
+    "short": "hs37d5",
+    "url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz"
+  },
+  "citation": "Genome Reference Consortium, GRCh37 (hs37d5 assembly, 1000 Genomes Project); exon coordinates from GENCODE"
+}

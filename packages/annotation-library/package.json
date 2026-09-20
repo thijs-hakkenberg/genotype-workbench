@@ -8,6 +8,7 @@
   "dependencies": {
     "@gw/plugin-host": "workspace:*",
     "@gw/plugin-sdk": "workspace:*",
+    "@gw/protein": "workspace:*",
     "@gw/storage": "workspace:*"
   }
 }

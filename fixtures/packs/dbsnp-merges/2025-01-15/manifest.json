@@ -20,16 +20,16 @@
   "version": "2025-01-15",
   "sourceDate": "2025-01-15",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:59+00:00",
+  "builtAt": "2026-09-20T01:40:40+00:00",
   "file": "dbsnp-merges.parquet",
-  "rows": 3390,
+  "rows": 3441,
   "columns": [
     "old_rsid",
     "new_rsid",
     "build"
   ],
-  "size": 29601,
-  "sha256": "96f29b227add2d836bcee1dba0b432b1f37ee7e7ffa439334e50b2d1c93252af",
+  "size": 30025,
+  "sha256": "d3bbce73f104eeee5054787dbd744b965ac32b613d07a940ac93eb87b4285e13",
   "stats": {
     "fixture": true
   }

@@ -20,9 +20,9 @@
   "version": "50lift37",
   "sourceDate": "2026-06-09",
   "locusVersion": "0.1.0",
-  "builtAt": "2026-09-19T21:06:59+00:00",
+  "builtAt": "2026-09-20T01:40:39+00:00",
   "file": "genes-gencode.parquet",
-  "rows": 10,
+  "rows": 13,
   "columns": [
     "chrom",
     "start",
@@ -37,10 +37,13 @@
     "element",
     "element",
     "cds_start",
-    "cds_end"
+    "cds_end",
+    "element",
+    "element",
+    "element"
   ],
-  "size": 3451,
-  "sha256": "6e58724fef3bf26a07e22df7a9d6e4c2b998700b651029728e8c8c02a9379cd4",
+  "size": 5765,
+  "sha256": "d01eab25e80bbfceee4d397a5030593fa4a5f7c89d157089d30d610936b1159a",
   "stats": {
     "fixture": true
   }

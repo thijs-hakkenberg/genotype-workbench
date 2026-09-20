@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-19T21:06:59+00:00",
+  "generatedAt": "2026-09-20T01:40:40+00:00",
   "packs": [
     {
       "schema": 1,
@@ -24,9 +24,9 @@
       "version": "2026-09-13",
       "sourceDate": "2026-09-13",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:58+00:00",
+      "builtAt": "2026-09-20T01:40:39+00:00",
       "file": "clinvar.parquet",
-      "rows": 13011,
+      "rows": 13960,
       "columns": [
         "chrom",
         "pos",
@@ -44,8 +44,8 @@
         "element",
         "origin"
       ],
-      "size": 195095,
-      "sha256": "ecb400914f17dba902f4801cfb595910dabad7c614fa9e54b50a313ad8b39d09",
+      "size": 214994,
+      "sha256": "39a95da62ea844e71071b991af1c2276eaa8df603f6dfa54fb01d00f79eed9f5",
       "stats": {
         "fixture": true
       },
@@ -73,9 +73,9 @@
       "version": "2026-09-01",
       "sourceDate": "2026-09-01",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:40+00:00",
       "file": "conditions-mondo.parquet",
-      "rows": 41,
+      "rows": 54,
       "columns": [
         "mondo_id",
         "name",
@@ -85,8 +85,8 @@
         "element",
         "element"
       ],
-      "size": 9741,
-      "sha256": "31e7cc514e215cff405b2e77c9e7e4301e7cbc2da99eeb4724cf42f46f1125c5",
+      "size": 11852,
+      "sha256": "8b2639d832b6085fa2f4f174f71d3d2554989a0f56c8c9d115e191d743261bdd",
       "stats": {
         "fixture": true
       },
@@ -114,16 +114,16 @@
       "version": "2025-01-15",
       "sourceDate": "2025-01-15",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:40+00:00",
       "file": "dbsnp-merges.parquet",
-      "rows": 3390,
+      "rows": 3441,
       "columns": [
         "old_rsid",
         "new_rsid",
         "build"
       ],
-      "size": 29601,
-      "sha256": "96f29b227add2d836bcee1dba0b432b1f37ee7e7ffa439334e50b2d1c93252af",
+      "size": 30025,
+      "sha256": "d3bbce73f104eeee5054787dbd744b965ac32b613d07a940ac93eb87b4285e13",
       "stats": {
         "fixture": true
       },
@@ -173,9 +173,9 @@
       "version": "phase3",
       "sourceDate": "2013-05-02",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:58+00:00",
+      "builtAt": "2026-09-20T01:40:39+00:00",
       "file": "freq-1000g.parquet",
-      "rows": 311,
+      "rows": 381,
       "columns": [
         "chrom",
         "pos",
@@ -192,8 +192,8 @@
         "af_eur",
         "af_sas"
       ],
-      "size": 12651,
-      "sha256": "6f7913b5897ce17304993fa052f9f3b0b920db4a2bf189fd4b2e97e484cb7dc9",
+      "size": 15534,
+      "sha256": "090a37836ccbc81f315fdb2e1cb9b56cb72df39b6aeab6b093106e0fc93dc4dd",
       "stats": {
         "fixture": true
       },
@@ -221,9 +221,9 @@
       "version": "50lift37",
       "sourceDate": "2026-06-09",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:39+00:00",
       "file": "genes-gencode.parquet",
-      "rows": 10,
+      "rows": 13,
       "columns": [
         "chrom",
         "start",
@@ -238,10 +238,13 @@
         "element",
         "element",
         "cds_start",
-        "cds_end"
+        "cds_end",
+        "element",
+        "element",
+        "element"
       ],
-      "size": 3451,
-      "sha256": "6e58724fef3bf26a07e22df7a9d6e4c2b998700b651029728e8c8c02a9379cd4",
+      "size": 5765,
+      "sha256": "d01eab25e80bbfceee4d397a5030593fa4a5f7c89d157089d30d610936b1159a",
       "stats": {
         "fixture": true
       },
@@ -269,17 +272,17 @@
       "version": "hapmap2-2011-01",
       "sourceDate": "2011-01-19",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:39+00:00",
       "file": "genetic-map.parquet",
-      "rows": 1372,
+      "rows": 1478,
       "columns": [
         "chrom",
         "pos",
         "cm",
         "rate"
       ],
-      "size": 8591,
-      "sha256": "f354bdd18118581b3f8d61066a832464bd74698359bd2f36751477f36920eb56",
+      "size": 10162,
+      "sha256": "857824ba40391937d78121a47797a1ffd2adea97fe6a086ecc322d19e6b6dd73",
       "stats": {
         "fixture": true
       },
@@ -307,9 +310,9 @@
       "version": "2026-09-15",
       "sourceDate": "2026-09-15",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:39+00:00",
       "file": "gwas-catalog.parquet",
-      "rows": 243,
+      "rows": 369,
       "columns": [
         "chrom",
         "pos",
@@ -334,8 +337,8 @@
         "mapped_gene",
         "context"
       ],
-      "size": 27006,
-      "sha256": "4c61bbc4a56d77b5d0ae93d29624fea9e3027c20324f084d92a70942b86ce5fa",
+      "size": 37134,
+      "sha256": "7f2865df8498c930bc21d0091f2e8e5b8c0925a4bfc2ba5d5af56d0a0b656eec",
       "stats": {
         "fixture": true
       },
@@ -363,7 +366,7 @@
       "version": "17.3",
       "sourceDate": "2016-02-18",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:39+00:00",
       "file": "haplotree-mt.parquet",
       "rows": 5435,
       "columns": [
@@ -402,7 +405,7 @@
       "version": "14.05.0",
       "sourceDate": "2026-09-19",
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:40+00:00",
       "file": "haplotree-y.parquet",
       "rows": 69292,
       "columns": [
@@ -420,6 +423,47 @@
         "fixture": true
       },
       "path": "haplotree-y/14.05.0/haplotree-y.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "proteins-uniprot",
+      "title": "Proteins (UniProt reviewed human proteome)",
+      "description": "Which protein a transcript makes, its sequence and length, and the AlphaFold model that shows its shape. Lets a coding variant be placed on a residue.",
+      "build": "GRCh37",
+      "role": "proteins",
+      "scientificDomain": "molecular-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": null,
+      "core": false,
+      "licence": "CC BY 4.0 (UniProt)",
+      "licenceClass": "open",
+      "source": {
+        "name": "UniProtKB reviewed human proteome (Swiss-Prot), via the UniProt REST stream",
+        "short": "UniProt",
+        "url": "https://rest.uniprot.org/uniprotkb/stream?query=organism_id:9606+AND+reviewed:true"
+      },
+      "citation": "The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Res. 2025",
+      "version": "2026-09-20",
+      "sourceDate": "2026-09-20",
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-20T01:40:40+00:00",
+      "file": "proteins-uniprot.parquet",
+      "rows": 9,
+      "columns": [
+        "accession",
+        "entry_name",
+        "name",
+        "symbol",
+        "length",
+        "sequence",
+        "element"
+      ],
+      "size": 7697,
+      "sha256": "3e1a0efb71dc199bc5f67935cb9304e2e3b35831e7ec39b78f61668d890b4b8d",
+      "stats": {
+        "fixture": true
+      },
+      "path": "proteins-uniprot/2026-09-20/proteins-uniprot.parquet"
     },
     {
       "schema": 1,
@@ -443,7 +487,7 @@
       "version": "2026-09-19",
       "sourceDate": null,
       "locusVersion": "0.1.0",
-      "builtAt": "2026-09-19T21:06:59+00:00",
+      "builtAt": "2026-09-20T01:40:40+00:00",
       "file": "reference-grch37.parquet",
       "rows": 5000,
       "columns": [
@@ -457,6 +501,44 @@
         "fixture": true
       },
       "path": "reference-grch37/2026-09-19/reference-grch37.parquet"
+    },
+    {
+      "schema": 1,
+      "id": "sequence-grch37",
+      "title": "GRCh37 sequence at coding regions and chip loci",
+      "description": "The reference bases themselves: every protein-coding exon, and a 25-base window around each consumer-chip position. Lets the genome view keep zooming past single positions into the sequence, and lets codons be read.",
+      "build": "GRCh37",
+      "role": "sequence",
+      "scientificDomain": "molecular-genetics",
+      "evidenceKind": "documentary",
+      "trackKind": "feature",
+      "core": false,
+      "licence": "Public domain (GRC / 1000 Genomes hs37d5)",
+      "licenceClass": "open",
+      "source": {
+        "name": "1000 Genomes hs37d5 (GRCh37 + rCRS mitochondrion), cut to coding exons and chip loci",
+        "short": "hs37d5",
+        "url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz"
+      },
+      "citation": "Genome Reference Consortium, GRCh37 (hs37d5 assembly, 1000 Genomes Project); exon coordinates from GENCODE",
+      "version": "2026-09-20",
+      "sourceDate": null,
+      "locusVersion": "0.1.0",
+      "builtAt": "2026-09-20T01:40:40+00:00",
+      "file": "sequence-grch37.parquet",
+      "rows": 263,
+      "columns": [
+        "chrom",
+        "start",
+        "end",
+        "seq"
+      ],
+      "size": 13638,
+      "sha256": "cd39a5d689a4c6a40de70f394b1fc6fcd5e3d3b01eabc13ca7e60ebc30d0d890",
+      "stats": {
+        "fixture": true
+      },
+      "path": "sequence-grch37/2026-09-20/sequence-grch37.parquet"
     }
   ]
 }

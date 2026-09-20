@@ -25,6 +25,7 @@ export interface StorageAdapter {
   /** Write a file (e.g. a downloaded pack) into storage. */
   putFile(path: string, data: Uint8Array): Promise<void>;
   hasFile(path: string): Promise<boolean>;
+  readFile(path: string): Promise<Uint8Array | null>;
   deleteFile(path: string): Promise<void>;
   readJson<T>(path: string): Promise<T | null>;
   writeJson(path: string, value: unknown): Promise<void>;
@@ -91,6 +92,15 @@ export class OpfsDuckDbStorage implements StorageAdapter {
     const writable = await handle.createWritable();
     await writable.write(data as Uint8Array<ArrayBuffer>);
     await writable.close();
+  }
+
+  async readFile(path: string): Promise<Uint8Array | null> {
+    try {
+      const file = await (await opfsFile(path, false)).getFile();
+      return new Uint8Array(await file.arrayBuffer());
+    } catch {
+      return null;
+    }
   }
 
   async hasFile(path: string): Promise<boolean> {
