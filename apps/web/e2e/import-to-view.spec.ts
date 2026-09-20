@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 
 const KIT = resolve(here, '../../../fixtures/synthetic-kits/synthetic-v5-small.txt');
+// A simulated pair: gametes recombined over the genetic map, so they share real segments.
+const SIBLING_A = resolve(here, '../../../fixtures/synthetic-kits/synthetic-sibling-a.txt');
+const SIBLING_B = resolve(here, '../../../fixtures/synthetic-kits/synthetic-sibling-b.txt');
 
 test('import a kit, see it, join a pack, keep it after reload — all on one origin', async ({ page, baseURL }) => {
   const offOrigin: string[] = [];
@@ -110,10 +113,14 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   expect(offOrigin).toEqual([]);
 });
 
-test('refuses a file that is not a 23andMe export', async ({ page }) => {
+test('refuses a file no vendor profile recognises, and names the ones it reads', async ({ page }) => {
   await page.goto('/#/import');
   await page.setInputFiles('input[type=file]', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello\nworld\n') });
-  await expect(page.getByRole('alert')).toContainText('not a format this version can read');
+  const alert = page.getByRole('alert');
+  await expect(alert).toContainText('not a format this version can read');
+  for (const vendor of ['23andMe', 'AncestryDNA', 'MyHeritage', 'FamilyTreeDNA']) {
+    await expect(alert).toContainText(vendor);
+  }
 });
 
 test('says so, and does not download, when the site has too little storage for a pack', async ({ page }) => {
@@ -176,4 +183,97 @@ test('Explore gives starting points drawn from the packs', async ({ page }) => {
   await row.click();
   await expect(page).toHaveURL(/#\/genome\/1:/);
   await expect(page.getByText('Gene models')).toBeVisible();
+});
+
+/**
+ * The v0.3 milestone's whole point: reading a second person's DNA, under a
+ * grant that names them.
+ *
+ * The two sibling kits are simulated through meiosis over the genetic map, so
+ * they really do share segments. They are deliberately sparse — 20,000 markers
+ * against a real chip's 600,000 — which exercises the path that matters most
+ * here: the analysis saying so rather than reporting confident nonsense.
+ */
+test('reads a second person only under a grant that names them', async ({ page, baseURL }) => {
+  const offOrigin: string[] = [];
+  page.on('request', (r: Request) => {
+    const u = r.url();
+    if (!u.startsWith(baseURL!) && !u.startsWith('data:') && !u.startsWith('blob:')) offOrigin.push(u);
+  });
+
+  const importKit = async (file: string, label: string, subject?: string, consent: 'yes' | 'none' = 'yes') => {
+    await page.goto('/#/import');
+    await page.setInputFiles('input[type=file]', file);
+    await expect(page.getByText('Custody record required')).toBeVisible({ timeout: 120_000 });
+    if (subject) {
+      await page.getByText("Someone else's (a relative)").click();
+      await page.locator('#subject').fill(subject);
+      if (consent === 'none') await page.getByText('None recorded').click();
+    }
+    await page.locator('#label').fill(label);
+    await page.getByRole('button', { name: 'Store kit on this device' }).click();
+    await expect(page.getByText('Kit overview')).toBeVisible({ timeout: 120_000 });
+  };
+
+  await importKit(SIBLING_A, 'Me — 23andMe');
+  // An AncestryDNA export: two allele columns, and chromosomes numbered to 26.
+  await importKit(SIBLING_B, 'Sister — AncestryDNA', 'R. Bakker');
+  await importKit(KIT, 'Uncle J — 23andMe', 'J. Bakker', 'none');
+
+  // Custody: the kit with no consent record says so, and offers a way out.
+  await page.goto('/#/kits');
+  const uncle = page.locator('tr', { hasText: 'Uncle J' });
+  await expect(uncle).toContainText('None recorded');
+  await expect(uncle).toContainText('Analysis blocked');
+
+  await page.goto('/#/packs');
+  await page.getByRole('button', { name: /^Install all/ }).click();
+  await expect(page.getByText('Grant requested')).toBeVisible();
+  await page.getByRole('button', { name: 'Grant for this session' }).click();
+  await expect(page.getByText('Installing…')).toHaveCount(0, { timeout: 120_000 });
+
+  await page.locator('select[aria-label="Active kit"]').selectOption({ label: 'Me — 23andMe' });
+  await page.goto('/#/kinship');
+
+  // A kit with no consent record is refused before anything is asked.
+  const chooseByText = async (text: string) => {
+    const value = await page.locator('#compare-kit option', { hasText: text }).first().getAttribute('value');
+    await page.locator('#compare-kit').selectOption(value!);
+  };
+  await chooseByText('Uncle J');
+  await expect(page.getByText(/No consent is recorded for J\. Bakker/)).toBeVisible();
+  await page.getByRole('button', { name: 'Compare on this device' }).click();
+  await expect(page.getByText('Grant requested')).toHaveCount(0);
+  await expect(page.locator('.error-box')).toContainText('no analysis may read it');
+
+  // The sister has one, so the dialog appears — and names them both.
+  await chooseByText('Sister');
+  await page.getByRole('button', { name: 'Compare on this device' }).click();
+  const dialog = page.locator('.dialog');
+  await expect(dialog).toBeVisible({ timeout: 60_000 });
+  await expect(dialog).toContainText('Read 2 kits in full');
+  await expect(dialog).toContainText('R. Bakker');
+  await expect(dialog).toContainText('Me — 23andMe');
+  await expect(dialog).toContainText('The manifest lists no hosts');
+
+  // Denying reads nothing.
+  await dialog.getByRole('button', { name: 'Deny' }).click();
+  await expect(page.locator('.error-box')).toContainText('not granted permission');
+
+  await page.getByRole('button', { name: 'Ask again' }).click();
+  await page.getByRole('button', { name: 'Grant for this session' }).click();
+  await expect(page.getByText('What they share')).toBeVisible({ timeout: 180_000 });
+
+  // It reports what it found, and what it cannot tell you.
+  await expect(page.getByText(/cM across/)).toBeVisible();
+  await expect(page.getByText('Computed on this device')).toBeVisible();
+  await expect(page.getByText(/half-identical/)).toBeVisible();
+  await expect(page.getByText(/Ranges overlap between relationships/)).toBeVisible();
+  // These fixtures are far sparser than a real chip, and it says so rather
+  // than reporting segments it cannot stand behind.
+  await expect(page.getByText(/too few to tell a real shared stretch/)).toBeVisible();
+  // Painting draws only what was compared: no X, Y or MT among the autosomes.
+  await expect(page.getByText('Autosomes only')).toBeVisible();
+
+  expect(offOrigin).toEqual([]);
 });

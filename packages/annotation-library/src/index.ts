@@ -424,6 +424,8 @@ export class AnnotationLibrary {
     const map = this.one('genetic-map');
     // The map has a row at every chip locus already, so an exact join covers
     // almost everything; ASOF carries the rest to the nearest point below.
+    // Only if that point is close: a map position megabases away says nothing
+    // about this locus, and a partial map must report a gap, not a guess.
     const cm = map
       ? `ASOF LEFT JOIN ${this.view(map)} m ON m.chrom = a.chrom AND m.pos <= a.pos`
       : '';
@@ -434,7 +436,8 @@ export class AnnotationLibrary {
     // Allele pairs are not canonically ordered — a vendor may write AG or GA
     // for the same call — so equality has to be order-independent.
     return this.storage.query<SharedLocus>(
-      `SELECT a.chrom, a.pos, ${map ? 'm.cm' : 'NULL'} AS cm,
+      `SELECT a.chrom, a.pos,
+              ${map ? 'CASE WHEN a.pos - m.pos <= 1000000 THEN m.cm END' : 'NULL'} AS cm,
               CASE WHEN least(a.a1, a.a2) = least(b.a1, b.a2)
                     AND greatest(a.a1, a.a2) = greatest(b.a1, b.a2) THEN 2
                    WHEN a.a1 IN (b.a1, b.a2) OR a.a2 IN (b.a1, b.a2) THEN 1

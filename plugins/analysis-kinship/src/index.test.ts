@@ -136,6 +136,25 @@ describe('kinship', () => {
     expect(dense.tooSparse).toBe(false);
   });
 
+  it('measures density over the whole comparison, not the corner the map covers', () => {
+    // 2,000 loci spread over 200 Mb, of which the map places only the first 50
+    // across 2 cM. Measured over that corner alone the pair would look finely
+    // resolved; measured honestly it is nothing of the sort.
+    const all = Array.from({ length: 2000 }, (_, i) => ({
+      chrom: '1',
+      pos: 1 + i * 100_000,
+      cm: i < 50 ? i * 0.04 : null,
+      ibs: 1 as const,
+      het_a: false,
+      het_b: false,
+    }));
+    const result = kinship(all);
+    expect(result.mapCoverage).toBeCloseTo(0.025, 3);
+    expect(result.markersPerCm).toBeLessThan(20);
+    expect(result.tooSparse).toBe(true);
+    expect(result.notes.join(' ')).toMatch(/places 3% of the positions compared/);
+  });
+
   it('always states that the match is half-identical and that ranges overlap', () => {
     const result = kinship(loci('1'.repeat(100)));
     expect(result.notes.join(' ')).toMatch(/half-identical/);

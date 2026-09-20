@@ -99,6 +99,8 @@ export interface KinshipResult {
   loci: number;
   /** Markers per centimorgan: how finely this pair of chips can resolve a segment. */
   markersPerCm: number;
+  /** Share of compared loci the genetic map actually places, 0 to 1. */
+  mapCoverage: number;
   /** True when the chips are too sparse for segment detection to mean anything. */
   tooSparse: boolean;
   options: SegmentOptions;
@@ -250,8 +252,13 @@ export function relationshipCandidates(totalCm: number, ibs0Rate: number): Candi
 /** The whole analysis: segments, coefficient, candidates, and the caveats. */
 export function kinship(loci: SharedLocus[], options?: Partial<SegmentOptions>): KinshipResult {
   const mapped = loci.filter((l) => l.cm !== null);
-  const spanCm = chromosomeSpans(mapped);
-  const markersPerCm = spanCm > 0 ? mapped.length / spanCm : 0;
+  const mapCoverage = loci.length === 0 ? 0 : mapped.length / loci.length;
+
+  // Density has to be measured over the whole comparison, not over whichever
+  // corner the map happens to cover. A map that places a tenth of the loci
+  // would otherwise make a sparse pair of chips look finely resolved.
+  const spanCm = mapCoverage >= 0.5 ? chromosomeSpans(mapped) : chromosomeSpans(loci, true);
+  const markersPerCm = spanCm > 0 ? loci.length / spanCm : 0;
 
   // A fixed marker count means different things on different chips, so scale
   // it to how finely this pair actually resolves the map.
@@ -276,8 +283,13 @@ export function kinship(loci: SharedLocus[], options?: Partial<SegmentOptions>):
         + ' shared stretch from a run of coincidences. The coefficient below does not depend on segments and still holds.',
     );
   }
-  if (segments.some((s) => s.cmEstimated)) {
-    notes.push('No genetic map is installed, so segment lengths are inferred from base pairs at roughly 1 cM per Mb.');
+  if (mapCoverage < 0.9) {
+    notes.push(
+      mapCoverage === 0
+        ? 'No genetic map places these positions, so lengths are inferred from base pairs at roughly 1 cM per Mb.'
+        : `The installed genetic map places ${(mapCoverage * 100).toFixed(0)}% of the positions compared; the rest are`
+          + ' measured in base pairs at roughly 1 cM per Mb, which is an approximation.',
+    );
   }
   notes.push(
     'Chip data is unphased, so a shared stretch is half-identical: the two match on one copy, and which parent it came'
@@ -300,24 +312,31 @@ export function kinship(loci: SharedLocus[], options?: Partial<SegmentOptions>):
     candidates,
     loci: loci.length,
     markersPerCm,
+    mapCoverage,
     tooSparse,
     options: opts,
     notes,
   };
 }
 
-/** Total map length covered, summed per chromosome. */
-function chromosomeSpans(loci: SharedLocus[]): number {
+/**
+ * Total length covered, summed per chromosome, in centimorgans.
+ *
+ * With `fromBases`, distance comes from base pairs at roughly 1 cM per Mb —
+ * the fallback for a map that does not reach these positions.
+ */
+function chromosomeSpans(loci: SharedLocus[], fromBases = false): number {
+  const at = (l: SharedLocus) => (fromBases ? l.pos / 1_000_000 : l.cm!);
   let total = 0;
   let first: SharedLocus | null = null;
   let previous: SharedLocus | null = null;
   for (const l of loci) {
     if (!first || l.chrom !== first.chrom) {
-      if (first && previous) total += previous.cm! - first.cm!;
+      if (first && previous) total += at(previous) - at(first);
       first = l;
     }
     previous = l;
   }
-  if (first && previous) total += previous.cm! - first.cm!;
+  if (first && previous) total += at(previous) - at(first);
   return total;
 }

@@ -189,7 +189,10 @@
             <div><span>Kinship coefficient</span><span class="num">{r.coefficient.phi.toFixed(4)}</span></div>
             <div>
               <span>Measured against</span>
-              <span>{run.map ? `${run.map.source.short} ${run.map.version} · ${run.map.licence}` : 'base pairs (no genetic map)'}</span>
+              <span>
+                {run.map ? `${run.map.source.short} ${run.map.version} · ${run.map.licence}` : 'base pairs (no genetic map)'}
+                {#if run.map && r.mapCoverage < 0.99}<br /><span class="faint">places {(r.mapCoverage * 100).toFixed(0)}% of the positions compared</span>{/if}
+              </span>
             </div>
           </div>
           <p class="notice" style="margin:var(--space-4) 0 0">
