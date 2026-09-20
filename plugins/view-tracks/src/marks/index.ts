@@ -421,6 +421,50 @@ export const frequency: MarkRenderer = {
 };
 
 /** The reference bases: letters when there is room, a quiet ruler below that. */
+/**
+ * segment — a stretch two kits match across, drawn with honest ends.
+ *
+ * A segment is a span, not a point, so it is a bar. The ends carry the
+ * finding: where a mismatch bounds the match, the bar stops square, because
+ * the match demonstrably ends there; where the run simply left the chip, it
+ * fades, because the true end is further on and unknown. This is the edge rule
+ * applied to a case where both kinds of end genuinely occur.
+ */
+export const segment: MarkRenderer = {
+  height: (items) => 18 + lanes(items).lanes * 16,
+  draw(m, items) {
+    const { ctx, palette } = m;
+    const hits: HitBox[] = [];
+    const { assign } = lanes(items, m);
+    items.forEach((it, i) => {
+      const y = 10 + assign[i]! * 16;
+      const x0 = m.x(it.start);
+      const x1 = Math.max(m.x(it.end), x0 + 3);
+      const row = it.row as { startKnown?: boolean; endKnown?: boolean };
+      const startKnown = row.startKnown !== false;
+      const endKnown = row.endKnown !== false;
+      const fade = Math.min(14, (x1 - x0) / 3);
+      const sel = it.id === m.selectedId;
+      const color = sel ? palette.a[300]! : palette.a[500]!;
+
+      const g = ctx.createLinearGradient(x0, 0, x1, 0);
+      g.addColorStop(0, alpha(color, startKnown ? 0.85 : 0));
+      if (!startKnown && x1 > x0) g.addColorStop(fade / (x1 - x0), alpha(color, 0.85));
+      if (!endKnown && x1 > x0) g.addColorStop(1 - fade / (x1 - x0), alpha(color, 0.85));
+      g.addColorStop(1, alpha(color, endKnown ? 0.85 : 0));
+      ctx.fillStyle = g;
+      ctx.fillRect(x0, y, x1 - x0, 9);
+
+      ctx.fillStyle = color;
+      if (startKnown) ctx.fillRect(x0, y - 2, 1.5, 13);
+      if (endKnown) ctx.fillRect(x1 - 1.5, y - 2, 1.5, 13);
+      if (sel) selectedRing(m, x0, y - 2, x1 - x0, 13);
+      hits.push({ item: it, x0, x1, y0: y - 2, y1: y + 11 });
+    });
+    return hits;
+  },
+};
+
 export const sequence: MarkRenderer = {
   height: () => 30,
   draw(m, items) {
@@ -514,6 +558,7 @@ export const protein: MarkRenderer = {
 export const KIND_RENDERERS: Partial<Record<TrackKind, MarkRenderer>> = {
   sequence,
   protein,
+  segment,
 };
 
 export const RENDERERS: Record<EvidenceKind, MarkRenderer> = {

@@ -13,6 +13,7 @@
   import Plugins from './routes/Plugins.svelte';
   import Clinvar from './routes/Clinvar.svelte';
   import Lineages from './routes/Lineages.svelte';
+  import Kinship from './routes/Kinship.svelte';
   import Explore from './routes/Explore.svelte';
 
   onMount(() => {
@@ -78,6 +79,8 @@
         <Plugins />
       {:else if route.page === 'clinvar'}
         <Clinvar />
+      {:else if route.page === 'kinship'}
+        <Kinship />
       {:else if route.page === 'lineages'}
         <Lineages />
       {:else if route.page === 'explore'}

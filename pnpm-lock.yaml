@@ -26,6 +26,9 @@ importers:
       '@gw/analysis-haplogroups':
         specifier: workspace:*
         version: link:../../plugins/analysis-haplogroups
+      '@gw/analysis-kinship':
+        specifier: workspace:*
+        version: link:../../plugins/analysis-kinship
       '@gw/annotation-library':
         specifier: workspace:*
         version: link:../../packages/annotation-library
@@ -56,6 +59,9 @@ importers:
       '@gw/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      '@gw/view-painting':
+        specifier: workspace:*
+        version: link:../../plugins/view-painting
       '@gw/view-structure':
         specifier: workspace:*
         version: link:../../plugins/view-structure
@@ -181,6 +187,15 @@ importers:
   plugins/profile-familytreedna: {}
 
   plugins/profile-myheritage: {}
+
+  plugins/view-painting:
+    dependencies:
+      '@gw/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../packages/plugin-sdk
+      '@gw/view-tracks':
+        specifier: workspace:*
+        version: link:../view-tracks
 
   plugins/view-structure:
     dependencies:

@@ -1,0 +1,15 @@
+{
+  "name": "@gw/view-painting",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Ideogram view: segment tracks painted across every chromosome (v0.3)",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manifest.json": "./manifest.json"
+  },
+  "dependencies": {
+    "@gw/plugin-sdk": "workspace:*",
+    "@gw/view-tracks": "workspace:*"
+  }
+}

@@ -13,7 +13,9 @@ import myHeritageManifest from '@gw/profile-myheritage/manifest.json';
 import familyTreeDnaManifest from '@gw/profile-familytreedna/manifest.json';
 import { manifest as viewManifest } from '@gw/view-tracks';
 import haplogroupsManifest from '@gw/analysis-haplogroups/manifest.json';
+import kinshipManifest from '@gw/analysis-kinship/manifest.json';
 import structureManifest from '@gw/view-structure/manifest.json';
+import paintingManifest from '@gw/view-painting/manifest.json';
 import publicKey from '../../../../keys/pack-index.pub?raw';
 
 /** The Pack Index signing key. Tests build with the fixture key instead. */
@@ -179,7 +181,9 @@ export async function boot() {
     }
     host.register(viewManifest);
     host.register(haplogroupsManifest as PluginManifest);
+    host.register(kinshipManifest as PluginManifest);
     host.register(structureManifest as PluginManifest);
+    host.register(paintingManifest as PluginManifest);
     await library.init();
     await store.init();
     host.setPrompter(

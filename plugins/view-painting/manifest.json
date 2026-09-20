@@ -1,0 +1,9 @@
+{
+  "id": "view-painting",
+  "version": "0.3.0",
+  "hostApi": "^0.1",
+  "capabilities": ["view"],
+  "title": "Chromosome painting",
+  "description": "Paints shared segments onto all the chromosomes at once, so where two people match is visible as a shape rather than a list. An end a mismatch bounds is drawn hard; an end that only ran out of chip is faded.",
+  "firstParty": true
+}

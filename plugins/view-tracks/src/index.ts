@@ -21,7 +21,7 @@ import { BINS_HEIGHT, KIND_RENDERERS, RENDERERS, drawBins, type HitBox, type Mar
 import { readPalette, type Palette } from './palette';
 
 export { RENDERERS } from './marks';
-export { readPalette } from './palette';
+export { alpha, readPalette, type Palette } from './palette';
 
 export const manifest = manifestJson as PluginManifest;
 
@@ -380,6 +380,6 @@ export function markSwatch(kind: keyof typeof EVIDENCE_KINDS): string {
 
 export const viewTracks: ViewPlugin = {
   manifest,
-  supports: (kind: TrackKind) => ['variant', 'feature', 'signal', 'sequence', 'protein'].includes(kind),
+  supports: (kind: TrackKind) => ['variant', 'feature', 'signal', 'sequence', 'protein', 'segment'].includes(kind),
   mount: (el, tracks, options) => new TrackView(el, tracks, options),
 };
