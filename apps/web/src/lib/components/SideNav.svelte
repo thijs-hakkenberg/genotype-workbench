@@ -4,6 +4,7 @@
 
   const items = $derived([
     { page: 'overview', label: 'Overview', badge: '' },
+    { page: 'explore', label: 'Explore', badge: '' },
     { page: 'genome', label: 'Genome view', badge: '' },
     { page: 'lineages', label: 'Lineages', badge: '' },
     { page: 'kits', label: 'Kits', badge: String(app.kits.length) },

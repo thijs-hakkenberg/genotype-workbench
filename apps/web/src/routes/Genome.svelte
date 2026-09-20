@@ -8,7 +8,7 @@
   import { app, activeKit, svc } from '../lib/services.svelte';
   import { route, go } from '../lib/router.svelte';
   import { fmtInt } from '../lib/format';
-  import SelectedPanel from '../lib/components/SelectedPanel.svelte';
+  import DetailDock from '../lib/components/DetailDock.svelte';
 
   const DEFAULT = '2:136590000-136625000'; // LCT/MCM6, the lactase-persistence region
   const kit = $derived(activeKit());
@@ -152,8 +152,8 @@
     </div>
   </div>
 
-  <div class="split">
-    <div style="min-width:0;padding:0 var(--space-8) var(--space-8);overflow:auto">
+  <div class="board">
+    <div class="tracks-wrap">
       <div class="panel" style="padding:0;overflow:hidden">
         <div bind:this={host}></div>
         {#each missing as m (m.role)}
@@ -181,51 +181,49 @@
           <span style="margin-left:auto">view-tracks 0.1 · Arrow from DuckDB · drag to pan, scroll to zoom</span>
         </div>
       </div>
+    </div>
 
-      {#if !kit}
-        <div class="panel" style="margin-top:var(--space-3)">
-          <p class="muted" style="margin:0">No kit imported yet. <a href="#/import">Import a raw data file</a> to see your calls here.</p>
-        </div>
+    {#if sel}
+      <DetailDock {kit} chrom={sel.chrom} pos={sel.pos} onclose={() => go(`genome/${region.chrom}:${region.start}-${region.end}`, true)} />
+    {:else}
+      <div class="hint">
+        <span class="faint">Click a mark in any track, or a row below, to see what every installed pack says about that position.</span>
+        {#if !kit}<a class="btn btn-secondary" href="#/import">Import a raw data file</a>{/if}
+      </div>
+    {/if}
+
+    <details class="calls" open={!sel}>
+      <summary>
+        Calls in view{callCount == null ? '' : ` · ${callCount > 5000 ? 'over 5,000' : fmtInt(callCount)}`}
+      </summary>
+      {#if calls.length === 0}
+        <p class="faint" style="font-size:12px;margin:var(--space-3) var(--space-6)">
+          {callCount === 0 ? 'The chip has no probes in this window.' : kit ? 'Reading…' : 'No kit imported yet.'}
+        </p>
       {:else}
-        <div class="panel" style="margin-top:var(--space-3);padding:var(--space-3) var(--space-6) var(--space-4)">
-          {#if calls.length === 0}
-            <p class="faint" style="font-size:12px;margin:var(--space-3) 0">{callCount === 0 ? 'The chip has no probes in this window.' : 'Reading…'}</p>
-          {:else}
-            <table class="table">
-              <thead><tr><th>Position</th><th>rsID</th><th>Ref</th><th>Call</th><th>State</th></tr></thead>
-              <tbody>
-                {#each calls as c (c.pos + c.rsid)}
-                  <tr class:sel={sel?.pos === c.pos && sel?.chrom === c.chrom} onclick={() => select(c.chrom, c.pos)}>
-                    <td class="num" style="color:var(--color-neutral-300)">{fmtInt(c.pos)}</td>
-                    <td>{c.rsid}</td>
-                    <td class="muted">{c.ref ?? '—'}</td>
-                    <td class="mono-allele">{formatCall(c)}</td>
-                    <td class="muted" style="font-size:12px">
-                      {c.is_nocall ? 'No-call' : c.strand_ambiguous ? 'Strand-ambiguous' : c.ref_check === 'complement-only' ? 'Probable strand flip' : 'Measured'}
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-            {#if (callCount ?? 0) > calls.length}
-              <p class="faint num" style="font-size:11px;margin:var(--space-3) 0 0">Showing the first {calls.length} calls; zoom in to list the rest.</p>
-            {/if}
+        <div style="padding:0 var(--space-6) var(--space-4)">
+          <table class="table">
+            <thead><tr><th>Position</th><th>rsID</th><th>Ref</th><th>Call</th><th>State</th></tr></thead>
+            <tbody>
+              {#each calls as c (c.pos + c.rsid)}
+                <tr class:sel={sel?.pos === c.pos && sel?.chrom === c.chrom} onclick={() => select(c.chrom, c.pos)}>
+                  <td class="num" style="color:var(--color-neutral-300)">{fmtInt(c.pos)}</td>
+                  <td>{c.rsid}</td>
+                  <td class="muted">{c.ref ?? '—'}</td>
+                  <td class="mono-allele">{formatCall(c)}</td>
+                  <td class="muted" style="font-size:12px">
+                    {c.is_nocall ? 'No-call' : c.strand_ambiguous ? 'Strand-ambiguous' : c.ref_check === 'complement-only' ? 'Probable strand flip' : 'Measured'}
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+          {#if (callCount ?? 0) > calls.length}
+            <p class="faint num" style="font-size:11px;margin:var(--space-3) 0 0">Showing the first {calls.length}; zoom in to list the rest.</p>
           {/if}
         </div>
       {/if}
-    </div>
-
-    <aside class="aside">
-      {#if sel}
-        <SelectedPanel {kit} chrom={sel.chrom} pos={sel.pos} />
-      {:else}
-        <div class="card-kicker">Selected</div>
-        <p class="muted" style="font-size:13px;margin-top:var(--space-3)">
-          Click a mark in any track, or a row in the table, to see your call and what each installed source says about that
-          position.
-        </p>
-      {/if}
-    </aside>
+    </details>
   </div>
 </div>
 
@@ -242,14 +240,17 @@
   .strip-cen { position: absolute; top: 12px; width: 4px; height: 13px; margin-left: -2px; background: var(--color-bg); box-shadow: inset 0 0 0 1px var(--color-neutral-700); }
   .strip-view { position: absolute; top: 8px; height: 21px; min-width: 2px; background: color-mix(in srgb, var(--color-accent-400) 25%, transparent); box-shadow: inset 0 0 0 1px var(--color-accent-400); border-radius: 1px; }
   .strip-label { position: absolute; top: 0; font-size: 10px; color: var(--color-neutral-500); }
-  .split { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 340px; }
-  .aside { border-left: 1px solid var(--color-divider); padding: var(--space-6); overflow: auto; }
+  .board { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+  .tracks-wrap { padding: 0 var(--space-8) var(--space-3); }
+  .hint { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-8); border-top: 1px solid var(--color-divider); font-size: 13px; }
+  .calls { border-top: 1px solid var(--color-divider); }
+  .calls > summary { padding: var(--space-3) var(--space-6); font-size: 12px; color: var(--color-neutral-400); cursor: pointer; }
+  .calls > summary:hover { color: var(--color-text); }
   .missing { display: grid; grid-template-columns: 176px 1fr; border-top: 1px solid var(--color-divider); min-height: 46px; }
   .missing .label { padding: 10px 16px; border-right: 1px solid var(--color-divider); display: flex; gap: 8px; align-items: flex-start; }
   @media (max-width: 1100px) {
-    .split { grid-template-columns: 1fr; }
-    .aside { border-left: 0; border-top: 1px solid var(--color-divider); }
     .chips { overflow-x: auto; }
     .chip { min-width: 22px; }
+    .tracks-wrap { padding: 0 16px var(--space-3); }
   }
 </style>

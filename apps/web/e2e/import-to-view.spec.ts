@@ -36,9 +36,9 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   // Genome view at rs4988235 via search
   await page.getByRole('searchbox').fill('rs4988235');
   await page.getByRole('searchbox').press('Enter');
-  await expect(page.locator('aside')).toContainText('rs4988235');
-  await expect(page.locator('aside')).toContainText('Your call · measured');
-  await expect(page.locator('aside')).toContainText('GRCh37:2:136608646:G');
+  await expect(page.locator('.dock')).toContainText('rs4988235');
+  await expect(page.locator('.dock')).toContainText('Your call · measured');
+  await expect(page.locator('.dock')).toContainText('GRCh37:2:136608646:G');
 
   // Install ClinVar through the grant dialog
   await page.goto('/#/packs');
@@ -50,8 +50,8 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   await expect(page.getByText(/Network: localhost/)).toBeVisible();
 
   await page.goto('/#/genome/2:136590000-136625000?sel=2:136608646');
-  await expect(page.locator('aside')).toContainText('ClinVar classification');
-  await expect(page.locator('aside')).toContainText('VCV');
+  await expect(page.locator('.dock')).toContainText('ClinVar · curated classification');
+  await expect(page.locator('.dock')).toContainText('VCV');
 
   // More sources: frequencies (population-frequency), GWAS, Mondo, the trees. The grant already holds.
   await page.goto('/#/packs');
@@ -61,17 +61,17 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
     await expect(panel.getByText(/Installed/)).toBeVisible();
   }
   await page.goto('/#/genome/2:136590000-136625000?sel=2:136608646');
-  await expect(page.locator('aside')).toContainText('of 1000 Genomes chromosomes', { timeout: 20_000 });
-  await expect(page.locator('aside')).toContainText('not about you');
-  await expect(page.locator('aside')).toContainText('Genetic position');
+  await expect(page.locator('.dock')).toContainText('of chromosomes', { timeout: 20_000 });
+  await expect(page.locator('.dock')).toContainText('not about you');
+  await expect(page.locator('.dock')).toContainText('Genetic position');
   await expect(page.getByText('Population frequency').first()).toBeVisible();
 
   // Sequence and protein: zoom past the track scale into bases and codons
   await page.goto('/#/genome/1:11856340-11856420?sel=1:11856378');
   await expect(page.getByText('Reference sequence', { exact: false }).first()).toBeVisible();
-  await expect(page.locator('aside')).toContainText('MTHFR p.Ala222Val', { timeout: 45_000 });
-  await expect(page.locator('aside')).toContainText('Codon 222 reads GCC in the reference');
-  await expect(page.locator('aside')).toContainText('Computed on this device');
+  await expect(page.locator('.dock')).toContainText('MTHFR p.Ala222Val', { timeout: 45_000 });
+  await expect(page.locator('.dock')).toContainText('Codon 222 reads GCC in the reference');
+  await expect(page.locator('.dock')).toContainText('computed on this device');
 
   // 3D asks before it fetches anything, and fetches nothing when refused
   const beforeDeny = offOrigin.length;
@@ -144,4 +144,36 @@ test('explains itself when a second tab opens, and recovers when the first close
   await first.close();
   await second.getByRole('button', { name: 'Try again' }).click();
   await expect(second.getByText('Kit overview')).toBeVisible({ timeout: 60_000 });
+});
+
+test('Explore gives starting points drawn from the packs', async ({ page }) => {
+  await page.goto('/#/import');
+  await page.setInputFiles('input[type=file]', KIT);
+  await page.getByRole('button', { name: 'Store kit on this device' }).click();
+  await expect(page.getByText('Kit overview')).toBeVisible();
+
+  await page.goto('/#/packs');
+  await page.getByRole('button', { name: /^Install all/ }).click();
+  await expect(page.getByText('Grant requested')).toBeVisible();
+  await page.getByRole('button', { name: 'Grant for this session' }).click();
+  await expect(page.getByText('Installing…')).toHaveCount(0, { timeout: 120_000 });
+
+  // The overview points somewhere instead of dead-ending.
+  await page.goto('/#/overview');
+  await expect(page.getByText('Where to look first')).toBeVisible();
+
+  await page.goto('/#/explore');
+  await expect(page.getByText('Best-reviewed ClinVar records for your calls')).toBeVisible();
+  await expect(page.getByText('Joining on this device…')).toHaveCount(0, { timeout: 120_000 });
+  // Ordered by evidence, and it says so.
+  await expect(page.getByText('Best review status first')).toBeVisible();
+  await expect(page.getByText(/never by how important/)).toBeVisible();
+
+  // A gene is an entry point, with the kit's calls counted in it.
+  await page.getByLabel('Search genes').fill('MTHFR');
+  const row = page.locator('tr', { hasText: 'MTHFR' }).first();
+  await expect(row).toBeVisible({ timeout: 30_000 });
+  await row.click();
+  await expect(page).toHaveURL(/#\/genome\/1:/);
+  await expect(page.getByText('Gene models')).toBeVisible();
 });

@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <div class="grid-2" style="margin-top:var(--space-3)">
+    <div class="grid-3" style="margin-top:var(--space-3)">
       <div class="panel">
         <div class="card-kicker">Custody</div>
         <h4>{kit.custody.dataSubject === 'Self' ? 'This kit is your own' : `This kit is ${kit.custody.dataSubject}'s`}</h4>
@@ -127,6 +127,31 @@
           <div><span>Recorded</span><span class="num">{fmtDate(kit.custody.recordedAt)}</span></div>
         </div>
         <p class="faint" style="font-size:12px;margin:var(--space-4) 0 0">A relative's kit needs a consent record before any analysis may read it.</p>
+      </div>
+
+      <div class="panel" style="display:flex;flex-direction:column">
+        <div class="card-kicker">Start here</div>
+        <h4>Where to look first</h4>
+        {#if annotationPacks.length === 0}
+          <p class="muted" style="font-size:13px;margin:0 0 var(--space-4)">
+            Install packs and this becomes a list of positions your packs have something to say about.
+          </p>
+          <div style="margin-top:auto"><a class="btn btn-secondary" href="#/packs">Browse Pack Index</a></div>
+        {:else}
+          <div class="kv" style="font-size:13px">
+            <div><span>Best-reviewed ClinVar records</span><span><a href="#/explore">See them</a></span></div>
+            <div><span>Strongest associations you carry</span><span><a href="#/explore">See them</a></span></div>
+            <div><span>Rarest alleles you carry</span><span><a href="#/explore">See them</a></span></div>
+            <div><span>Coding changes in your calls</span><span><a href="#/explore?scan=coding">Scan</a></span></div>
+          </div>
+          <p class="notice" style="margin:var(--space-4) 0 0">
+            Ordered by how well established the evidence is, never by importance to you.
+          </p>
+          <div style="margin-top:auto;padding-top:var(--space-4);display:flex;gap:var(--space-2)">
+            <a class="btn btn-primary" href="#/explore">Explore my calls</a>
+            <a class="btn btn-ghost" href="#/lineages">Lineages</a>
+          </div>
+        {/if}
       </div>
 
       <div class="panel" style="display:flex;flex-direction:column">

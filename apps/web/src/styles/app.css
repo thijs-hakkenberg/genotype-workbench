@@ -49,6 +49,7 @@ main { min-width: 0; overflow: auto; }
 .panel { background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-6); }
 .panel h4 { margin: 6px 0 var(--space-4); }
 .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); align-items: stretch; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .kv { display: flex; flex-direction: column; gap: var(--space-3); font-size: 13px; }
 .kv > div { display: flex; justify-content: space-between; gap: var(--space-4); }
@@ -118,7 +119,7 @@ main { min-width: 0; overflow: auto; }
   .sidenav { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--color-divider); padding: var(--space-2) var(--space-4); }
   .sidenav .foot { display: none; }
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .grid-2 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .page { padding: var(--space-6) 16px 48px; }
   .searchbox { margin-left: 0; width: 100%; }
   .searchbox .input { width: 100%; max-width: none; }

@@ -2,11 +2,11 @@
 
 A local-first workbench for your own raw DNA file. Import a 23andMe export, explore it on a genome view, and join it to public databanks that arrive as whole downloaded packs. Everything runs in your browser: the file is never uploaded, and nothing reaches the network unless you grant it.
 
-![Genome view: your calls next to gene models, ClinVar classifications and GWAS associations, each drawn in its own evidence form](docs/screenshots/genome.png)
+![Genome view: tracks across the full width, with the selected position's details docked underneath](docs/screenshots/genome.png)
 
-| Overview | Packs |
+| Explore: where to start | Overview |
 | --- | --- |
-| ![Kit overview with call statistics and probe coverage per chromosome](docs/screenshots/overview.png) | ![Signed pack index with licence, size and source per pack](docs/screenshots/packs.png) |
+| ![Explore page: best-reviewed ClinVar records, strongest associations, rarest alleles, coding changes, and a gene search](docs/screenshots/explore.png) | ![Kit overview with call statistics and probe coverage per chromosome](docs/screenshots/overview.png) |
 
 One zoom runs from the chromosome to the bases and the codons; a coding position names its residue and shows it in the protein.
 
@@ -22,8 +22,9 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 
 - **Import.** A 23andMe raw data file (chips v3–v5, build 37) is read and normalized in a Web Worker by the Rust `locus` normalizer compiled to WASM, in about 1–2 s for a 640k-row v5 file. Every call is checked against the GRCh37 reference base. Strand-ambiguous (A/T, C/G) calls are flagged, no-calls are kept, and duplicate probes are merged. A custody record (data subject, custodian, consent basis) is required before the kit is stored.
 - **Storage.** Each kit is a Parquet file in the browser's Origin Private File System, queried with DuckDB-WASM. Kits and packs survive reloads.
-- **Overview.** Call statistics, reference consistency, probe coverage per chromosome, custody, and your calls per ClinVar classification.
-- **Genome view.** A canvas track view (`plugins/view-tracks`) draws each track in its evidence kind's form: measured calls, documentary gene models, curated ClinVar classifications, GWAS associations, and population frequencies. You can pan, zoom, click to select, and search by region, rsID (including retired rsIDs) or gene. Wide windows switch to binned density. The selected-position panel lists every source strongest evidence first, with ClinVar conditions explained through Mondo.
+- **Overview.** Call statistics, reference consistency, probe coverage per chromosome, custody, your calls per ClinVar classification, and a card pointing at where to look first.
+- **Explore.** Starting points drawn from your own calls: best-reviewed ClinVar records, strongest associations you carry an allele for, rarest alleles, coding changes translated on the device, and a gene search. Ordered by how well established the evidence is, never by how important it might be for you.
+- **Genome view.** Tracks run the full width, and selecting a position opens a dock underneath with the call, the classification, frequencies, the protein and its 3D structure side by side. A canvas track view (`plugins/view-tracks`) draws each track in its evidence kind's form: measured calls, documentary gene models, curated ClinVar classifications, GWAS associations, and population frequencies. You can pan, zoom, click to select, and search by region, rsID (including retired rsIDs) or gene. Wide windows switch to binned density. The selected-position panel lists every source strongest evidence first, with ClinVar conditions explained through Mondo.
 - **Sequence and protein.** Keep zooming and the tracks become the reference bases, your own called bases, and the codons of the gene in view. Select a coding position and the panel names the residue and what the allele changes it to (for example MTHFR p.Ala222Val), computed on this device from GENCODE coding blocks and the GRCh37 sequence.
 - **3D structure.** Mol* shows the protein's predicted shape from AlphaFold with that residue marked. The structure is fetched once per protein, only after you grant it, and then kept on this device.
 - **Lineages.** Maternal-line (mtDNA, PhyloTree 17) and paternal-line (Y, YFull YTree) haplogroups, matched on this device and shown with the markers that support them.

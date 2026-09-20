@@ -428,6 +428,83 @@ export class AnnotationLibrary {
       classification ? [classification] : []);
   }
 
+  /**
+   * Associations the kit carries an allele for, strongest first. The reported
+   * allele is matched on either strand; the view says which reading was used.
+   */
+  async topAssociationsForKit(kitView: string, limit = 50): Promise<(GwasRow & { a1: string; a2: string | null; ref: string | null })[]> {
+    const gwas = this.one('association');
+    if (!gwas) return [];
+    const comp = `CASE g.risk_allele WHEN 'A' THEN 'T' WHEN 'T' THEN 'A' WHEN 'C' THEN 'G' WHEN 'G' THEN 'C' END`;
+    return this.storage.query(
+      `SELECT g.*, k.a1, k.a2, k.ref FROM ${this.view(gwas)} g JOIN ${ident(kitView)} k
+         ON k.chrom = g.chrom AND k.pos = g.pos
+       WHERE NOT k.is_nocall AND g.risk_allele IS NOT NULL
+         AND (k.a1 IN (g.risk_allele, ${comp}) OR k.a2 IN (g.risk_allele, ${comp}))
+       ORDER BY g.p_mlog DESC NULLS LAST LIMIT ${limit}`);
+  }
+
+  /** Alleles the kit carries that are uncommon in the frequency pack, rarest first. */
+  async rarestAllelesForKit(kitView: string, below = 0.05, limit = 50): Promise<(FrequencyRow & { a1: string; a2: string | null; rsid: string })[]> {
+    const freq = this.one('frequency');
+    if (!freq) return [];
+    return this.storage.query(
+      `SELECT f.*, k.a1, k.a2, k.rsid FROM ${this.view(freq)} f JOIN ${ident(kitView)} k
+         ON k.chrom = f.chrom AND k.pos = f.pos
+       WHERE NOT k.is_nocall AND (k.a1 = f.alt OR k.a2 = f.alt) AND f.af < ${below} AND f.af > 0
+       ORDER BY f.af LIMIT ${limit}`);
+  }
+
+  /** Genes matching a search, with how many of the kit's calls fall inside each. */
+  async genesWithCalls(kitView: string | null, query: string, limit = 40): Promise<(GeneRow & { calls: number })[]> {
+    const genes = this.one('genes');
+    if (!genes) return [];
+    const like = `%${query.trim()}%`;
+    const counted = kitView
+      ? `(SELECT CAST(count(*) AS INTEGER) FROM ${ident(kitView)} k WHERE k.chrom = g.chrom AND k.pos BETWEEN g.start AND g."end")`
+      : '0';
+    return this.storage.query(
+      `SELECT g.*, ${counted} AS calls FROM ${this.view(genes)} g
+       WHERE g.symbol ILIKE ? OR g.gene_id ILIKE ?
+       ORDER BY (upper(g.symbol) = upper(?)) DESC, (g.biotype = 'protein_coding') DESC, length(g.symbol) LIMIT ${limit}`,
+      [like, like, query.trim()]);
+  }
+
+  /**
+   * Coding positions where the kit differs from the reference, with the
+   * transcript blocks and reference bases needed to translate them. The
+   * consequence itself is computed in `@gw/protein`, on this device.
+   */
+  async codingCandidates(kitView: string, limit = 60_000): Promise<{
+    candidates: (CodingTranscript & { pos: number; rsid: string; a1: string; a2: string | null; ref: string; symbol: string })[];
+    sequence: SequenceIndex;
+    /** How many coding positions differ from the reference in total, before the cap. */
+    total: number;
+  }> {
+    const genes = this.one('genes');
+    const seq = this.one('sequence');
+    if (!genes || !seq) return { candidates: [], sequence: new SequenceIndex([]), total: 0 };
+    const inBlock = `len(list_filter(range(1, len(g.cds_starts) + 1), i -> k.pos BETWEEN g.cds_starts[i] AND g.cds_ends[i])) > 0`;
+    const where = `NOT k.is_nocall AND k.ref IS NOT NULL AND (k.a1 <> k.ref OR (k.a2 IS NOT NULL AND k.a2 <> k.ref))
+                   AND g.canonical AND ${inBlock}`;
+    const candidates = await this.storage.query<never>(
+      `SELECT k.chrom, k.pos, k.rsid, k.a1, k.a2, k.ref, g.symbol, g.strand, g.transcript_id, g.transcript_name,
+              g.cds_starts, g.cds_ends, g.cds_frames
+       FROM ${ident(kitView)} k JOIN ${this.view(genes)} g
+         ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end
+       WHERE ${where} LIMIT ${limit}`);
+    const [{ n: total }] = await this.storage.query<{ n: number }>(
+      `SELECT CAST(count(*) AS INTEGER) AS n FROM ${ident(kitView)} k JOIN ${this.view(genes)} g
+         ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end WHERE ${where}`) as [{ n: number }];
+    const ranges = await this.storage.query<{ chrom: Chrom; start: number; end: number; seq: string }>(
+      `SELECT DISTINCT s.chrom, s.start, s."end", s.seq FROM ${this.view(seq)} s
+       WHERE EXISTS (
+         SELECT 1 FROM ${ident(kitView)} k JOIN ${this.view(genes)} g
+           ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end
+         WHERE ${where} AND s.chrom = k.chrom AND s."end" >= k.pos - 3 AND s.start <= k.pos + 3)`);
+    return { candidates, sequence: new SequenceIndex(ranges), total };
+  }
+
   /** Annotation tracks, each encoded by its pack's evidence kind. */
   trackSources(): TrackSource[] {
     return [
