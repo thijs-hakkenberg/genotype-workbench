@@ -209,6 +209,23 @@ export function ident(name: string): string {
   return `"${name}"`;
 }
 
+/**
+ * Whether an error is the browser refusing a second exclusive handle on a
+ * stored file. DuckDB opens kits and packs with exclusive access handles, so
+ * only one tab of the app can hold them at a time. Browsers word it
+ * differently ("No modification allowed", "Access Handles cannot be created").
+ */
+export function isStorageBusyError(e: unknown): boolean {
+  const name = (e as { name?: string })?.name ?? '';
+  const message = e instanceof Error ? e.message : String(e ?? '');
+  return (
+    name === 'NoModificationAllowedError' ||
+    /no modification allowed/i.test(message) ||
+    /access handles? cannot be created/i.test(message) ||
+    /another open access handle/i.test(message)
+  );
+}
+
 /** Ask the browser not to evict our data under storage pressure. */
 export async function requestPersistence(): Promise<boolean> {
   try {

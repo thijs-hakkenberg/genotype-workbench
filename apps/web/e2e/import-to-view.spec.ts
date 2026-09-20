@@ -128,3 +128,20 @@ test('says so, and does not download, when the site has too little storage for a
   await expect(clinvar.getByRole('button', { name: /Install/ })).toBeDisabled();
   await expect(page.getByText(/of storage left for this site/)).toBeVisible();
 });
+
+test('explains itself when a second tab opens, and recovers when the first closes', async ({ context }) => {
+  const first = await context.newPage();
+  await first.goto('/#/import');
+  await first.setInputFiles('input[type=file]', KIT);
+  await first.getByRole('button', { name: 'Store kit on this device' }).click();
+  await expect(first.getByText('Kit overview')).toBeVisible();
+
+  // The kit's file is open exclusively by the first tab.
+  const second = await context.newPage();
+  await second.goto('/#/overview');
+  await expect(second.getByText('This workbench is open in another tab')).toBeVisible({ timeout: 30_000 });
+
+  await first.close();
+  await second.getByRole('button', { name: 'Try again' }).click();
+  await expect(second.getByText('Kit overview')).toBeVisible({ timeout: 60_000 });
+});

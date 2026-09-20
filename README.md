@@ -95,6 +95,10 @@ tools/packkit/            pack pipeline (uv)
 fixtures/                 synthetic kits and fixture packs; never real data
 ```
 
+## One tab at a time
+
+Kits and packs are files on the device, and the query engine opens them exclusively, so the app runs in one tab per browser profile. A second tab says so and offers to retry; it recovers as soon as the first tab closes.
+
 ## Privacy guard rails
 
 - Real raw-data exports are never committed: `.gitignore` covers them, and CI runs `scripts/check-no-genomes.sh`.

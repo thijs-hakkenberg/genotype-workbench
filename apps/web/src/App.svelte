@@ -14,7 +14,19 @@
   import Clinvar from './routes/Clinvar.svelte';
   import Lineages from './routes/Lineages.svelte';
 
-  onMount(boot);
+  onMount(() => {
+    void boot();
+    // Coming back to this tab after closing the other one: retry by itself.
+    const retryIfFreed = () => {
+      if (document.visibilityState === 'visible' && app.phase === 'failed' && app.errorKind === 'busy') location.reload();
+    };
+    window.addEventListener('focus', retryIfFreed);
+    document.addEventListener('visibilitychange', retryIfFreed);
+    return () => {
+      window.removeEventListener('focus', retryIfFreed);
+      document.removeEventListener('visibilitychange', retryIfFreed);
+    };
+  });
 </script>
 
 <div class="shell">
@@ -28,6 +40,19 @@
           <h4 style="margin:6px 0">{app.bootStep}…</h4>
           <p class="notice">Everything runs in this browser. Nothing you import leaves this device.</p>
         </div>
+      {:else if app.phase === 'failed' && app.errorKind === 'busy'}
+        <div class="page" style="max-width:640px">
+          <div class="card-kicker">Already open</div>
+          <h4 style="margin:6px 0 var(--space-4)">This workbench is open in another tab</h4>
+          <p class="muted" style="font-size:13px">
+            Your kits and packs are files on this device, and the query engine opens them for one tab at a time. Close the
+            other tab or window with Genotype Workbench, then try again here.
+          </p>
+          <div style="display:flex;gap:var(--space-2);margin-top:var(--space-6)">
+            <button class="btn btn-primary" type="button" onclick={() => location.reload()}>Try again</button>
+          </div>
+          <p class="faint" style="font-size:11px;margin-top:var(--space-6)">{app.error}</p>
+        </div>
       {:else if app.phase === 'failed'}
         <div class="page">
           <div class="card-kicker">Could not start</div>
@@ -36,6 +61,9 @@
           <p class="notice" style="margin-top:var(--space-4)">
             Genotype Workbench keeps kits in the browser's private file system. Private windows and some browsers block it.
           </p>
+          <div style="display:flex;gap:var(--space-2);margin-top:var(--space-4)">
+            <button class="btn btn-secondary" type="button" onclick={() => location.reload()}>Try again</button>
+          </div>
         </div>
       {:else if route.page === 'genome'}
         <Genome />

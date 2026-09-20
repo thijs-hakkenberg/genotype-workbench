@@ -2,7 +2,7 @@
  * Wires the contexts together and exposes reactive app state.
  * Contexts talk through their public APIs only (Core architecture, context map).
  */
-import { OpfsDuckDbStorage, requestPersistence, type StorageEstimate } from '@gw/storage';
+import { OpfsDuckDbStorage, isStorageBusyError, requestPersistence, type StorageEstimate } from '@gw/storage';
 import { PluginHost, type NetworkRequest, type PromptAnswer } from '@gw/plugin-host';
 import { AnnotationLibrary, type InstalledPack } from '@gw/annotation-library';
 import { GenotypeStore, type Kit } from '@gw/genotype-store';
@@ -27,6 +27,8 @@ export const app = $state({
   phase: 'booting' as 'booting' | 'ready' | 'failed',
   bootStep: 'Starting the query engine',
   error: '',
+  /** `busy`: another tab holds the stored files; `unsupported`: no OPFS here. */
+  errorKind: 'other' as 'other' | 'busy' | 'unsupported',
   kits: [] as Kit[],
   activeKitId: null as string | null,
   installed: [] as InstalledPack[],
@@ -122,7 +124,9 @@ export async function refreshIndex() {
 
 export async function boot() {
   try {
+    app.errorKind = 'other';
     if (!('storage' in navigator) || !navigator.storage.getDirectory) {
+      app.errorKind = 'unsupported';
       throw new Error('This browser has no Origin Private File System, so nothing could be kept on this device.');
     }
     const storage = await OpfsDuckDbStorage.open(new URL('/duckdb-extensions', location.href).href);
@@ -168,6 +172,7 @@ export async function boot() {
     app.phase = 'ready';
   } catch (e) {
     console.error(e);
+    if (isStorageBusyError(e)) app.errorKind = 'busy';
     app.error = e instanceof Error ? e.message : String(e);
     app.phase = 'failed';
   }
