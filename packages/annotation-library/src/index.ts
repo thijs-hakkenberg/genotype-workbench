@@ -34,6 +34,19 @@ export * from './alleles';
 
 const PACKS_JSON = 'meta/packs.json';
 
+/**
+ * What a genes pack must carry before anything can be translated from it.
+ *
+ * The iteration-1 gene models (Ensembl 75) have none of these; GENCODE built
+ * for ADR-0013 has all of them.
+ */
+const CODING_COLUMNS = ['canonical', 'cds_start', 'cds_end', 'cds_starts', 'cds_ends', 'cds_frames'];
+
+/** Shown wherever a coding feature cannot run because the genes pack predates it. */
+export const CODING_PACK_NEEDED =
+  'The installed gene models pack has no coding blocks, so nothing here can be translated.'
+  + ' Install the GENCODE gene models pack, which carries them.';
+
 /** Roles for packs installed before manifests carried one (iteration 1). */
 const LEGACY_ROLES: Record<string, PackRole> = {
   'reference-grch37': 'reference',
@@ -101,6 +114,7 @@ export class AnnotationLibrary {
   private installed: InstalledPack[] = [];
   private listeners = new Set<() => void>();
   private index: PackIndex | null = null;
+  private columns = new Map<string, Set<string>>();
 
   constructor(
     private storage: StorageAdapter,
@@ -117,6 +131,7 @@ export class AnnotationLibrary {
       p.manifest.role ??= LEGACY_ROLES[p.manifest.id]!;
       if (p.manifest.id === 'gnomad-chip') p.manifest.evidenceKind = 'population-frequency';
       await this.storage.attachParquet(p.file, packView(p.manifest.id));
+      await this.columnsOf(p.manifest);
     }
   }
 
@@ -214,6 +229,7 @@ export class AnnotationLibrary {
     const file = `packs/${manifest.id}-${manifest.version}.parquet`;
     await this.storage.putFile(file, bytes);
     await this.storage.attachParquet(file, packView(manifest.id));
+    await this.columnsOf(manifest);
     this.installed.push({ manifest, installedAt: new Date().toISOString(), file });
     await this.storage.writeJson(PACKS_JSON, this.installed);
     this.changed();
@@ -251,6 +267,48 @@ export class AnnotationLibrary {
 
   private one(role: PackRole): PackManifest | undefined {
     return this.byRole(role)[0];
+  }
+
+  /** Column names in a pack's view, cached per pack version. */
+  private async columnsOf(m: PackManifest): Promise<Set<string>> {
+    const key = `${m.id}@${m.version}`;
+    let cols = this.columns.get(key);
+    if (!cols) {
+      const rows = await this.storage.query<{ column_name: string }>(
+        `SELECT column_name FROM (DESCRIBE SELECT * FROM ${this.view(m)})`);
+      cols = new Set(rows.map((r) => r.column_name));
+      this.columns.set(key, cols);
+    }
+    return cols;
+  }
+
+  /**
+   * The installed pack for `role` that can actually answer a query needing
+   * these columns.
+   *
+   * A pack built before a feature existed does not carry its columns — the
+   * gene models from iteration 1 have no coding blocks, for instance. Asking
+   * for them anyway fails deep inside SQL with a binder error no reader can
+   * act on, so the columns are checked here and the caller can say which pack
+   * to install instead.
+   */
+  private async oneWith(role: PackRole, ...required: string[]): Promise<PackManifest | undefined> {
+    for (const m of this.byRole(role)) {
+      const cols = await this.columnsOf(m);
+      if (required.every((c) => cols.has(c))) return m;
+    }
+    return undefined;
+  }
+
+  /**
+   * The same question, answered from the cache primed at install time, for
+   * callers that cannot await — the track list, built on every render.
+   */
+  private oneWithCached(role: PackRole, ...required: string[]): PackManifest | undefined {
+    return this.byRole(role).find((m) => {
+      const cols = this.columns.get(`${m.id}@${m.version}`);
+      return !!cols && required.every((c) => cols.has(c));
+    });
   }
 
   private view(m: PackManifest) {
@@ -334,7 +392,7 @@ export class AnnotationLibrary {
 
   /** Coding transcripts overlapping a position, canonical first. */
   async codingTranscriptsAt(chrom: Chrom, pos: number): Promise<(GeneRow & CodingTranscript)[]> {
-    const genes = this.one('genes');
+    const genes = await this.oneWith('genes', ...CODING_COLUMNS);
     if (!genes) return [];
     const rows = await this.storage.query<GeneRow>(
       `SELECT * FROM ${this.view(genes)}
@@ -529,10 +587,16 @@ export class AnnotationLibrary {
     sequence: SequenceIndex;
     /** How many coding positions differ from the reference in total, before the cap. */
     total: number;
+    /** Why nothing was scanned, in the words the page shows. */
+    blocked: string | null;
   }> {
-    const genes = this.one('genes');
+    const genes = await this.oneWith('genes', ...CODING_COLUMNS);
     const seq = this.one('sequence');
-    if (!genes || !seq) return { candidates: [], sequence: new SequenceIndex([]), total: 0 };
+    const empty = { candidates: [], sequence: new SequenceIndex([]), total: 0 };
+    if (!genes) {
+      return { ...empty, blocked: this.byRole('genes').length ? CODING_PACK_NEEDED : null };
+    }
+    if (!seq) return { ...empty, blocked: null };
     const inBlock = `len(list_filter(range(1, len(g.cds_starts) + 1), i -> k.pos BETWEEN g.cds_starts[i] AND g.cds_ends[i])) > 0`;
     const where = `NOT k.is_nocall AND k.ref IS NOT NULL AND (k.a1 <> k.ref OR (k.a2 IS NOT NULL AND k.a2 <> k.ref))
                    AND g.canonical AND ${inBlock}`;
@@ -542,16 +606,17 @@ export class AnnotationLibrary {
        FROM ${ident(kitView)} k JOIN ${this.view(genes)} g
          ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end
        WHERE ${where} LIMIT ${limit}`);
-    const [{ n: total }] = await this.storage.query<{ n: number }>(
+    const counted = await this.storage.query<{ n: number }>(
       `SELECT CAST(count(*) AS INTEGER) AS n FROM ${ident(kitView)} k JOIN ${this.view(genes)} g
-         ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end WHERE ${where}`) as [{ n: number }];
+         ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end WHERE ${where}`);
+    const total = counted[0]?.n ?? 0;
     const ranges = await this.storage.query<{ chrom: Chrom; start: number; end: number; seq: string }>(
       `SELECT DISTINCT s.chrom, s.start, s."end", s.seq FROM ${this.view(seq)} s
        WHERE EXISTS (
          SELECT 1 FROM ${ident(kitView)} k JOIN ${this.view(genes)} g
            ON g.chrom = k.chrom AND k.pos BETWEEN g.cds_start AND g.cds_end
          WHERE ${where} AND s.chrom = k.chrom AND s."end" >= k.pos - 3 AND s.start <= k.pos + 3)`);
-    return { candidates, sequence: new SequenceIndex(ranges), total };
+    return { candidates, sequence: new SequenceIndex(ranges), total, blocked: null };
   }
 
   /** Annotation tracks, each encoded by its pack's evidence kind. */
@@ -562,7 +627,9 @@ export class AnnotationLibrary {
       ...this.byRole('association').map((m) => this.gwasTrack(m)),
       ...this.byRole('frequency').map((m) => this.frequencyTrack(m)),
       ...this.byRole('sequence').map((m) => this.sequenceTrack(m)),
-      ...(this.one('sequence') && this.one('genes') ? [this.proteinTrack(this.one('sequence')!)] : []),
+      ...(this.one('sequence') && this.oneWithCached('genes', ...CODING_COLUMNS)
+        ? [this.proteinTrack(this.one('sequence')!)]
+        : []),
     ];
   }
 
@@ -674,7 +741,7 @@ export class AnnotationLibrary {
 
   /** Codons and amino acids of the coding transcript in view. */
   private proteinTrack(seqPack: PackManifest): TrackSource<CodonRow> {
-    const genes = this.one('genes')!;
+    const genes = this.oneWithCached('genes', ...CODING_COLUMNS)!;
     return {
       descriptor: {
         id: 'pack:protein',

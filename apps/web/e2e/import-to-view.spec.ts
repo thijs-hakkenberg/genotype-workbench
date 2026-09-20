@@ -113,6 +113,17 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   expect(offOrigin).toEqual([]);
 });
 
+test('the version in the header leads to what changed', async ({ page }) => {
+  await page.goto('/');
+  const version = page.locator('.nav-brand a');
+  await expect(version).toHaveText(/^v\d+\.\d+\.\d+$/);
+  await version.click();
+  await expect(page.getByRole('heading', { name: 'What changed' })).toBeVisible();
+  // The running version is marked, and the locus version is named as a different number.
+  await expect(page.getByText('This version')).toBeVisible();
+  await expect(page.getByText(/records which normalizer produced/)).toBeVisible();
+});
+
 test('refuses a file no vendor profile recognises, and names the ones it reads', async ({ page }) => {
   await page.goto('/#/import');
   await page.setInputFiles('input[type=file]', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello\nworld\n') });

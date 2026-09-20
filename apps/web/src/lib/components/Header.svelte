@@ -41,7 +41,10 @@
 </script>
 
 <header class="nav topbar">
-  <div class="nav-brand">Genotype Workbench <small>v{__APP_VERSION__}</small></div>
+  <div class="nav-brand">
+    Genotype Workbench
+    <a class="version" href="#/changelog" title="What changed in this version">v{__APP_VERSION__}</a>
+  </div>
   {#if kit}
     <label class="kit-pill" title="Active kit">
       <span class="swatch"></span>
@@ -72,3 +75,19 @@
     <div class="faint" style="font-size:11px;width:100%;text-align:right" role="status">{message}</div>
   {/if}
 </header>
+
+<style>
+  /* The version reads as a label until you notice it is a link. nocturne.css
+     is a copy and is never edited, so this lives with the component. */
+  .version {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-neutral-500);
+    border-bottom: 1px solid transparent;
+  }
+  .version:hover,
+  .version:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+</style>

@@ -24,6 +24,7 @@
   let coding = $state<Coding[] | null>(null);
   let codingState = $state<'idle' | 'scanning' | 'done'>('idle');
   let codingNote = $state('');
+  let codingBlocked = $state('');
 
   $effect(() => {
     const k = kit;
@@ -53,8 +54,13 @@
     if (!k) return;
     codingState = 'scanning';
     codingNote = '';
+    codingBlocked = '';
     try {
-      const { candidates, sequence, total } = await svc().library.codingCandidates(viewName(k.kitId));
+      const { candidates, sequence, total, blocked } = await svc().library.codingCandidates(viewName(k.kitId));
+      if (blocked) {
+        codingBlocked = blocked;
+        return;
+      }
       const out: Coding[] = [];
       for (const c of candidates) {
         const alt = [c.a1, c.a2].find((a) => a && a !== c.ref && 'ACGT'.includes(a));
@@ -187,6 +193,8 @@
           <p class="notice">Install the sequence and gene packs. <a href="#/packs">Packs</a></p>
         {:else if codingState === 'scanning'}
           <p class="faint">Translating every coding call on this device…</p>
+        {:else if codingBlocked}
+          <p class="notice" style="margin:0">{codingBlocked} <a href="#/packs">Packs</a></p>
         {:else}
           {#if !coding}
             <p class="notice" style="margin:0 0 var(--space-3)">

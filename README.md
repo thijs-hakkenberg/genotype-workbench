@@ -6,6 +6,8 @@ A local-first workbench for raw DNA files. Import an export from 23andMe, Ancest
 
 <sub>Every screenshot shows a synthetic kit (random genotypes on real chip positions), never a real person's DNA.</sub>
 
+What changed in each version: [`CHANGELOG.md`](CHANGELOG.md), also shown in the app behind the version number in the header.
+
 Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20architecture.md), [Decisions](docs/Decisions(1).md), [Scientific domains](docs/Scientific%20domains.md), the [ADRs](docs/adr/) and the Nocturne design system with the UI mockups.
 
 ## What it does
