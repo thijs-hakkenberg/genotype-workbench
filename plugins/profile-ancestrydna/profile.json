@@ -1,0 +1,22 @@
+{
+  "id": "profile-ancestrydna",
+  "version": "0.1.0",
+  "vendor": "ancestrydna",
+  "vendorLabel": "AncestryDNA",
+  "build": "GRCh37",
+  "delimiter": "\t",
+  "commentPrefix": "#",
+  "headerRow": "rsid",
+  "columns": { "rsid": 0, "chrom": 1, "pos": 2, "genotype": [3, 4] },
+  "noCallToken": "00",
+  "strand": "plus",
+  "detect": {
+    "headerContains": ["AncestryDNA"],
+    "buildMarkers": ["build 37", "GRCh37"],
+    "rejectMarkers": ["build 36", "NCBI36"]
+  },
+  "chipVersions": [
+    { "id": "v1", "minRows": 680000, "maxRows": 740000, "label": "V1 (Illumina OmniExpress, 2012–2016)" },
+    { "id": "v2", "minRows": 600000, "maxRows": 680000, "label": "V2 (Illumina OmniExpress+, 2016–)" }
+  ]
+}

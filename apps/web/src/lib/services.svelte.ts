@@ -8,6 +8,9 @@ import { AnnotationLibrary, type InstalledPack } from '@gw/annotation-library';
 import { GenotypeStore, type Kit } from '@gw/genotype-store';
 import type { Grant, PackIndex, PluginManifest } from '@gw/plugin-sdk';
 import profileManifest from '@gw/profile-23andme/manifest.json';
+import ancestryDnaManifest from '@gw/profile-ancestrydna/manifest.json';
+import myHeritageManifest from '@gw/profile-myheritage/manifest.json';
+import familyTreeDnaManifest from '@gw/profile-familytreedna/manifest.json';
 import { manifest as viewManifest } from '@gw/view-tracks';
 import haplogroupsManifest from '@gw/analysis-haplogroups/manifest.json';
 import structureManifest from '@gw/view-structure/manifest.json';
@@ -138,7 +141,9 @@ export async function boot() {
 
     app.bootStep = 'Opening your kits and packs';
     await host.init();
-    host.register(profileManifest as PluginManifest);
+    for (const m of [profileManifest, ancestryDnaManifest, myHeritageManifest, familyTreeDnaManifest]) {
+      host.register(m as PluginManifest);
+    }
     host.register(viewManifest);
     host.register(haplogroupsManifest as PluginManifest);
     host.register(structureManifest as PluginManifest);

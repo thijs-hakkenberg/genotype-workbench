@@ -7,6 +7,9 @@ import { Table, Utf8, makeData, makeVector } from 'apache-arrow';
 import { BIN_ABOVE_BP, BINS_PER_WINDOW, type Chrom, type Region, type TrackItem, type TrackSource } from '@gw/plugin-sdk';
 import { ident, type StorageAdapter } from '@gw/storage';
 import profile23andMe from '@gw/profile-23andme/profile.json';
+import profileAncestryDna from '@gw/profile-ancestrydna/profile.json';
+import profileMyHeritage from '@gw/profile-myheritage/profile.json';
+import profileFamilyTreeDna from '@gw/profile-familytreedna/profile.json';
 import type { ImportColumns, ImportWorkerApi, ReferenceColumns } from './import.worker';
 import type { CallRow, Custody, DensityBin, ImportMeta, Kit, RefCheck } from './types';
 
@@ -14,7 +17,11 @@ export * from './types';
 export type { ReferenceColumns } from './import.worker';
 
 const KITS_JSON = 'meta/kits.json';
-const PROFILES = [profile23andMe];
+/**
+ * Order matters for detection: MyHeritage and FamilyTreeDNA share a column
+ * header, so MyHeritage's comment banner has to be looked for first.
+ */
+const PROFILES = [profile23andMe, profileAncestryDna, profileMyHeritage, profileFamilyTreeDna];
 const REF_CHECK_ORDER: RefCheck[] = [
   'match', 'hom-non-ref', 'complement-only', 'mismatch', 'unknown', 'indel-unresolved', 'not-applicable',
 ];
@@ -92,7 +99,8 @@ export class GenotypeStore {
     const profile = PROFILES.find((p) => p.id === profileId);
     if (!profile) {
       throw new ImportRefused(
-        'This file is not a format this version can read. Iteration 1 reads 23andMe raw data (chips v3–v5, build 37).',
+        `This file is not a format this version can read. It reads ${PROFILES.map((p) => p.vendorLabel).join(', ')}`
+          + ' raw data exports, on build 37.',
       );
     }
     const bytes = new Uint8Array(await file.arrayBuffer());

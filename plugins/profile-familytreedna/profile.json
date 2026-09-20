@@ -1,0 +1,22 @@
+{
+  "id": "profile-familytreedna",
+  "version": "0.1.0",
+  "vendor": "familytreedna",
+  "vendorLabel": "FamilyTreeDNA",
+  "build": "GRCh37",
+  "delimiter": ",",
+  "commentPrefix": "#",
+  "headerRow": "RSID",
+  "columns": { "rsid": 0, "chrom": 1, "pos": 2, "genotype": [3] },
+  "noCallToken": "--",
+  "strand": "plus",
+  "detect": {
+    "headerContains": ["RSID,CHROMOSOME,POSITION,RESULT"],
+    "buildMarkers": ["build 37", "GRCh37"],
+    "rejectMarkers": ["build 36", "NCBI36"]
+  },
+  "buildBasis": "Family Finder reports positions on GRCh37, but the export carries no header stating it",
+  "chipVersions": [
+    { "id": "ff", "minRows": 500000, "maxRows": 750000, "label": "Family Finder (positions on GRCh37)" }
+  ]
+}

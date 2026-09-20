@@ -1,0 +1,11 @@
+{
+  "name": "@gw/profile-familytreedna",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Declarative format profile for FamilyTreeDNA Family Finder raw data (ADR-0006: data, not code)",
+  "type": "module",
+  "exports": {
+    "./profile.json": "./profile.json",
+    "./manifest.json": "./manifest.json"
+  }
+}

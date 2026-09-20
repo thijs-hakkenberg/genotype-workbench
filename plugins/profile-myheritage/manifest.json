@@ -1,0 +1,11 @@
+{
+  "id": "profile-myheritage",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": [
+    "importer"
+  ],
+  "title": "MyHeritage raw data",
+  "description": "Reads MyHeritage raw data files as a declarative format profile. Quoted comma-separated columns, and a build this profile asserts rather than reads.",
+  "firstParty": true
+}

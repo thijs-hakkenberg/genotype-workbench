@@ -58,6 +58,7 @@ impl ImportResult {
             "chipLabel": m.chip_label,
             "chipBasis": m.chip_basis,
             "build": m.build,
+            "buildBasis": m.build_basis,
             "sourceSha256": m.source_sha256,
             "locusVersion": m.locus_version,
             "stats": {

@@ -4,11 +4,16 @@
   "private": true,
   "description": "Genotype Store: Kit, Call and Custody aggregates, import through the locus normalizer, read API",
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "dependencies": {
     "@gw/locus-wasm": "link:../../crates/locus-wasm/pkg",
     "@gw/plugin-sdk": "workspace:*",
     "@gw/profile-23andme": "workspace:*",
+    "@gw/profile-ancestrydna": "workspace:*",
+    "@gw/profile-familytreedna": "workspace:*",
+    "@gw/profile-myheritage": "workspace:*",
     "@gw/storage": "workspace:*",
     "apache-arrow": "^17.0.0",
     "comlink": "^4.4.2"

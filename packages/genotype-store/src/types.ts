@@ -39,6 +39,8 @@ export interface ImportMeta {
   chipLabel: string | null;
   chipBasis: string;
   build: 'GRCh37';
+  /** Whether the file stated the build, or the profile asserted it and why. */
+  buildBasis: string;
   sourceSha256: string;
   locusVersion: string;
   stats: ImportStats;

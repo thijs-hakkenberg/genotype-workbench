@@ -1,0 +1,22 @@
+{
+  "id": "profile-myheritage",
+  "version": "0.1.0",
+  "vendor": "myheritage",
+  "vendorLabel": "MyHeritage",
+  "build": "GRCh37",
+  "delimiter": ",",
+  "commentPrefix": "#",
+  "headerRow": "RSID",
+  "columns": { "rsid": 0, "chrom": 1, "pos": 2, "genotype": [3] },
+  "noCallToken": "--",
+  "strand": "plus",
+  "detect": {
+    "headerContains": ["MyHeritage"],
+    "buildMarkers": ["build 37", "GRCh37"],
+    "rejectMarkers": ["build 36", "NCBI36"]
+  },
+  "buildBasis": "MyHeritage genotypes its chips on GRCh37 and reports positions on it, but does not write the build into the file",
+  "chipVersions": [
+    { "id": "omniexpress", "minRows": 580000, "maxRows": 720000, "label": "Illumina OmniExpress (positions on GRCh37)" }
+  ]
+}

@@ -147,6 +147,7 @@
       <h4 style="margin:6px 0 2px">{m.vendorLabel} {m.chipVersion ?? '(chip not recognised)'} · {m.build}</h4>
       <div class="faint num" style="font-size:12px;margin-bottom:var(--space-6)">
         {fileName} · {m.chipLabel ?? ''} · chip {m.chipBasis} · {m.importer} · SHA-256 {m.sourceSha256.slice(0, 4)}…{m.sourceSha256.slice(-4)}
+        <br />{m.build} · build {m.buildBasis}
       </div>
 
       <div class="grid-2" style="gap:var(--space-4) var(--space-8)">

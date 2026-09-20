@@ -1,0 +1,11 @@
+{
+  "id": "profile-ancestrydna",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": [
+    "importer"
+  ],
+  "title": "AncestryDNA raw data",
+  "description": "Reads AncestryDNA raw data files as a declarative format profile. Two allele columns per row, and chromosomes numbered through 26; the core parses and normalizes.",
+  "firstParty": true
+}

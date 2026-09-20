@@ -25,6 +25,12 @@ pub struct FormatProfile {
     pub no_call_token: String,
     pub strand: String,
     pub detect: Detect,
+    /// Why GRCh37 may be assumed for a vendor that never states a build in the
+    /// file. Absent means the header must say it; the import is refused if it
+    /// does not. When set, the reason is carried into the kit so the UI can
+    /// show on whose word the positions are trusted.
+    #[serde(default)]
+    pub build_basis: Option<String>,
     #[serde(default)]
     pub chip_versions: Vec<ChipVersion>,
 }
@@ -111,6 +117,9 @@ pub struct KitMeta {
     /// How the chip version was determined, for display next to it.
     pub chip_basis: String,
     pub build: String,
+    /// How the build was established: stated by the file, or assumed on the
+    /// profile's stated grounds.
+    pub build_basis: String,
     pub source_sha256: String,
     pub locus_version: String,
 }
@@ -132,19 +141,43 @@ pub fn detect<'a>(bytes: &[u8], profiles: &'a [FormatProfile]) -> Option<&'a For
     profiles.iter().find(|p| p.matches(&header))
 }
 
+/// The comment banner, plus the first row after it.
+///
+/// FamilyTreeDNA ships no comment lines at all, so a format that identifies
+/// itself only by its column names still has to be recognisable.
 fn comment_header(bytes: &[u8], max_lines: usize) -> String {
     let head = &bytes[..bytes.len().min(64 * 1024)];
     let text = String::from_utf8_lossy(head);
-    text.lines()
-        .take(max_lines)
-        .filter(|l| l.starts_with('#'))
-        .collect::<Vec<_>>()
-        .join("\n")
+    let mut out: Vec<&str> = Vec::new();
+    for line in text.lines().take(max_lines) {
+        if line.trim().is_empty() {
+            continue;
+        }
+        out.push(line);
+        if !line.starts_with('#') {
+            break;
+        }
+    }
+    out.join("\n")
 }
 
 pub fn sha256_hex(bytes: &[u8]) -> String {
     let digest = Sha256::digest(bytes);
     digest.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// One field's value: surrounding whitespace off, and the quotes some vendors
+/// wrap every column in (MyHeritage, FamilyTreeDNA) off with it.
+///
+/// Not a CSV parser: a quoted field containing the delimiter would already
+/// have been split, and no consumer chip format puts one there. A profile that
+/// needs that has outgrown this engine and should say so rather than guess.
+fn field(raw: &str) -> &str {
+    let s = raw.trim();
+    match (s.strip_prefix('"'), s.strip_suffix('"')) {
+        (Some(_), Some(_)) if s.len() >= 2 => &s[1..s.len() - 1],
+        _ => s,
+    }
 }
 
 /// Read a whole file through a profile and normalize every row.
@@ -159,11 +192,7 @@ pub fn import(
     progress: &mut dyn FnMut(usize),
 ) -> Result<ImportOutput, ImportError> {
     let text = std::str::from_utf8(bytes).map_err(|_| ImportError::NotText)?;
-    let header: String = text
-        .lines()
-        .take_while(|l| l.starts_with(profile.comment_prefix.as_str()) || l.trim().is_empty())
-        .collect::<Vec<_>>()
-        .join("\n");
+    let header = comment_header(bytes, 200);
 
     if !profile.matches(&header) {
         return Err(ImportError::WrongVendor(profile.vendor_label.clone()));
@@ -171,7 +200,8 @@ pub fn import(
     if let Some(m) = profile.detect.reject_markers.iter().find(|m| header.contains(m.as_str())) {
         return Err(ImportError::WrongBuild(m.clone()));
     }
-    if !profile.detect.build_markers.iter().any(|m| header.contains(m.as_str())) {
+    let states_build = profile.detect.build_markers.iter().any(|m| header.contains(m.as_str()));
+    if !states_build && profile.build_basis.is_none() {
         return Err(ImportError::BuildNotStated);
     }
 
@@ -202,7 +232,7 @@ pub fn import(
         }
         let fields: Vec<&str> = line.split(delim).collect();
         if let Some(h) = &profile.header_row {
-            if fields.first().is_some_and(|f| f.trim().eq_ignore_ascii_case(h)) {
+            if fields.first().is_some_and(|f| field(f).eq_ignore_ascii_case(h)) {
                 continue;
             }
         }
@@ -214,17 +244,17 @@ pub fn import(
             reject(&mut stats, line_no, format!("expected {} columns, found {}", max_col + 1, fields.len()));
             continue;
         }
-        let Ok(pos) = fields[cols.pos].trim().parse::<u64>() else {
+        let Ok(pos) = field(fields[cols.pos]).parse::<u64>() else {
             reject(&mut stats, line_no, format!("position '{}' is not a number", fields[cols.pos]));
             continue;
         };
         genotype_buf.clear();
         for &g in &cols.genotype {
-            genotype_buf.push_str(fields[g].trim());
+            genotype_buf.push_str(field(fields[g]));
         }
         let raw = RawCall {
-            rsid: fields[cols.rsid].to_string(),
-            chrom: fields[cols.chrom].to_string(),
+            rsid: field(fields[cols.rsid]).to_string(),
+            chrom: field(fields[cols.chrom]).to_string(),
             pos,
             genotype: genotype_buf.clone(),
         };
@@ -268,6 +298,11 @@ pub fn import(
                 None => format!("unknown: {} rows matches no known chip", stats.rows_read),
             },
             build: profile.build.clone(),
+            build_basis: match (states_build, &profile.build_basis) {
+                (true, _) => "stated in the file header".to_string(),
+                (false, Some(why)) => format!("not stated in the file; assumed because {why}"),
+                (false, None) => unreachable!("an unstated build without a basis is refused above"),
+            },
             source_sha256: sha256_hex(bytes),
             locus_version: locus::LOCUS_VERSION.to_string(),
         },
@@ -402,5 +437,79 @@ mod tests {
         let profiles = vec![profile()];
         assert!(detect(HEADER.as_bytes(), &profiles).is_some());
         assert!(detect(b"#AncestryDNA raw data download\n", &profiles).is_none());
+    }
+
+    fn vendor(name: &str) -> FormatProfile {
+        let json = match name {
+            "ancestrydna" => include_str!("../../../plugins/profile-ancestrydna/profile.json"),
+            "myheritage" => include_str!("../../../plugins/profile-myheritage/profile.json"),
+            "familytreedna" => include_str!("../../../plugins/profile-familytreedna/profile.json"),
+            other => panic!("no profile {other}"),
+        };
+        FormatProfile::from_json(json).unwrap()
+    }
+
+    const ANCESTRY: &str = "#AncestryDNA raw data download\n\
+#Data is formatted using human reference build 37 (also known as GRCh37).\n\
+rsid\tchromosome\tposition\tallele1\tallele2\n";
+
+    #[test]
+    fn ancestrydna_reads_two_allele_columns() {
+        let body = "rs1\t1\t100\tA\tG\nrs2\t1\t200\t0\t0\nrs3\t25\t300\tC\tC\nrs4\t26\t73\tT\tT\n";
+        let file = format!("{ANCESTRY}{body}");
+        let out = import(file.as_bytes(), &vendor("ancestrydna"), &NoReference, 0, &mut |_| {}).unwrap();
+
+        assert_eq!(out.stats.calls, 4);
+        // The two allele columns join into one genotype, and "00" is a no-call.
+        assert_eq!(out.stats.no_calls, 1);
+        // 25 is Ancestry's pseudoautosomal X, 26 its MT.
+        let order: Vec<_> = out.calls.iter().map(|c| (c.chrom.code(), c.pos)).collect();
+        assert_eq!(order, vec![(1, 100), (1, 200), (23, 300), (25, 73)]);
+        assert_eq!(out.meta.vendor_label, "AncestryDNA");
+        assert_eq!(out.meta.build_basis, "stated in the file header");
+    }
+
+    #[test]
+    fn reads_quoted_csv_columns() {
+        let file = "# MyHeritage DNA raw data.\n\
+RSID,CHROMOSOME,POSITION,RESULT\n\
+\"rs1\",\"1\",\"100\",\"AG\"\n\
+\"rs2\",\"1\",\"200\",\"--\"\n";
+        let out = import(file.as_bytes(), &vendor("myheritage"), &NoReference, 0, &mut |_| {}).unwrap();
+
+        assert_eq!(out.stats.calls, 2);
+        assert_eq!(out.stats.no_calls, 1);
+        assert_eq!(out.calls[0].rsid, "rs1");
+        assert_eq!(out.calls[0].pos, 100);
+    }
+
+    #[test]
+    fn says_when_a_build_was_assumed_rather_than_read() {
+        // MyHeritage never writes the build into the file. The import is still
+        // allowed, but the kit records that nobody stated it.
+        let file = "# MyHeritage DNA raw data.\n\
+RSID,CHROMOSOME,POSITION,RESULT\n\
+\"rs1\",\"1\",\"100\",\"AG\"\n";
+        let out = import(file.as_bytes(), &vendor("myheritage"), &NoReference, 0, &mut |_| {}).unwrap();
+        assert!(out.meta.build_basis.starts_with("not stated in the file; assumed because"));
+
+        // A profile without that basis still refuses the file outright.
+        let mut strict = vendor("myheritage");
+        strict.build_basis = None;
+        let refused = import(file.as_bytes(), &strict, &NoReference, 0, &mut |_| {});
+        assert!(matches!(refused, Err(ImportError::BuildNotStated)));
+    }
+
+    #[test]
+    fn recognises_a_file_that_has_no_comment_banner() {
+        // FamilyTreeDNA ships the column names and nothing else.
+        let file = "RSID,CHROMOSOME,POSITION,RESULT\n\"rs1\",\"1\",\"100\",\"AG\"\n";
+        let profiles = vec![profile(), vendor("myheritage"), vendor("familytreedna")];
+        let found = detect(file.as_bytes(), &profiles).expect("a bare CSV is still recognisable");
+        assert_eq!(found.id, "profile-familytreedna");
+
+        // A MyHeritage file carries the same column names, so its banner has to win.
+        let mh = "# MyHeritage DNA raw data.\nRSID,CHROMOSOME,POSITION,RESULT\n";
+        assert_eq!(detect(mh.as_bytes(), &profiles).unwrap().id, "profile-myheritage");
     }
 }

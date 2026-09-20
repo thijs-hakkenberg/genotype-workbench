@@ -1,0 +1,11 @@
+{
+  "id": "profile-familytreedna",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": [
+    "importer"
+  ],
+  "title": "FamilyTreeDNA raw data",
+  "description": "Reads FamilyTreeDNA Family Finder exports as a declarative format profile. The file carries no comment banner, so it is recognised by its column names, and the build is asserted rather than read.",
+  "firstParty": true
+}
