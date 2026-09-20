@@ -22,7 +22,7 @@ import {
 import type { PluginHost } from '@gw/plugin-host';
 import { ident, type StorageAdapter } from '@gw/storage';
 import { SequenceIndex, type CodingTranscript } from '@gw/protein';
-import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, MergeRow, ProteinRow } from './rows';
+import type { ClinvarRow, ConditionRow, FrequencyRow, GeneRow, GwasRow, MergeRow, ProteinRow, SharedLocus } from './rows';
 import { classificationRank, classificationShort } from './rows';
 import { codonItems, pickTranscript, sequenceItems, type CodonRow, type SequenceItemRow } from './sequence';
 import { sha256Hex, verifyIndexSignature } from './verify';
@@ -402,6 +402,52 @@ export class AnnotationLibrary {
        FROM ${this.view(clinvar)} c JOIN ${ident(kitView)} k
          ON k.chrom = c.chrom AND k.pos = c.pos AND NOT k.is_nocall AND (k.a1 = c.alt OR k.a2 = c.alt)
        GROUP BY 1 ORDER BY 2 DESC`);
+  }
+
+  /**
+   * One row per locus two kits both called, with how many alleles they share
+   * and where the locus sits on the genetic map.
+   *
+   * This is the whole of kinship's data access. The join is what DuckDB is
+   * for; the walk over the result is the analysis, and it lives in the plugin.
+   *
+   * `ibs` — identity by state — is 2 when the genotypes are the same, 1 when
+   * they share one allele, 0 when they share none. Only 0 is decisive: two
+   * people who inherited a stretch from the same ancestor cannot disagree
+   * completely anywhere in it, so a 0 ends a segment. Sharing is not evidence
+   * of descent on its own, which is why the walk needs a run and not a locus.
+   *
+   * No-calls and indels are excluded: an unresolved indel has no alleles to
+   * compare, and a no-call would read as a false break.
+   */
+  async sharedLoci(viewA: string, viewB: string): Promise<SharedLocus[]> {
+    const map = this.one('genetic-map');
+    // The map has a row at every chip locus already, so an exact join covers
+    // almost everything; ASOF carries the rest to the nearest point below.
+    const cm = map
+      ? `ASOF LEFT JOIN ${this.view(map)} m ON m.chrom = a.chrom AND m.pos <= a.pos`
+      : '';
+    // Autosomes only. A shared X segment means something different in each
+    // sex, Y and MT do not recombine at all, and none of them belongs in a
+    // centimorgan total; they need their own analysis, not this one.
+    //
+    // Allele pairs are not canonically ordered — a vendor may write AG or GA
+    // for the same call — so equality has to be order-independent.
+    return this.storage.query<SharedLocus>(
+      `SELECT a.chrom, a.pos, ${map ? 'm.cm' : 'NULL'} AS cm,
+              CASE WHEN least(a.a1, a.a2) = least(b.a1, b.a2)
+                    AND greatest(a.a1, a.a2) = greatest(b.a1, b.a2) THEN 2
+                   WHEN a.a1 IN (b.a1, b.a2) OR a.a2 IN (b.a1, b.a2) THEN 1
+                   ELSE 0 END AS ibs,
+              (a.a1 <> a.a2) AS het_a, (b.a1 <> b.a2) AS het_b
+       FROM ${ident(viewA)} a
+       JOIN ${ident(viewB)} b ON a.chrom = b.chrom AND a.pos = b.pos
+       ${cm}
+       WHERE NOT a.is_nocall AND NOT b.is_nocall
+         AND a.a2 IS NOT NULL AND b.a2 IS NOT NULL
+         AND a.chrom NOT IN ('X', 'Y', 'MT')
+         AND a.ref_check <> 'indel-unresolved' AND b.ref_check <> 'indel-unresolved'
+       ORDER BY a.chrom, a.pos`);
   }
 
   /**

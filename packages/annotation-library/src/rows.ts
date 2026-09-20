@@ -127,3 +127,20 @@ export function classificationShort(c: string): string {
   if (s.startsWith('not provided')) return 'NP';
   return '·';
 }
+
+/**
+ * One locus two kits both called, as the kinship analysis reads it.
+ *
+ * `ibs` is how many alleles the two genotypes share: 2, 1, or 0. `cm` is the
+ * locus's cumulative position on the genetic map, null where the map has no
+ * point below it. `het_a`/`het_b` are needed for the kinship coefficient,
+ * which counts heterozygotes rather than segments.
+ */
+export interface SharedLocus {
+  chrom: string;
+  pos: number;
+  cm: number | null;
+  ibs: 0 | 1 | 2;
+  het_a: boolean;
+  het_b: boolean;
+}

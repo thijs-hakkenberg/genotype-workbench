@@ -168,6 +168,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-sdk
 
+  plugins/analysis-kinship:
+    dependencies:
+      '@gw/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../packages/plugin-sdk
+
   plugins/profile-23andme: {}
 
   plugins/profile-ancestrydna: {}

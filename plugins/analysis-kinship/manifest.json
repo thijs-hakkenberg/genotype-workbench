@@ -1,0 +1,10 @@
+{
+  "id": "analysis-kinship",
+  "version": "0.3.0",
+  "hostApi": "^0.1",
+  "capabilities": ["analysis"],
+  "title": "Kinship",
+  "description": "Compares two kits on this device to find the stretches of DNA they share, and offers the relationships those stretches are consistent with. Reads two kits in full, each only with a consent basis; no network.",
+  "firstParty": true,
+  "permissions": { "multiKit": true }
+}
