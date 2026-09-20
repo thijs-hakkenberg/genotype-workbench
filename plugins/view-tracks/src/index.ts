@@ -220,7 +220,8 @@ export class TrackView implements TrackViewHandle {
         m.ctx.font = `11px ${this.palette.font}`;
         m.ctx.fillStyle = this.palette.n[500];
         m.ctx.textBaseline = 'middle';
-        m.ctx.fillText(row.error ? `Could not read this track: ${row.error}` : 'Nothing in this window', 12, height / 2);
+        const empty = row.source.descriptor.emptyMessage ?? 'Nothing in this window';
+        m.ctx.fillText(row.error ? `Could not read this track: ${row.error}` : empty, 12, height / 2);
       }
       row.label.style.opacity = row.loading ? '0.6' : '1';
     }

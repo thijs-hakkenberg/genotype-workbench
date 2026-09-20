@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import type { Chrom, Region, TrackDescriptor, TrackItem, TrackSource } from '@gw/plugin-sdk';
-  import { EVIDENCE_KINDS } from '@gw/plugin-sdk';
+  import { EVIDENCE_KINDS, SEQUENCE_BELOW_BP } from '@gw/plugin-sdk';
   import { CHROM_LENGTH, GRCH37, clampRegion, formatRegion, formatWidth, parseRegion } from '@gw/plugin-sdk/genome';
   import { TrackView, markSwatch } from '@gw/view-tracks';
   import { formatCall, type CallRow } from '@gw/genotype-store';
@@ -33,6 +33,7 @@
     { role: 'sequence', title: 'Reference sequence and protein', kind: 'documentary' as const },
   ];
   const missing = $derived(PACK_SLOTS.filter((s) => !app.installed.some((p) => p.manifest.role === s.role)));
+  const hasSequence = $derived(app.installed.some((p) => p.manifest.role === 'sequence'));
 
   function tracks(): TrackSource[] {
     const { store, library } = svc();
@@ -118,10 +119,11 @@
     </div>
     <span class="muted num" style="font-size:12px">
       {formatWidth(width)} · {callCount == null ? '…' : callCount > 5000 ? 'over 5,000' : fmtInt(callCount)} calls in view
+      {#if width > SEQUENCE_BELOW_BP && hasSequence}· <button type="button" class="linkish" onclick={() => zoomTo(100)}>zoom in for bases and codons</button>{/if}
     </span>
     <div style="margin-left:auto;display:flex;gap:var(--space-2);align-items:center">
       <div class="seg" role="radiogroup" aria-label="Window width">
-        {#each [2e4, 2e5, 2e6] as bp (bp)}
+        {#each [1e2, 2e4, 2e5, 2e6] as bp (bp)}
           <label class="seg-opt"><input type="radio" name="zoom" checked={Math.abs(width - bp) < bp * 0.05} onchange={() => zoomTo(bp)} />{formatWidth(bp)}</label>
         {/each}
       </div>
@@ -234,6 +236,7 @@
   .chip { flex: 1; min-width: 0; padding: 4px 0; border: 0; cursor: pointer; font-size: 10px; border-radius: 3px; background: var(--color-neutral-900); color: var(--color-neutral-400); }
   .chip:hover { color: var(--color-text); }
   .chip.active { background: var(--color-accent-800); color: var(--color-accent-100); }
+  .linkish { border: 0; background: transparent; color: var(--color-accent); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
   .strip { position: relative; height: 30px; margin-bottom: var(--space-3); cursor: pointer; }
   .strip-bar { position: absolute; left: 0; right: 0; top: 14px; height: 9px; border-radius: 2px; background: repeating-linear-gradient(to right, var(--color-neutral-700) 0 1px, transparent 1px 5px), var(--color-neutral-900); }
   .strip-cen { position: absolute; top: 12px; width: 4px; height: 13px; margin-left: -2px; background: var(--color-bg); box-shadow: inset 0 0 0 1px var(--color-neutral-700); }

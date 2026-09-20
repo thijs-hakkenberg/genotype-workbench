@@ -38,6 +38,23 @@
     }
   }
 
+  // Install everything on offer, in index order, with one grant for the lot.
+  let installingAll = $state(false);
+  const pending = $derived(listed.filter((m) => !m.core && !installedVersion(m.id) && fits(m)));
+
+  async function installAll() {
+    installingAll = true;
+    try {
+      for (const m of pending) {
+        if (installedVersion(m.id)) continue;
+        await install(m);
+        if (errors[m.id]) break; // a denied grant or a failure stops the run
+      }
+    } finally {
+      installingAll = false;
+    }
+  }
+
   async function remove(id: string) {
     await svc().library.remove(id);
     void refreshEstimate();
@@ -64,7 +81,14 @@
         remotely, so no source learns what you carry.
       </div>
     </div>
-    <div class="actions"><button class="btn btn-secondary" type="button" onclick={refreshIndex}>Refresh index</button></div>
+    <div class="actions">
+      {#if pending.length}
+        <button class="btn btn-primary" type="button" disabled={installingAll} onclick={installAll}>
+          {installingAll ? 'Installing…' : `Install all ${pending.length} · ${fmtBytes(pending.reduce((n, m) => n + m.size, 0))}`}
+        </button>
+      {/if}
+      <button class="btn btn-secondary" type="button" onclick={refreshIndex}>Refresh index</button>
+    </div>
   </div>
 
   {#if app.indexError}

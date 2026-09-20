@@ -36,7 +36,7 @@ export interface MarkRenderer {
 
 const DENSITY_THRESHOLD = 1500;
 /** Pixels per base at which letters replace marks, for calls and for the reference. */
-const LETTERS_ABOVE_PX = 7;
+const LETTERS_ABOVE_PX = 5.5;
 
 function hatch(m: MarkContext, x: number, y: number, w: number, h: number) {
   const { ctx, palette } = m;
@@ -139,7 +139,7 @@ interface CallRowLike {
 function calls(m: MarkContext, items: TrackItem[]): HitBox[] {
   const { ctx, palette, height } = m;
   const hits: HitBox[] = [];
-  const size = Math.min(15, Math.max(8, m.scale * 0.95));
+  const size = Math.min(15, Math.max(7, m.scale * 0.95));
   ctx.font = `500 ${size}px ${palette.font}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -434,7 +434,7 @@ export const sequence: MarkRenderer = {
       return [];
     }
     const letters = m.scale >= LETTERS_ABOVE_PX;
-    const size = Math.min(14, Math.max(8, m.scale * 0.95));
+    const size = Math.min(14, Math.max(7, m.scale * 0.95));
     ctx.font = `${size}px ${palette.font}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

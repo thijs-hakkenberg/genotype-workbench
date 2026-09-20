@@ -176,6 +176,8 @@ export interface TrackDescriptor {
   evidenceKind: EvidenceKind;
   title: string;
   licence?: string;
+  /** Shown when the track has nothing here, in its own words. */
+  emptyMessage?: string;
 }
 
 export interface Region {

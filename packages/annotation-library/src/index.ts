@@ -531,7 +531,11 @@ export class AnnotationLibrary {
   /** The reference bases themselves, drawn only when the window is small enough to read. */
   private sequenceTrack(m: PackManifest): TrackSource<SequenceItemRow> {
     return {
-      descriptor: { ...this.descriptor(m, 'Reference sequence'), kind: 'sequence' },
+      descriptor: {
+        ...this.descriptor(m, 'Reference sequence'),
+        kind: 'sequence',
+        emptyMessage: 'No reference bases here: this pack covers coding exons and chip positions',
+      },
       itemsIn: async (region) => {
         if (region.end - region.start > SEQUENCE_BELOW_BP) return [];
         const rows = await this.storage.query<{ chrom: Chrom; start: number; end: number; seq: string }>(
@@ -555,6 +559,7 @@ export class AnnotationLibrary {
         evidenceKind: 'documentary',
         title: 'Protein',
         licence: genes.licence,
+        emptyMessage: 'No coding sequence in this window',
       },
       itemsIn: async (region) => {
         if (region.end - region.start > SEQUENCE_BELOW_BP) return [];
