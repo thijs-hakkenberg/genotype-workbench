@@ -2,38 +2,54 @@
 
 A local-first workbench for your own raw DNA file. Import a 23andMe export, explore it on a genome view, and join it to public databanks that arrive as whole downloaded packs. Everything runs in your browser: the file is never uploaded, and nothing reaches the network unless you grant it.
 
-![Genome view: tracks across the full width, with the selected position's details docked underneath](docs/screenshots/genome.png)
+![The genome view: your calls, gene models, ClinVar classifications, GWAS associations, population frequency, the reference sequence and the protein, each drawn in its own evidence form](docs/screenshots/genome-tracks.png)
 
-| Explore: where to start | Overview |
-| --- | --- |
-| ![Explore page: best-reviewed ClinVar records, strongest associations, rarest alleles, coding changes, and a gene search](docs/screenshots/explore.png) | ![Kit overview with call statistics and probe coverage per chromosome](docs/screenshots/overview.png) |
-
-One zoom runs from the chromosome to the bases and the codons; a coding position names its residue and shows it in the protein.
-
-| Sequence and protein in the same view | Residue in 3D |
-| --- | --- |
-| ![Tracks zoomed to 81 bases: calls as letters, reference sequence, and the codons of MTHFR](docs/screenshots/scales.png) | ![The consequence card: MTHFR p.Ala222Val with the residue marked in the AlphaFold structure](docs/screenshots/structure.png) |
-
-<sub>Screenshots show a synthetic kit (random genotypes on real chip positions), never a real person's DNA.</sub>
+<sub>Every screenshot shows a synthetic kit (random genotypes on real chip positions), never a real person's DNA.</sub>
 
 Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20architecture.md), [Decisions](docs/Decisions(1).md), [Scientific domains](docs/Scientific%20domains.md), the [ADRs](docs/adr/) and the Nocturne design system with the UI mockups.
 
-## Iteration 1: what works
+## What it does
 
-- **Import.** A 23andMe raw data file (chips v3–v5, build 37) is read and normalized in a Web Worker by the Rust `locus` normalizer compiled to WASM, in about 1–2 s for a 640k-row v5 file. Every call is checked against the GRCh37 reference base. Strand-ambiguous (A/T, C/G) calls are flagged, no-calls are kept, and duplicate probes are merged. A custody record (data subject, custodian, consent basis) is required before the kit is stored.
-- **Storage.** Each kit is a Parquet file in the browser's Origin Private File System, queried with DuckDB-WASM. Kits and packs survive reloads.
-- **Overview.** Call statistics, reference consistency, probe coverage per chromosome, custody, your calls per ClinVar classification, and a card pointing at where to look first.
-- **Explore.** Starting points drawn from your own calls: best-reviewed ClinVar records, strongest associations you carry an allele for, rarest alleles, coding changes translated on the device, and a gene search. Ordered by how well established the evidence is, never by how important it might be for you.
-- **Genome view.** Tracks run the full width, and selecting a position opens a dock underneath with the call, the classification, frequencies, the protein and its 3D structure side by side. A canvas track view (`plugins/view-tracks`) draws each track in its evidence kind's form: measured calls, documentary gene models, curated ClinVar classifications, GWAS associations, and population frequencies. You can pan, zoom, click to select, and search by region, rsID (including retired rsIDs) or gene. Wide windows switch to binned density. The selected-position panel lists every source strongest evidence first, with ClinVar conditions explained through Mondo.
-- **Sequence and protein.** Keep zooming and the tracks become the reference bases, your own called bases, and the codons of the gene in view. Select a coding position and the panel names the residue and what the allele changes it to (for example MTHFR p.Ala222Val), computed on this device from GENCODE coding blocks and the GRCh37 sequence.
-- **3D structure.** Mol* shows the protein's predicted shape from AlphaFold with that residue marked. The structure is fetched once per protein, only after you grant it, and then kept on this device.
-- **Lineages.** Maternal-line (mtDNA, PhyloTree 17) and paternal-line (Y, YFull YTree) haplogroups, matched on this device and shown with the markers that support them.
-- **Packs.** Packs are built by `tools/packkit` (Python + DuckDB, normalized through the same Rust code via `locus-py`) and listed in an Ed25519-signed index. The app downloads each pack whole after a network grant, checks its SHA-256, and joins it locally. Before downloading, it checks that the site's storage quota can hold the pack.
+**Import.** A 23andMe raw data file (chips v3–v5, build 37) is read and normalized in a Web Worker by the Rust `locus` normalizer compiled to WASM, in about 1–2 s for a 640k-row v5 file. Every call is checked against the GRCh37 reference base. Strand-ambiguous (A/T, C/G) calls are flagged, no-calls are kept, and duplicate probes are merged. A custody record — whose DNA, who imported it, on what basis — is required before the kit is stored.
+
+![Import: the normalization report, with call rate, strand-ambiguous count and reference checks, above the custody record it requires](docs/screenshots/import.png)
+
+**Explore.** Starting points drawn from your own calls by joining them with the installed packs. Ordered by how well established the evidence is — review status, p-value, allele frequency — never by how important it might be for you. Includes a gene search that counts your calls per gene.
+
+![Explore: best-reviewed ClinVar records, strongest associations, rarest alleles, coding changes, and a gene search showing MTHFR with 21 calls](docs/screenshots/explore.png)
+
+**Overview.** Call statistics, reference consistency, probe coverage per chromosome, the custody record, your calls per ClinVar classification, and a card pointing at where to look first.
+
+![Kit overview: 636,108 calls, 98.5% call rate, 100% reference consistency, probe density per chromosome, custody and starting points](docs/screenshots/overview.png)
+
+**The genome view.** Tracks run the full width, each drawn in its evidence kind's form, so an association never looks like a classification. Pan, zoom, click to select, and search by region, rsID (including retired ones) or gene. Wide windows switch to binned density.
+
+**The detail dock.** Selecting a position opens a panel beneath the tracks: your call and how it was checked, the classification with its conditions, each frequency pack, the protein, and the associations in a row below — side by side rather than stacked in a column.
+
+![The detail dock for rs1801133: the call, ClinVar with its conditions, 1000 Genomes frequency by population, and the protein card offering to fetch the structure](docs/screenshots/genome-dock.png)
+
+**Sequence and protein.** Keep zooming and the tracks become the reference bases, your own called bases as letters, and the codons of the gene in view.
+
+![At 101 bases: a heterozygous call shown as stacked letters, the reference sequence, and MTHFR's codons with their amino acids](docs/screenshots/sequence.png)
+
+**3D structure.** A coding position names its residue and what the allele changes it to, computed here from GENCODE coding blocks and the GRCh37 sequence. Mol\* then shows the residue in the protein's predicted shape, after you grant the one request it takes.
+
+![MTHFR p.Ala222Val: codon 222 reads GCC in the reference and GTC with A, with residue 222 marked in the AlphaFold structure](docs/screenshots/genome-protein.png)
+
+**Lineages.** Maternal-line (mtDNA, PhyloTree 17) and paternal-line (Y, YFull YTree) haplogroups, matched on this device, shown with the markers that support them and what the chip could not read.
+
+![Lineages: the best-matching mtDNA and Y haplogroups, with positions read, markers carried, and each tree's licence](docs/screenshots/lineages.png)
+
+**Packs.** Public databanks arrive as whole packs from a signed index, each with its licence, size, row count and source. One button installs everything on offer; the app checks the site's storage quota first.
+
+![The Packs page: eleven packs with licence, evidence kind, size and citation, and an Install all button](docs/screenshots/packs.png)
 
 | Pack | Role | Evidence kind | Licence |
 | --- | --- | --- | --- |
 | GRCh37 reference at chip loci (core) | reference | documentary | Public domain |
 | GENCODE 50 genes, lifted to GRCh37 | genes | documentary | Open access |
+| GRCh37 sequence at coding exons and chip loci | sequence | documentary | Public domain |
+| UniProt reviewed human proteome | proteins | documentary | CC BY 4.0 |
 | ClinVar | classification | curated classification | CC0 |
 | GWAS Catalog (lifted to GRCh37) | association | statistical association | CC0 |
 | 1000 Genomes phase 3 frequencies | frequency | population frequency | Open |
@@ -41,10 +57,18 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 | Mondo condition names | conditions | documentary | CC BY 4.0 |
 | dbSNP rsID merges | rsid-merges | documentary | Public domain |
 | HapMap II genetic map | genetic-map | estimate | Public |
-| GRCh37 sequence at coding exons and chip loci | sequence | documentary | Public domain |
-| UniProt reviewed human proteome | proteins | documentary | CC BY 4.0 |
 | PhyloTree 17 mtDNA tree | haplotree-mt | documentary | MIT packaging |
 | YFull YTree + YBrowse positions | haplotree-y | documentary | CC BY 4.0 + unverified |
+
+They are built by `tools/packkit` (Python + DuckDB, normalized through the same Rust code via `locus-py`). The app downloads each pack whole, checks its SHA-256 against the signed index, and joins it locally: no variant is ever looked up remotely.
+
+**Every network request is asked for.** A pack download or a structure request names the host, the size, what is sent (nothing about you) and which kits are read (none).
+
+![The grant dialog: host, purpose, size, storage left, and that nothing about you is sent](docs/screenshots/grant.png)
+
+**What ClinVar says about your calls.** Positions where your call carries an allele a ClinVar record classifies, strongest evidence first: review status, then the strongest association at the same position.
+
+![The ClinVar list: records ordered by review status with the strongest GWAS association at each position](docs/screenshots/clinvar.png)
 
 Information, not diagnosis: the app shows what sources say, with citations. It computes no risk score.
 
