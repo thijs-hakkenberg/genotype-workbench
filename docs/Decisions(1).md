@@ -258,6 +258,11 @@ Licences below marked **verified** were checked against the source on 2026-09-19
 | FamilySearch | Network connector | Free, but production data needs [acceptance into the Solutions program and a compatibility review](https://developers.familysearch.org/main/docs/getting-started) | Later, gated |
 | Ancestry trees | GEDCOM export only | No public tree API as far as I know (not verified) | via GEDCOM |
 
+**Portability (2026-09-21).** Reading is broad; writing is deliberately unsolved. There is no export path yet, and the
+direction is a single audited interface for agents — MCP or similar — rather than a matrix of per-format exporters. One
+way out is easier to reason about, and easier to make redact living people by default, than a growing set of file
+writers. GEDCOM export stays cheap to add and is a precondition-carrying decision (ADR-0019).
+
 ### Reference data (first-party packs the core depends on)
 
 | Data | Why | Constraint |
