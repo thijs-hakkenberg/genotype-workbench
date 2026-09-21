@@ -167,6 +167,8 @@ Nineteen ADRs cover the decisions that are expensive to reverse: the original se
 
 The later seven, in `docs/adr/`: 0011 a sixth evidence kind, `population-frequency`; 0012 pack roles and haplogroups as the first analysis; 0013 one view from sequence to genome track to 3D structure; 0014 the Explore page and the detail dock; 0015 consent grants that name the people whose DNA is read; 0016 kinship in DuckDB, and chromosome painting drawn here rather than by Gosling; 0017 the double helix as a ribbon model from published B-form parameters; 0018 what a confirmed kinship estimate records; 0019 living people in an imported tree, and why export waits.
 
+A standing review of what protects this data, what does not, and what encryption would really cost is in [Security review](Security%20review.md).
+
 Decisions that were not obvious carry their full reasoning — criteria set before options, the options that lost, and what would falsify the choice — in [Trade-off analyses](Trade-off%20analyses.md).
 
 | ADR | Decision | Status | Reversal cost |

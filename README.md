@@ -165,6 +165,7 @@ Kits and packs are files on the device, and the query engine opens them exclusiv
 - Packs are whole files. No variant is ever looked up remotely.
 - No analysis reads a kit whose custody record has no consent basis. The Plugin Host refuses it before a dialog is ever shown, so a grant cannot be clicked past (ADR-0009, ADR-0015).
 - Install scripts that report home are refused: Mol* pulls in `@scarf/scarf`, denied in `pnpm-workspace.yaml`.
+- **Kits are stored unencrypted.** The browser's private file system isolates them from other websites, not from anyone holding the disk, a backup, or another program running as you — so the protection at rest is whatever full-disk encryption your operating system provides. Optional passphrase encryption is the first recommendation of the [security review](docs/Security%20review.md).
 
 ## Deviations from the docs, by design
 
