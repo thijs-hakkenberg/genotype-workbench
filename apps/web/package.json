@@ -1,6 +1,6 @@
 {
   "name": "@gw/web",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -22,6 +22,7 @@
     "@gw/profile-ancestrydna": "workspace:*",
     "@gw/profile-familytreedna": "workspace:*",
     "@gw/profile-myheritage": "workspace:*",
+    "@gw/profile-synthetic": "workspace:*",
     "@gw/protein": "workspace:*",
     "@gw/storage": "workspace:*",
     "@gw/view-painting": "workspace:*",

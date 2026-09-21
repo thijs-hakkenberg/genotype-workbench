@@ -3,6 +3,7 @@
   import { app, setActiveKit, svc, refreshEstimate, spaceFor } from '../lib/services.svelte';
   import { go } from '../lib/router.svelte';
   import { fmtBytes, fmtInt, fmtPct } from '../lib/format';
+  import { SYNTHETIC_MODES, syntheticFile, type SyntheticMode } from '../lib/synthetic';
 
   type Phase = 'pick' | 'reading' | 'review' | 'saving';
   let phase = $state<Phase>('pick');
@@ -22,12 +23,51 @@
   let basis = $state<ConsentBasis>('recorded-consent');
   let note = $state('');
 
+  // Generating a profile to try the workbench with.
+  let mode = $state<SyntheticMode>('drawn');
+  let seed = $state(Math.floor(Math.random() * 100000));
+  let sex = $state<'male' | 'female'>('female');
+  let generating = $state('');
+
   const hasReference = $derived(app.installed.some((p) => p.manifest.id === 'reference-grch37'));
+
+  /**
+   * Build a synthetic profile and import it exactly as a real file.
+   *
+   * It goes through the ordinary path so the normalizer checks every base,
+   * and so a generated kit is comparable with an imported one rather than a
+   * second kind of thing.
+   */
+  async function generate() {
+    error = '';
+    generating = 'Reading the reference positions…';
+    try {
+      const reference = await svc().library.referenceColumns();
+      if (!reference) {
+        error = 'The GRCh37 reference pack is not installed, so there are no positions to generate at.';
+        return;
+      }
+      const file = syntheticFile(reference.columns, {
+        mode,
+        seed,
+        sex,
+        onProgress: (done, total) => (generating = `Writing ${fmtInt(done)} of ${fmtInt(total)} positions…`),
+      });
+      generating = '';
+      own = true;
+      await read(file);
+    } catch (e) {
+      error = e instanceof Error ? e.message : String(e);
+    } finally {
+      generating = '';
+    }
+  }
   const stats = $derived(prepared?.meta.stats);
   const checked = $derived(
     stats ? stats.refChecks.match + stats.refChecks['hom-non-ref'] + stats.refChecks['complement-only'] + stats.refChecks.mismatch : 0,
   );
-  const canSave = $derived(!!prepared && (own || subjectName.trim().length > 0) && custodian.trim().length > 0);
+  const isSynthetic = $derived(prepared?.meta.vendor === 'synthetic');
+  const canSave = $derived(!!prepared && (isSynthetic || own || subjectName.trim().length > 0) && custodian.trim().length > 0);
 
   async function read(file: File) {
     error = '';
@@ -45,8 +85,7 @@
       const { store, library } = svc();
       const reference = await library.referenceColumns();
       prepared = await store.prepare(file, reference, (n) => (rowsRead = n));
-      const m = prepared.meta;
-      label = `${own ? 'Me' : subjectName || 'Kit'} — ${m.vendorLabel} ${m.chipVersion ?? ''}`.trim();
+      label = defaultLabel();
       phase = 'review';
     } catch (e) {
       error = e instanceof ImportRefused || e instanceof Error ? e.message : String(e);
@@ -66,9 +105,9 @@
     phase = 'saving';
     try {
       const kit = await svc().store.save(prepared, label, {
-        dataSubject: own ? 'Self' : subjectName.trim(),
+        dataSubject: isSynthetic ? 'Nobody — generated' : own ? 'Self' : subjectName.trim(),
         custodian: custodian.trim(),
-        consentBasis: own ? 'self' : basis,
+        consentBasis: isSynthetic ? 'synthetic' : own ? 'self' : basis,
         consentNote: note.trim() || undefined,
         recordedAt: new Date().toISOString(),
       });
@@ -81,11 +120,18 @@
     }
   }
 
-  $effect(() => {
-    if (prepared && phase === 'review') {
-      const m = prepared.meta;
-      label = `${own ? 'Me' : subjectName.trim() || 'Relative'} — ${m.vendorLabel} ${m.chipVersion ?? ''}`.trim();
+  /** What to call a kit before anyone renames it. */
+  function defaultLabel(): string {
+    const m = prepared?.meta;
+    if (!m) return '';
+    if (m.vendor === 'synthetic') {
+      return `Synthetic — ${SYNTHETIC_MODES[mode].label.toLowerCase()}, seed ${seed}`;
     }
+    return `${own ? 'Me' : subjectName.trim() || 'Relative'} — ${m.vendorLabel} ${m.chipVersion ?? ''}`.trim();
+  }
+
+  $effect(() => {
+    if (prepared && phase === 'review') label = defaultLabel();
   });
 </script>
 
@@ -128,10 +174,64 @@
     >
       <span class="mk-measured" style="width:14px;height:14px"></span>
       <h4 style="margin:4px 0 0">Drop a raw data file</h4>
-      <div class="muted" style="font-size:13px">23andMe raw data (chips v3–v5, build 37) — the .txt or .zip-extracted file</div>
+      <div class="muted" style="font-size:13px">23andMe (chips v3–v5), AncestryDNA, MyHeritage or FamilyTreeDNA, on build 37 — the .txt or .zip-extracted file</div>
       <div class="faint" style="font-size:12px">Read in this browser. Never uploaded.</div>
       <input bind:this={input} type="file" accept=".txt,.tsv,text/plain" hidden
         onchange={(e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) void read(f); }} />
+    </div>
+
+    <div class="panel" style="margin-top:var(--space-4)">
+      <div class="card-kicker">No raw data file?</div>
+      <h4>Generate one, and try the workbench on it</h4>
+      <p class="muted" style="font-size:13px;max-width:620px;margin:0 0 var(--space-4)">
+        A generated profile is <strong>not anyone's DNA</strong>. It is the GRCh37 reference at the
+        {hasReference ? '' : ''}positions consumer chips read, with alleles either left alone or drawn at random. It
+        imports through the same normalizer as a real file, and every page that names its source calls it a synthetic
+        profile.
+      </p>
+
+      <div class="field" style="max-width:520px">
+        <label for="syn-mode">What the alleles should be</label>
+        <div class="seg" id="syn-mode">
+          {#each Object.entries(SYNTHETIC_MODES) as [key, m] (key)}
+            <label class="seg-opt">
+              <input type="radio" name="syn-mode" checked={mode === key} onchange={() => (mode = key as SyntheticMode)} />{m.label}
+            </label>
+          {/each}
+        </div>
+      </div>
+      <p class="faint" style="font-size:12px;max-width:620px;margin:var(--space-2) 0 var(--space-4)">
+        {SYNTHETIC_MODES[mode].what}
+      </p>
+
+      <div class="grid-2" style="max-width:520px">
+        <div class="field">
+          <label for="syn-sex">Sex chromosomes</label>
+          <select id="syn-sex" class="input" bind:value={sex}>
+            <option value="female">Two X chromosomes</option>
+            <option value="male">One X and one Y</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="syn-seed">Seed</label>
+          <input id="syn-seed" class="input num" type="number" min="1" bind:value={seed} />
+        </div>
+      </div>
+      <p class="faint" style="font-size:12px;margin:var(--space-2) 0 var(--space-4)">
+        The same seed always generates the same profile, so a result can be reproduced or compared.
+      </p>
+
+      <div style="display:flex;gap:var(--space-3);align-items:center">
+        <button class="btn btn-secondary" type="button" disabled={!hasReference || !!generating} onclick={generate}>
+          {generating ? 'Generating…' : 'Generate a synthetic profile'}
+        </button>
+        {#if generating}<span class="faint num" style="font-size:12px">{generating}</span>{/if}
+      </div>
+      {#if !hasReference}
+        <p class="notice" style="margin:var(--space-4) 0 0">
+          This needs the GRCh37 reference pack, which is where the positions come from.
+        </p>
+      {/if}
     </div>
   {:else if phase === 'reading'}
     <div class="panel" style="margin-top:var(--space-6)">
@@ -179,14 +279,23 @@
     </div>
 
     <div class="panel" style="margin-top:var(--space-3)">
-      <div class="card-kicker">Custody record required</div>
-      <h4>Whose DNA is this, and who may read it?</h4>
+      <div class="card-kicker">{isSynthetic ? 'Custody record' : 'Custody record required'}</div>
+      <h4>{isSynthetic ? 'Nobody\u2019s DNA, so nobody to consent' : 'Whose DNA is this, and who may read it?'}</h4>
+      {#if isSynthetic}
+        <p class="notice" style="margin:0 0 var(--space-4)">
+          This profile was generated on this device and is not anyone's genome. Its data subject is recorded as nobody
+          and its consent basis as <strong>synthetic</strong> — which means consent does not apply here, not that it
+          was given. Analyses will run on it so the workbench can be tried end to end.
+        </p>
+      {/if}
       <div style="display:flex;flex-direction:column;gap:var(--space-4)">
-        <div style="display:flex;gap:var(--space-6);flex-wrap:wrap">
-          <label class="radio"><input type="radio" name="own" checked={own} onchange={() => (own = true)} /><span class="dot"></span>My own DNA</label>
-          <label class="radio"><input type="radio" name="own" checked={!own} onchange={() => (own = false)} /><span class="dot"></span>Someone else's (a relative)</label>
-        </div>
-        {#if !own}
+        {#if !isSynthetic}
+          <div style="display:flex;gap:var(--space-6);flex-wrap:wrap">
+            <label class="radio"><input type="radio" name="own" checked={own} onchange={() => (own = true)} /><span class="dot"></span>My own DNA</label>
+            <label class="radio"><input type="radio" name="own" checked={!own} onchange={() => (own = false)} /><span class="dot"></span>Someone else's (a relative)</label>
+          </div>
+        {/if}
+        {#if !own && !isSynthetic}
           <div class="field"><label for="subject">Data subject — whose DNA</label>
             <input id="subject" class="input" bind:value={subjectName} placeholder="e.g. M. Bakker" /></div>
           <div class="field"><label for="basis">Consent basis</label>
@@ -217,3 +326,4 @@
     </div>
   {/if}
 </div>
+

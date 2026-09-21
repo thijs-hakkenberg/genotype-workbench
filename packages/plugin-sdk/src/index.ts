@@ -262,7 +262,7 @@ export interface KitSubject {
   /** Whose DNA it is, from the custody record. */
   dataSubject: string;
   /** `none` means no analysis may read it, whatever the user answers. */
-  consentBasis: 'self' | 'recorded-consent' | 'none';
+  consentBasis: 'self' | 'recorded-consent' | 'none' | 'synthetic';
 }
 
 export interface ViewHandle {

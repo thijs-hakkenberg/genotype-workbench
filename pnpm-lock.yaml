@@ -53,6 +53,9 @@ importers:
       '@gw/profile-myheritage':
         specifier: workspace:*
         version: link:../../plugins/profile-myheritage
+      '@gw/profile-synthetic':
+        specifier: workspace:*
+        version: link:../../plugins/profile-synthetic
       '@gw/protein':
         specifier: workspace:*
         version: link:../../packages/protein
@@ -132,6 +135,9 @@ importers:
       '@gw/profile-myheritage':
         specifier: workspace:*
         version: link:../../plugins/profile-myheritage
+      '@gw/profile-synthetic':
+        specifier: workspace:*
+        version: link:../../plugins/profile-synthetic
       '@gw/storage':
         specifier: workspace:*
         version: link:../storage
@@ -187,6 +193,8 @@ importers:
   plugins/profile-familytreedna: {}
 
   plugins/profile-myheritage: {}
+
+  plugins/profile-synthetic: {}
 
   plugins/view-painting:
     dependencies:

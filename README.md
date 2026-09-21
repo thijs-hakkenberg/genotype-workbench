@@ -52,6 +52,10 @@ A helix is *one* molecule, and you have two copies of each autosome, so the draw
 
 ![Lineages: the best-matching mtDNA and Y haplogroups, with positions read, markers carried, and each tree's licence](docs/screenshots/lineages.png)
 
+**No raw data file?** Generate one and try the workbench on it. A generated profile is **not anyone's DNA**: it is the GRCh37 reference at the positions consumer chips read, with alleles either left alone or drawn at random. It imports through the same Rust normalizer as a real file, so a generated kit behaves like any other — but it carries its own vendor label, a data subject of *nobody*, and a consent basis of `synthetic`, which records that consent does not apply rather than that it was given. The same seed always produces the same profile.
+
+![The import page offering to generate a synthetic profile: a choice between the reference everywhere and alleles drawn at random, with sex chromosomes and a seed](docs/screenshots/synthetic.png)
+
 **Whose DNA, and who may read it.** Every kit records its data subject and its custodian on the same line, because the two differ as soon as a relative's kit arrives, and the consent basis it may be analysed under. A kit with no consent record is readable and viewable, but no analysis may touch it — and there is a route to recording one, which appends rather than overwrites, so the record still says what was true before.
 
 ![The Kits page: three kits with data subject, custodian and consent basis, one tagged None recorded and Analysis blocked](docs/screenshots/kits-custody.png)

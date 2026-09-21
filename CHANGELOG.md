@@ -8,6 +8,14 @@ The app version is also its own number: the **locus version** shown beside each
 kit records which normalizer produced that kit's calls, and moves only when
 `crates/locus` does.
 
+## 0.3.3 — 2026-09-21
+
+### Added
+
+- **A synthetic profile generator**, for anyone who has no raw data file or would rather not put their own in yet. It writes the GRCh37 reference at the positions consumer chips read — about 1.5 million of them — with alleles either left as the reference or drawn at random, and imports the result through the ordinary path, so the Rust normalizer checks every base exactly as it would for a real export and a generated kit is comparable with an imported one. Generating in about three seconds.
+- Nothing about it can pass as a person. It carries its own format profile, so every surface that names a source says **Synthetic**; its custody record names *nobody* as the data subject; and a fourth consent basis, `synthetic`, records that consent does not apply here rather than that it was given. rsIDs are left empty on purpose — an rsID is a name dbSNP gives a position somebody observed, and inventing one would be inventing a citation.
+- The same seed always produces the same profile, so a finding can be reproduced or two profiles compared.
+
 ## 0.3.2 — 2026-09-21
 
 ### Fixed

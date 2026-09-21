@@ -1,0 +1,11 @@
+{
+  "name": "@gw/profile-synthetic",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Format profile for generated synthetic profiles (ADR-0006: data, not code)",
+  "type": "module",
+  "exports": {
+    "./profile.json": "./profile.json",
+    "./manifest.json": "./manifest.json"
+  }
+}

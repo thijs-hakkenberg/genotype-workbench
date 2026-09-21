@@ -20,7 +20,7 @@
     void refreshEstimate();
   }
 
-  const basisLabel = { self: 'Self', 'recorded-consent': 'Recorded consent', none: 'None recorded' } as const;
+  const basisLabel = { self: 'Self', 'recorded-consent': 'Recorded consent', none: 'None recorded', synthetic: 'Synthetic' } as const;
 </script>
 
 <div class="page">
@@ -50,7 +50,9 @@
               <td>{k.custody.custodian}</td>
               <td>
                 <span class="tag {k.custody.consentBasis === 'none' ? 'tag-outline' : 'tag-accent'}">{basisLabel[k.custody.consentBasis]}</span>
-                {#if k.custody.consentBasis === 'none'}
+                {#if k.custody.consentBasis === 'synthetic'}
+                  <div class="faint" style="font-size:11px;margin-top:2px">Generated, not genotyped</div>
+                {:else if k.custody.consentBasis === 'none'}
                   <div class="faint" style="font-size:11px;margin-top:2px">Analysis blocked</div>
                   <button class="btn btn-ghost" type="button" style="margin-top:4px"
                           onclick={(e) => (e.stopPropagation(), (recording = k.kitId))}>Record one</button>

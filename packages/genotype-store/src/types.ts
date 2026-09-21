@@ -1,6 +1,13 @@
 import type { Chrom } from '@gw/plugin-sdk';
 
-export type ConsentBasis = 'self' | 'recorded-consent' | 'none';
+/**
+ * On what basis a kit may be analysed.
+ *
+ * `synthetic` is not a weaker `self`: a generated profile is not anyone's DNA,
+ * so there is nobody to consent and nobody's privacy at stake. It is kept
+ * distinct so no surface can quietly present generated data as a person's.
+ */
+export type ConsentBasis = 'self' | 'recorded-consent' | 'none' | 'synthetic';
 
 /** Whose DNA, who imported it, and on what basis it may be analysed (ADR-0009). */
 export interface Custody {

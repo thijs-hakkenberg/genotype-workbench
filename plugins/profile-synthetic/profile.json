@@ -1,0 +1,38 @@
+{
+  "id": "profile-synthetic",
+  "version": "0.1.0",
+  "vendor": "synthetic",
+  "vendorLabel": "Synthetic",
+  "build": "GRCh37",
+  "delimiter": "\t",
+  "commentPrefix": "#",
+  "headerRow": "rsid",
+  "columns": {
+    "rsid": 0,
+    "chrom": 1,
+    "pos": 2,
+    "genotype": [
+      3
+    ]
+  },
+  "noCallToken": "--",
+  "strand": "plus",
+  "detect": {
+    "headerContains": [
+      "Genotype Workbench synthetic profile"
+    ],
+    "buildMarkers": [
+      "build 37",
+      "GRCh37"
+    ],
+    "rejectMarkers": []
+  },
+  "chipVersions": [
+    {
+      "id": "profile",
+      "minRows": 1,
+      "maxRows": 10000000,
+      "label": "generated on this device, not genotyped"
+    }
+  ]
+}

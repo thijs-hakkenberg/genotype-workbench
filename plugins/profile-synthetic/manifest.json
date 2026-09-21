@@ -1,0 +1,9 @@
+{
+  "id": "profile-synthetic",
+  "version": "0.1.0",
+  "hostApi": "^0.1",
+  "capabilities": ["importer"],
+  "title": "Synthetic profile",
+  "description": "Reads the profiles this app generates for trying the workbench without a raw data file. A generated profile is not anyone's DNA, and every surface that names its vendor says so.",
+  "firstParty": true
+}

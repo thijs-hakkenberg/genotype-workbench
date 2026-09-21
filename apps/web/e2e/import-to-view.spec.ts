@@ -113,6 +113,40 @@ test('import a kit, see it, join a pack, keep it after reload — all on one ori
   expect(offOrigin).toEqual([]);
 });
 
+/**
+ * The path someone with no raw data file takes. It has to end somewhere real —
+ * a stored kit the rest of the workbench treats like any other — while never
+ * letting generated data pass as a person's.
+ */
+test('generates a profile for anyone without a file, and never calls it a person', async ({ page }) => {
+  await page.goto('/#/import');
+  await expect(page.getByText('No raw data file?')).toBeVisible();
+  await page.getByRole('button', { name: /Generate a synthetic profile/ }).click();
+
+  // It goes through the ordinary importer: the report is the real one.
+  await expect(page.getByText('Custody record')).toBeVisible({ timeout: 180_000 });
+  await expect(page.getByText('Rows read')).toBeVisible();
+  await expect(page.locator('.panel').first()).toContainText('Synthetic profile');
+  await expect(page.locator('.panel').first()).toContainText('not genotyped');
+
+  // Nobody to ask, and it says that rather than claiming consent was given.
+  // toContainText normalizes whitespace; a regex would not, and the sentence wraps.
+  await expect(page.locator('p.notice')).toContainText('consent does not apply here, not that it was given');
+  await expect(page.getByText('My own DNA')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Store kit on this device' }).click();
+  await expect(page.getByText('Kit overview')).toBeVisible({ timeout: 180_000 });
+
+  // And every surface that names whose it is says nobody's.
+  await page.goto('/#/kits');
+  const row = page.locator('tr', { hasText: 'Synthetic' });
+  await expect(row).toContainText('Nobody — generated');
+  await expect(row).toContainText('Generated, not genotyped');
+
+  // The same seed gives the same profile, so a finding can be reproduced.
+  await expect(page.locator('tr', { hasText: /seed \d+/ })).toHaveCount(1);
+});
+
 test('the molecule is drawn, and says what it is and is not', async ({ page }) => {
   await page.goto('/#/import');
   await page.setInputFiles('input[type=file]', KIT);
