@@ -767,7 +767,7 @@ export class AnnotationLibrary {
         // Two reasons there may be nothing, and the row has one line to say so:
         // the window is too wide for a turn to mean anything, or this pack has
         // no sequence here. Both are true of the same sentence.
-        emptyMessage: `Nothing to draw: the molecule is drawn below ${HELIX_BELOW_BP} bases, where this pack has reference sequence`,
+        emptyMessage: `Nothing to draw here — the molecule needs a window under ${HELIX_BELOW_BP} bases with reference sequence in it. Use “take me to the molecule” above.`,
       },
       itemsIn: async (region) => {
         if (region.end - region.start > HELIX_BELOW_BP) return [];
@@ -799,6 +799,52 @@ export class AnnotationLibrary {
         return items;
       },
     };
+  }
+
+  /**
+   * A window near `near` where the molecule can actually be drawn.
+   *
+   * The sequence pack covers coding exons and chip positions, which is a great
+   * many small islands — around fifty bases at a typical chip locus — rather
+   * than a continuous genome. Zooming to a few hundred bases at an arbitrary
+   * spot therefore lands in a gap far more often than not, so the view needs a
+   * way to jump to somewhere that has sequence.
+   *
+   * A position this kit actually called is preferred, because that is the one
+   * base on screen that is the person's own rather than the reference.
+   */
+  async moleculeWindow(chrom: Chrom, near: number, kitView: string | null): Promise<Region | null> {
+    const m = this.one('sequence');
+    if (!m) return null;
+
+    // A position this kit called, with sequence over it, is the one worth
+    // landing on: it is the only base on screen that is the person's own
+    // rather than the reference. Candidates are bounded first, so this stays a
+    // small join rather than one across the chromosome.
+    if (kitView) {
+      const [own] = await this.storage.query<{ pos: number; start: number; end: number }>(
+        `SELECT k.pos, s.start, s."end"
+         FROM (SELECT pos FROM ${ident(kitView)} WHERE chrom = ? AND NOT is_nocall
+               ORDER BY abs(pos - ?) LIMIT 50) k
+         JOIN ${this.view(m)} s ON s.chrom = ? AND k.pos BETWEEN s.start AND s."end"
+         ORDER BY abs(k.pos - ?) LIMIT 1`, [chrom, near, chrom, near]);
+      if (own) return windowAround(chrom, own.pos, own.start, own.end);
+    }
+
+    // Otherwise the nearest covered stretch, above and below. Two bounded
+    // lookups rather than one join: the pack has over a million ranges.
+    const rows = await this.storage.query<{ start: number; end: number }>(
+      `(SELECT start, "end" FROM ${this.view(m)} WHERE chrom = ? AND "end" >= ? ORDER BY start LIMIT 1)
+       UNION ALL
+       (SELECT start, "end" FROM ${this.view(m)} WHERE chrom = ? AND start <= ? ORDER BY start DESC LIMIT 1)`,
+      [chrom, near, chrom, near]);
+    if (rows.length === 0) return null;
+
+    const distance = (r: { start: number; end: number }) =>
+      near < r.start ? r.start - near : near > r.end ? near - r.end : 0;
+    const best = rows.reduce((a, b) => (distance(a) <= distance(b) ? a : b));
+
+    return windowAround(chrom, Math.round((best.start + best.end) / 2), best.start, best.end);
   }
 
   /** Codons and amino acids of the coding transcript in view. */
@@ -848,6 +894,16 @@ export class AnnotationLibrary {
             })),
     };
   }
+}
+
+/**
+ * A window centred on `at`, no wider than the helix is drawn at, and no wider
+ * than the covered stretch it sits in — so the view does not open half empty.
+ */
+function windowAround(chrom: Chrom, at: number, start: number, end: number): Region {
+  const covered = end - start + 1;
+  const half = Math.max(30, Math.floor(Math.min(HELIX_BELOW_BP, covered + 40) / 2));
+  return { chrom, start: Math.max(1, at - half), end: at + half };
 }
 
 export function packView(id: string): string {

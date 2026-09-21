@@ -38,6 +38,8 @@ Design and decisions live in [`docs/`](docs/): [Core architecture](docs/Core%20a
 
 ![The double helix track below the sequence and protein tracks, with base letters on both strands and the reference sequence above](docs/screenshots/helix.png)
 
+The sequence pack covers coding exons and chip positions rather than the whole genome, so the molecule can only be drawn in the stretches it reaches. **Take me to the molecule** in the genome view's toolbar jumps to the nearest one, preferring a position your own chip read.
+
 A helix is *one* molecule, and you have two copies of each autosome, so the drawing says which bases are yours. Where both copies agree, your base is drawn and marked as measured. Where they differ, the reference base is drawn with both of your letters beside a doubled rung: chip data is unphased, so placing either one on this molecule would be a guess about which parent it came from. Everything else is the reference standing in, because a chip reads positions, not stretches. The detail dock shows the same geometry end-on, looking down the axis.
 
 ![The detail dock at rs4988235, with the molecule shown end-on as a rosette of stacked base pairs and the B-form measurements beside it](docs/screenshots/helix-endon.png)

@@ -228,9 +228,13 @@ export class TrackView implements TrackViewHandle {
         // screen reader, and an empty track has something to say.
         row.canvas.setAttribute('aria-label', `${row.source.descriptor.title}: ${message}`);
       } else {
+        // Not "0 drawn" while a query is still running: that is a claim about
+        // the window, and it has not been read yet.
         row.canvas.setAttribute(
           'aria-label',
-          `${row.source.descriptor.title}: ${row.items.length} drawn in this window`,
+          row.loading
+            ? `${row.source.descriptor.title}: reading this window`
+            : `${row.source.descriptor.title}: ${row.items.length} drawn in this window`,
         );
       }
       row.label.style.opacity = row.loading ? '0.6' : '1';

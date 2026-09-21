@@ -137,7 +137,12 @@ test('the molecule is drawn, and says what it is and is not', async ({ page }) =
   // Too far out for a turn to mean anything, and the row says so rather than
   // drawing a smear. (The canvas hint is not in the DOM; the empty row is.)
   await page.goto('/#/genome/2:136600000-136620000');
-  await expect(page.locator('canvas[aria-label*="molecule is drawn below 400 bases"]')).toHaveCount(1);
+  await expect(page.locator('canvas[aria-label*="needs a window under 400 bases"]')).toHaveCount(1);
+
+  // And there is a way out of that state, because zooming in place lands in a
+  // gap far more often than not: the pack is islands, not a genome.
+  await page.getByRole('button', { name: /take me to/ }).click();
+  await expect(page.locator('canvas[aria-label*="Double helix"][aria-label*="drawn in this window"]')).toHaveCount(1, { timeout: 30_000 });
 });
 
 test('the version in the header leads to what changed', async ({ page }) => {

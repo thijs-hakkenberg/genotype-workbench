@@ -8,6 +8,13 @@ The app version is also its own number: the **locus version** shown beside each
 kit records which normalizer produced that kit's calls, and moves only when
 `crates/locus` does.
 
+## 0.3.2 — 2026-09-21
+
+### Fixed
+
+- **The molecule was almost impossible to find.** The reference sequence pack covers coding exons and chip positions, which is around 1.5 million small islands — a median of 51 bases — rather than a continuous genome, so zooming to a few hundred bases anywhere in particular landed in a gap nearly every time, and the helix track just said it had nothing to draw. The genome view now has a **take me to the molecule** link that jumps to the nearest stretch with sequence in it, preferring a position this kit actually called, since that is the one base on screen that is yours rather than the reference. The empty message points at it.
+- A track no longer reports "0 drawn in this window" to assistive technology while its query is still running. That is a claim about the window, and it has not been read yet.
+
 ## 0.3.1 — 2026-09-21
 
 The molecule everything else is a reading of.

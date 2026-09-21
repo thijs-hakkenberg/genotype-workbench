@@ -5,7 +5,6 @@
   import { CHROM_LENGTH, GRCH37, clampRegion, formatRegion, formatWidth, parseRegion } from '@gw/plugin-sdk/genome';
   import { TrackView, markSwatch } from '@gw/view-tracks';
   import { formatCall, viewName, type CallRow } from '@gw/genotype-store';
-  import { HELIX_BELOW_BP } from '@gw/annotation-library';
   import { app, activeKit, svc } from '../lib/services.svelte';
   import { route, go } from '../lib/router.svelte';
   import { fmtInt } from '../lib/format';
@@ -43,6 +42,33 @@
     // The molecule last: it is what everything above is a reading of.
     const helix = library.helixTrack(kit ? viewName(kit.kitId) : null);
     return [...t, ...library.trackSources(), ...(helix ? [helix] : [])];
+  }
+
+  let seeking = $state(false);
+  let moleculeNote = $state('');
+
+  /**
+   * Jump to somewhere the molecule can actually be drawn.
+   *
+   * Zooming in place almost never works: the sequence pack covers coding exons
+   * and chip positions, which is a great many small islands rather than a
+   * continuous genome, so an arbitrary few hundred bases usually falls in a
+   * gap. This finds the nearest stretch that has sequence, preferring one of
+   * this kit's own calls.
+   */
+  async function showMolecule() {
+    seeking = true;
+    moleculeNote = '';
+    try {
+      const from = sel?.pos ?? Math.round((region.start + region.end) / 2);
+      const found = await svc().library.moleculeWindow(region.chrom, from, kit ? viewName(kit.kitId) : null);
+      if (found) navigate(found, false);
+      else moleculeNote = `No reference sequence on chromosome ${region.chrom}: that pack covers coding exons and chip positions.`;
+    } catch (e) {
+      moleculeNote = e instanceof Error ? e.message : String(e);
+    } finally {
+      seeking = false;
+    }
   }
 
   function navigate(r: Region, replace = true) {
@@ -122,7 +148,8 @@
     </div>
     <span class="muted num" style="font-size:12px">
       {formatWidth(width)} · {callCount == null ? '…' : callCount > 5000 ? 'over 5,000' : fmtInt(callCount)} calls in view
-      {#if width > SEQUENCE_BELOW_BP && hasSequence}· <button type="button" class="linkish" onclick={() => zoomTo(100)}>zoom in for bases and codons</button>{:else if width > HELIX_BELOW_BP && hasSequence}· <button type="button" class="linkish" onclick={() => zoomTo(120)}>zoom in for the double helix</button>{/if}
+      {#if hasSequence}· <button type="button" class="linkish" onclick={showMolecule} disabled={seeking}>{seeking ? 'looking…' : width > SEQUENCE_BELOW_BP ? 'take me to bases, codons and the molecule' : 'take me to the molecule'}</button>{/if}
+      {#if moleculeNote}<br /><span class="faint">{moleculeNote}</span>{/if}
     </span>
     <div style="margin-left:auto;display:flex;gap:var(--space-2);align-items:center">
       <div class="seg" role="radiogroup" aria-label="Window width">
